@@ -1,0 +1,11 @@
+.vscode
+node_modules
+build
+out-tsc
+*-debug.log
+*-error.log
+/.nyc_output
+/dist
+/lib
+/tmp
+oclif.manifest.json

@@ -1,0 +1,10 @@
+{
+    "openapi_path": "https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml",
+    "targets": [
+        "react-query"
+    ],
+    "override_policies": {
+        "react-query": "skip",
+        "types": "override"
+    }
+}

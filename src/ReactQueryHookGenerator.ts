@@ -1,0 +1,320 @@
+import { existsSync } from 'fs';
+import { mkdir, writeFile } from 'fs/promises';
+import kleur from 'kleur';
+import { ParameterDeclarationStructure, Project, VariableDeclarationKind } from 'ts-morph';
+
+import { SEARCH_OPCODES, parseOpcode, renderImports } from './helpers';
+import { AugmentedOperation, ImportData, OverridePolicy } from './types';
+
+export const createCallQueryKey = (operation: AugmentedOperation, forInvalidation = false) => {
+    const isHavePathParams = operation.hasPathParams;
+    const id = forInvalidation ? 'data?.id' : 'id';
+
+    // Always invalidate search of multiple entities.
+    if (forInvalidation && operation['path'].endsWith(':search'))
+        return `QueryKeys.${operation.original.operationId}()`;
+
+    if (operation.original.requestBody && isHavePathParams) {
+        return `QueryKeys.${operation.original.operationId}(${id}, data)`;
+    } else if (isHavePathParams) {
+        return `QueryKeys.${operation.original.operationId}(${id})`;
+    } else if (operation.original.requestBody) {
+        return `QueryKeys.${operation.original.operationId}(data)`;
+    } else {
+        return `QueryKeys.${operation.original.operationId}()`;
+    }
+};
+
+export class ReactQueryHookGenerator {
+    private overridePolicy: OverridePolicy;
+
+    constructor({ overridePolicy }: { overridePolicy: OverridePolicy }) {
+        this.overridePolicy = overridePolicy;
+    }
+
+    async generate(group: string, flatOperations: AugmentedOperation[]) {
+        const folder = `output/${group}`;
+        await mkdir(folder, { recursive: true });
+        const filePath = `${folder}/index.ts`;
+
+        const isExisting = existsSync(filePath);
+
+        if (this.overridePolicy === 'skip' && isExisting) {
+            console.log(
+                kleur.italic(kleur.bgWhite(kleur.black(group))),
+                'хуки react-query пропущены как существующие'
+            );
+            return;
+        }
+
+        const project = new Project();
+        const sourceFile = project.createSourceFile(`index.ts`, '', { overwrite: true });
+
+        const imports: ImportData[] = [];
+        imports.push(
+            ...[
+                {
+                    from: 'react-query',
+                    name: 'useMutation',
+                },
+                {
+                    from: 'react-query',
+                    name: 'useQuery',
+                },
+                {
+                    from: '@api/common/types',
+                    name: 'FetchError',
+                },
+
+                {
+                    from: '@api/',
+                    name: 'apiClient',
+                },
+            ]
+        );
+
+        const searchOperations = flatOperations.filter(e => SEARCH_OPCODES.includes(parseOpcode(e)));
+
+        type OperationId = string;
+        const queryKeys = searchOperations.reduce((acc, searchOperation) => {
+            const pathParameters =
+                searchOperation.original.parameters?.filter(e => {
+                    if ('in' in e) {
+                        return e.in === 'path';
+                    }
+
+                    return false;
+                }) || [];
+
+            if (pathParameters.length && searchOperation.original.requestBody) {
+                throw new Error(
+                    `Unsupported route definition: path parameters + requestBody. 
+                    Please move your path parameters (${JSON.stringify(pathParameters)}) into request body`
+                );
+            }
+
+            if (pathParameters.length > 1) {
+                throw new Error('Unsupported multiple path parameters.');
+            }
+
+            acc[searchOperation.original.operationId!] = {
+                ...searchOperation,
+                hasPathParams: pathParameters.length > 0,
+                hasBody: !!searchOperation.original.requestBody,
+            };
+
+            return acc;
+        }, {} as Record<OperationId, AugmentedOperation & { hasPathParams: boolean; hasBody: boolean }>);
+
+        // console.log(group, queryKeys);
+
+        sourceFile.addVariableStatement({
+            isExported: true,
+            declarationKind: VariableDeclarationKind.Const,
+            declarations: [
+                {
+                    name: 'QueryKeys',
+                    initializer: writer => {
+                        const entries = Object.entries(queryKeys);
+                        writer.writeLine('{');
+
+                        entries.forEach(([key, op]) => {
+                            if (op.hasBody && op.hasPathParams) {
+                                writer.writeLine(
+                                    `${key}: (id?: number | string, data?: any) => (id || data) ? ['${op.queryKey}', id, data] : ['${op.queryKey}'],`
+                                );
+                            } else if (op.hasPathParams) {
+                                writer.writeLine(
+                                    `${key}: (id?: number | string) => id ? ['${op.queryKey}', id] : ['${op.queryKey}'],`
+                                );
+                            } else if (op.hasBody) {
+                                writer.writeLine(
+                                    `${key}: (data?: any) => data ? ['${op.queryKey}', data] : ['${op.queryKey}'],`
+                                );
+                            } else {
+                                writer.writeLine(`${key}: () => ['${op.queryKey}'],`);
+                            }
+                        });
+
+                        writer.writeLine('}');
+                    },
+                },
+            ],
+        });
+
+        flatOperations.forEach(operation => {
+            const queryParams =
+                operation.original.parameters?.filter(e => {
+                    if (!('in' in e)) return false;
+                    return e.in === 'query';
+                }) || [];
+
+            if (queryParams.length && operation.isMutation)
+                throw new Error('Mutations with queryParams are not supported yet: check ' + JSON.stringify(operation));
+
+            const name = operation.hookName;
+
+            const callApi = (withData = false) => {
+                const method = operation['method'].toLowerCase();
+                const path = operation.pathWithVariables;
+
+                let args: string[] = [];
+
+                if (withData) {
+                    if (operation.isFileUpload) {
+                        args.push('data: data.formData');
+                    } else {
+                        args.push('data');
+                    }
+                }
+                if (queryParams.length) args.push('params');
+
+                return `apiClient.${method}(\`${path}\`, {${args.join(', ')}})`;
+            };
+
+            const types = operation.typeNames;
+
+            if (types.request) {
+                imports.push({
+                    from: './types',
+                    name: types.request,
+                });
+            }
+
+            imports.push({
+                from: './types',
+                name: types.response,
+            });
+
+            if (operation.isMutation) {
+                const dataParamInfo = {
+                    type: null as string | null,
+                    definition: '',
+                    hasRequestBody: !!operation.original.requestBody,
+                };
+
+                if (operation.hasPathParams && operation.original.requestBody) {
+                    dataParamInfo.type = `{ id: number | string; } & ${types.request}`;
+                    dataParamInfo.definition = '({ id, ...data })';
+                } else if (operation.hasPathParams) {
+                    dataParamInfo.type = types.request;
+                    dataParamInfo.definition = '({ id, })';
+                } else if (operation.original.requestBody) {
+                    dataParamInfo.type = types.request;
+                    dataParamInfo.definition = '(data)';
+                }
+
+                sourceFile.addFunction({
+                    name: name,
+                    isExported: true,
+                    isDefaultExport: false,
+                    docs: operation.original.description ? [operation.original.description] : [],
+                    statements: writer => {
+                        const opsToInvalidate = searchOperations.length ? operation.invalidatees : [];
+
+                        if (opsToInvalidate.length) {
+                            writer.writeLine(`const queryClient = useQueryClient();`);
+
+                            imports.push({
+                                from: 'react-query',
+                                name: 'useQueryClient',
+                            });
+
+                            writer.blankLine();
+                        }
+
+                        writer.writeLine(`return useMutation<${types.response}, FetchError, ${dataParamInfo.type}>(`);
+
+                        writer.writeLine(`${dataParamInfo.definition} => ${callApi(dataParamInfo.hasRequestBody)},`);
+
+                        if (opsToInvalidate.length) {
+                            writer.writeLine('{');
+                            writer.writeLine('onSuccess: ({ data }) => {');
+                            opsToInvalidate.forEach(op => {
+                                writer.write('queryClient.invalidateQueries(');
+                                writer.write(createCallQueryKey(op, true));
+                                writer.write(');');
+                                writer.blankLine();
+                            });
+                            writer.writeLine('},');
+                            writer.writeLine('}');
+                        }
+
+                        writer.writeLine(');');
+                    },
+                });
+            } else {
+                const dataParamInfo = {
+                    type: null as string | null,
+                    name: 'data',
+                };
+
+                if (operation.hasPathParams && operation.original.requestBody) {
+                    dataParamInfo.type = `{ id: number | string; } & ${types.request}`;
+                    dataParamInfo.name = '{ id, ...data }';
+                } else if (operation.hasPathParams) {
+                    dataParamInfo.type = '{ id: number | string; }';
+                    dataParamInfo.name = '{ id, }';
+                } else if (operation.original.requestBody) {
+                    dataParamInfo.type = types.request;
+                    dataParamInfo.name = 'data';
+                }
+
+                sourceFile.addFunction({
+                    name: name,
+                    docs: operation.original.description ? [operation.original.description] : [],
+                    isExported: true,
+                    isDefaultExport: false,
+                    parameters: [
+                        ...(dataParamInfo.type
+                            ? ([
+                                  {
+                                      name: dataParamInfo.name,
+                                      type: dataParamInfo.type,
+                                  },
+                              ] as ParameterDeclarationStructure[])
+                            : []),
+                        ...(queryParams.length
+                            ? ([
+                                  {
+                                      name: 'params',
+                                      type: 'Record<string, any>',
+                                      initializer: '{}',
+                                  },
+                              ] as ParameterDeclarationStructure[])
+                            : []),
+                        {
+                            name: 'enabled',
+                            initializer: 'true',
+                        },
+                    ],
+                    statements: writer => {
+                        writer.writeLine(`return useQuery<${types.response}, FetchError>({`);
+                        writer.indent(2);
+
+                        if (operation.original.operationId! in queryKeys) {
+                            const call = createCallQueryKey(operation);
+
+                            if (call) {
+                                writer.write(`queryKey: ${call},`);
+                            }
+                        }
+
+                        writer.indent(2);
+                        writer.writeLine(`queryFn: () => ${callApi(!!operation.original.requestBody)},`);
+                        writer.writeLine('enabled,');
+                        writer.writeLine('});');
+                    },
+                });
+            }
+        });
+
+        renderImports(sourceFile, imports);
+
+        sourceFile.formatText();
+
+        const content = sourceFile.getFullText();
+
+        await writeFile(filePath, content);
+    }
+}

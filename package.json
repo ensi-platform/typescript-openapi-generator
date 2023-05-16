@@ -1,0 +1,88 @@
+{
+  "name": "@ensi/typescript-openapi-generator",
+  "version": "1.0.0",
+  "description": "Generate TS types and react-query hooks from OpenAPIV3 specification\nFor more information use: https://docs.ensi.tech/",
+  "author": "Greensight",
+  "bin": {
+    "ts-openapi-gen": "./bin/run"
+  },
+  "private": false,
+  "scripts": {
+    "build": "rimraf dist && tsc && node ./scripts/addHeaders.js",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint . --ext .ts --config .eslintrc",
+    "postpack": "rimraf oclif.manifest.json",
+    "prepack": "yarn build && oclif manifest && oclif readme"
+  },
+  "oclif": {
+    "bin": "ts-openapi-gen",
+    "dirname": "ts-openapi-gen",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ensi-platform/typescript-openapi-generator"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "bugs": "https://github.com/ensi-platform/typescript-openapi-generator/issues",
+  "keywords": [
+    "oclif"
+  ],
+  "homepage": "https://github.com/ensi-platform/typescript-openapi-generator",
+  "files": [
+    "/bin",
+    "/dist",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "types": "dist/index.d.ts",
+  "license": "ISC",
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^10.1.0",
+    "@inquirer/input": "^1.0.7",
+    "@inquirer/prompts": "^1.1.3",
+    "@oclif/core": "^2",
+    "@oclif/plugin-help": "^5",
+    "@oclif/plugin-plugins": "^2.4.7",
+    "@openapi-contrib/openapi-schema-to-json-schema": "^4.0.4",
+    "@openapitools/openapi-generator-cli": "^2.5.2",
+    "@stoplight/json-schema-ref-parser": "^9.2.4",
+    "@stoplight/yaml": "^4.2.3",
+    "add": "^2.0.6",
+    "case": "^1.6.3",
+    "code-block-writer": "^12.0.0",
+    "fastify": "^4.12.0",
+    "js-yaml": "^4.1.0",
+    "json-schema-resolver": "^2.0.0",
+    "json-schema-to-typescript": "^12.0.0",
+    "kleur": "^4.1.5",
+    "lodash.keyby": "^4.6.0",
+    "node-fetch-commonjs": "^3.2.4",
+    "openapi-typescript": "^6.1.0",
+    "prettier": "^2.8.8",
+    "ts-morph": "^18.0.0",
+    "yaml": "^2.1.1",
+    "yargs": "^17.6.2",
+    "yarn": "^1.22.19"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+    "@types/js-yaml": "^4.0.5",
+    "@types/lodash.keyby": "^4.6.7",
+    "@types/node": "^18.0.0",
+    "@types/yargs": "^17.0.22",
+    "eslint": "^8.40.0",
+    "eslint-config-oclif": "^4",
+    "eslint-config-oclif-typescript": "^1.0.3",
+    "oclif": "^3",
+    "openapi-types": "^12.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}

@@ -1,0 +1,4 @@
+pnpm-lock.json
+.helm/*
+.husky/*
+.next/*

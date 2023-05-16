@@ -1,0 +1,83 @@
+module.exports = {
+    env: {
+        browser: true,
+        es2021: true,
+        node: true,
+        jest: true,
+    },
+    extends: ['next', 'airbnb', 'prettier', 'plugin:jsx-a11y/recommended', 'oclif', 'oclif-typescript'],
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+        ecmaFeatures: {
+            jsx: true,
+        },
+        ecmaVersion: 12,
+        sourceType: 'module',
+    },
+    settings: {
+        'import/resolver': {
+            node: {
+                extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.d.ts'],
+            },
+        },
+        'mdx/code-blocks': true,
+    },
+    plugins: ['react', '@typescript-eslint'],
+    rules: {
+        'react/react-in-jsx-scope': 0,
+        camelcase: 0,
+        'react-hooks/exhaustive-deps': 'error',
+        'react/jsx-filename-extension': 0,
+        'react/jsx-props-no-spreading': 0,
+        'import/no-unresolved': [2, { ignore: ['@'] }],
+        'no-unused-vars': 0,
+        '@typescript-eslint/no-unused-vars': [2],
+        'react/no-unescaped-entities': 1,
+        'import/extensions': 0,
+        'react/destructuring-assignment': 1,
+        'react/require-default-props': 0,
+        'import/no-extraneous-dependencies': 1,
+        'no-param-reassign': [2, { props: false }],
+        'react/button-has-type': 1,
+        'react/prop-types': 0,
+        'no-nested-ternary': 1,
+        'react/no-array-index-key': 1,
+        'react/jsx-key': 1,
+        'jsx-a11y/anchor-is-valid': 0,
+        'no-console': [1, { allow: ['warn', 'error', 'info'] }],
+        'consistent-return': 0,
+        'no-shadow': 0,
+        '@typescript-eslint/no-shadow': [1],
+        'jsx-a11y/label-has-associated-control': 0,
+        'jsx-a11y/anchor-has-content': 0,
+        'react/no-danger': 0,
+        'react/no-unknown-property': ['error', { ignore: ['css'] }],
+        'jsx-a11y/no-static-element-interactions': [
+            2,
+            { handlers: ['onMouseDown', 'onMouseUp', 'onKeyPress', 'onKeyDown', 'onKeyUp'] },
+        ],
+        'react/no-unstable-nested-components': ['warn'],
+        'no-restricted-exports': 0,
+        'import/no-cycle': 0,
+        'react/function-component-definition': 0,
+        'react/no-unused-prop-types': 1,
+        'jsx-a11y/click-events-have-key-events': 0,
+        'import/no-named-as-default': 0,
+        'import/prefer-default-export': 0,
+    },
+    overrides: [
+        {
+            files: ['**/*.mdx'],
+            parser: 'eslint-mdx',
+            extends: ['plugin:mdx/overrides'],
+            rules: {
+                'prettier/prettier': [
+                    0,
+                    {
+                        parser: 'markdown',
+                    },
+                ],
+            },
+        },
+    ],
+};
