@@ -13,7 +13,7 @@ import { OverridePolicy } from '../../types';
 export default class Generate extends Command {
     static description = 'Main entrypoint';
 
-    static examples = [`$ generate`];
+    static examples = ['$ generate'];
 
     static args = {
         origin: Args.string({ description: 'File path or URL to index.yaml file', required: false }),
@@ -36,7 +36,7 @@ export default class Generate extends Command {
             args.origin = await input({ message: 'Type origin of index.yaml (file path or URL)' });
         }
 
-        const { openapi_path } = config;
+        const { openapi_path, targets, override_policies } = config;
 
         const loader = getSchemaLoaderForOrigin(openapi_path);
         const indexDocument = await loader.loadIndex();
@@ -46,13 +46,13 @@ export default class Generate extends Command {
             console.log(`   ${p}% зависимостей...`);
         });
 
-        console.log(`Загружаем зависимые компоненты...`);
+        console.log('Загружаем зависимые компоненты...');
 
         const parsedSchema = await schemaParser.parse();
         const { groups, groupedOperations, operations } = parsedSchema;
         console.log('   100% зависимостей загружено!');
 
-        if (!config.targets) {
+        if (!targets) {
             config.targets = await checkbox({
                 message: 'Выберите что генерировать:',
                 choices: [
@@ -77,8 +77,8 @@ export default class Generate extends Command {
         const parser = new TypeParser(parsedSchema);
         parser.parse();
 
-        if (config.override_policies[Target.TYPES] === undefined) {
-            config.override_policies[Target.TYPES] = (await select({
+        if (override_policies[Target.TYPES] === undefined) {
+            override_policies[Target.TYPES] = (await select({
                 message: 'Действие при наличии существующего файла типов...',
                 choices: [
                     {
@@ -94,7 +94,7 @@ export default class Generate extends Command {
         }
 
         const typeGen = new TypeRenderer({
-            overridePolicy: config.override_policies[Target.TYPES]!,
+            overridePolicy: override_policies[Target.TYPES]!,
         });
 
         await typeGen.renderCommonDependencies(operations);
@@ -105,9 +105,9 @@ export default class Generate extends Command {
 
         console.log('✔️ Типы сгенерированы!');
 
-        if (config.targets.includes(Target.REACT_QUERY)) {
-            if (config.override_policies[Target.REACT_QUERY] === undefined) {
-                config.override_policies[Target.REACT_QUERY] = (await select({
+        if (targets.includes(Target.REACT_QUERY)) {
+            if (override_policies[Target.REACT_QUERY] === undefined) {
+                override_policies[Target.REACT_QUERY] = (await select({
                     message: 'Действие при наличии существующего файла хуков...',
                     choices: [
                         {
@@ -123,7 +123,7 @@ export default class Generate extends Command {
             }
 
             const hookGen = new ReactQueryHookGenerator({
-                overridePolicy: config.override_policies[Target.REACT_QUERY]!,
+                overridePolicy: override_policies[Target.REACT_QUERY]!,
             });
 
             await Promise.all(
