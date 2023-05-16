@@ -31,10 +31,21 @@ module.exports = {
         'no-unused-vars': 0,
         '@typescript-eslint/no-unused-vars': [2],
         'import/extensions': 0,
-
+        'unicorn/no-array-reduce': 0,
+        'no-prototype-builtins': 0,
+        'unicorn/no-useless-undefined': 0,
+        'operator-linebreak': 0,
+        'unicorn/filename-case': [
+            'error',
+            {
+                cases: {
+                    camelCase: true,
+                    pascalCase: true,
+                },
+            },
+        ],
         'no-param-reassign': [2, { props: false }],
         'no-nested-ternary': 1,
-        'no-console': [1, { allow: ['warn', 'error', 'info'] }],
         'consistent-return': 0,
         'no-shadow': 0,
         '@typescript-eslint/no-shadow': [1],

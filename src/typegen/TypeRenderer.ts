@@ -1,10 +1,10 @@
 import toJsonSchema from '@openapi-contrib/openapi-schema-to-json-schema';
-import { existsSync } from 'fs';
-import { mkdir, writeFile } from 'fs/promises';
 import type { JSONSchema4 } from 'json-schema';
 import { compile as compileTypescript } from 'json-schema-to-typescript';
 import kleur from 'kleur';
-import { MediaTypeObject, RequestBodyObject, ResponseObject } from 'openapi-typescript';
+import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { MediaTypeObject, RequestBodyObject } from 'openapi-typescript';
 import { CodeBlockWriter, Project } from 'ts-morph';
 
 import { RequestContentType, renderImports } from '../helpers';
@@ -32,16 +32,16 @@ export class TypeRenderer {
                 if (Array.isArray(schema.type)) {
                     if (schema.type.includes('null'))
                         return {
-                            type: schema.type.filter(e => e !== 'null')[0],
+                            type: schema.type.find(e => e !== 'null'),
                             nullable: true,
                         };
-                    else throw new Error('Invalid type tuple: ' + JSON.stringify(schema));
+                    throw new Error('Invalid type tuple: ' + JSON.stringify(schema));
                 }
 
                 return schema as any;
             },
         });
-        delete res['$schema'];
+        delete res.$schema;
         return res;
     }
 
@@ -51,8 +51,8 @@ export class TypeRenderer {
         if (!('data' in schema.properties!) && !('meta' in schema.properties!))
             throw new Error('Invalid json schema for response:' + JSON.stringify(schema));
 
-        let data = undefined;
-        let meta = undefined;
+        let data;
+        let meta;
 
         if ('data' in schema.properties!) {
             data = schema.properties.data;
@@ -115,7 +115,7 @@ export class TypeRenderer {
     }
 
     private async generateResponseType(operation: AugmentedOperation, imports: ImportData[]) {
-        if (!operation.responses.length)
+        if (operation.responses.length === 0)
             throw new Error('Invalid operation: ' + JSON.stringify(operation) + '. It has no responses.');
 
         const types = operation.typeNames;
@@ -153,9 +153,11 @@ export class TypeRenderer {
                     const { data, meta } = this.extractResponseJsonSchema(jsonSchema);
                     if (data) datas.push(data);
                     if (meta) metas.push(meta);
-                } catch (err) {
+                } catch {
                     console.error(
-                        `${kleur.red('[TypesGenerator] Формат возвращаемых данных ошибочно отличается от шаблона ')}${kleur.red().bold(operation['path'])}`,
+                        `${kleur.red(
+                            '[TypesGenerator] Формат возвращаемых данных ошибочно отличается от шаблона '
+                        )}${kleur.red().bold(operation.path)}`,
                         `Используем взамен ${kleur.cyan(`type ${types.response} = object;`)}`
                     );
 
@@ -165,9 +167,9 @@ export class TypeRenderer {
                 console.log(
                     '[typegen/Parser]',
                     operation.path,
-                    'has invalid response ',
+                    'has invalid response',
                     kleur.italic(response.code),
-                    ': unsupported content-type ',
+                    ': unsupported content-type',
                     kleur.red(response.contentType)
                 );
             }
@@ -177,7 +179,7 @@ export class TypeRenderer {
         }
 
         // Pure referenced output
-        if (!datas.length || !metas.length) {
+        if (datas.length === 0 || metas.length === 0) {
             return `export type ${types.response} = ${refed.join(' | ')};\n`;
         }
 
@@ -220,18 +222,18 @@ export class TypeRenderer {
         const groupedByPath = new Map<string, RefSchemaData[]>();
         const seenObjects = new Set<RefSchemaData>();
 
-        dependencies.forEach(dep => {
+        for (const dep of dependencies) {
             if (!groupedByPath.has(dep.savedPath)) {
                 groupedByPath.set(dep.savedPath, []);
             }
 
-            if (seenObjects.has(dep)) return;
+            if (seenObjects.has(dep)) continue;
             seenObjects.add(dep);
 
             groupedByPath.get(dep.savedPath)!.push(dep);
-        });
+        }
 
-        const folder = `output/`;
+        const folder = 'output/';
         await mkdir(`${folder}commonTypes`, { recursive: true });
 
         await Promise.all(
@@ -239,12 +241,13 @@ export class TypeRenderer {
                 const deps = groupedByPath.get(pathGroup)!;
 
                 const project = new Project();
-                const sourceFile = project.createSourceFile(`types.ts`, '', { overwrite: true });
+                const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
                 let allCodes = '';
 
                 for (const dep of deps) {
                     const jsonSchema = this.convertToJsonSchema(dep.schema);
 
+                    // eslint-disable-next-line no-await-in-loop
                     const ts = await compileTypescript(jsonSchema, dep.name, {
                         bannerComment: '',
                         additionalProperties: false,
@@ -272,7 +275,7 @@ export class TypeRenderer {
         }
 
         const project = new Project();
-        const sourceFile = project.createSourceFile(`types.ts`, '', { overwrite: true });
+        const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
 
         const imports: ImportData[] = [
             {

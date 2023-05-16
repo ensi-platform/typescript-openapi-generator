@@ -7,8 +7,8 @@ import { ApiClient } from '../ApiClient';
 import { ISchemaLoader } from '../types';
 
 const valueOrArrayElement = (value: any) => {
-    if (Array.isArray(value) && value.length) return value[0];
-    if (Array.isArray(value) && !value.length) return null;
+    if (Array.isArray(value) && value.length > 0) return value[0];
+    if (Array.isArray(value) && value.length === 0) return null;
 
     return value;
 };
@@ -25,9 +25,9 @@ export class UrlLoader implements ISchemaLoader {
     private apiClient = new ApiClient(1);
 
     constructor(url: string) {
-        this.url = url.replace('/index.yaml', '');  
+        this.url = url.replace('/index.yaml', '');
 
-        if (this.url.at(-1) === '/') this.url = this.url.substring(0, this.url.length - 1);
+        if (this.url.at(-1) === '/') this.url = this.url.slice(0, Math.max(0, this.url.length - 1));
     }
 
     public getType() {
@@ -49,9 +49,9 @@ export class UrlLoader implements ISchemaLoader {
             const res = await this.apiClient.fetch<string>(portionUrl);
             cb(undefined, res);
             return res;
-        } catch (e) {
-            console.error(e);
-            cb(e, undefined);
+        } catch (error: any) {
+            console.error(error);
+            cb(error, undefined);
             return '';
         }
     }

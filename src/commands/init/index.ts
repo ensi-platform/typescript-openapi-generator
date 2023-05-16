@@ -1,19 +1,11 @@
-import input from '@inquirer/input';
-import { checkbox, select } from '@inquirer/prompts';
-import { Args, Command } from '@oclif/core';
+import { Command } from '@oclif/core';
 
-import { ReactQueryHookGenerator } from '../../ReactQueryHookGenerator';
-import { SchemaParser } from '../../SchemaParser';
-import { Config, Target } from '../../config/Config';
-import { getSchemaLoaderForOrigin } from '../../loader';
-import { TypeParser } from '../../typegen/TypeParser';
-import { TypeRenderer } from '../../typegen/TypeRenderer';
-import { OverridePolicy } from '../../types';
+import { Config } from '../../config/Config';
 
 export default class Init extends Command {
     static description = 'Create a config file';
 
-    static examples = [`$ init`];
+    static examples = ['$ init'];
 
     static args = {};
 

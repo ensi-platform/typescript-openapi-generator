@@ -1,4 +1,4 @@
-import { camel, kebab, pascal } from 'case';
+import { kebab, pascal } from 'case';
 import type { OpenAPIV3 } from 'openapi-types';
 import { PathItemObject, RequestBodyObject } from 'openapi-typescript';
 import { SourceFile } from 'ts-morph';
@@ -24,7 +24,7 @@ export const parseOpcode = (operation: OpenAPIV3.OperationObject | AugmentedOper
 };
 
 export const SUPPORTED_REQUEST_CONTENT = ['multipart/form-data', 'application/json'] as const;
-export type RequestContentType = typeof SUPPORTED_REQUEST_CONTENT[number];
+export type RequestContentType = (typeof SUPPORTED_REQUEST_CONTENT)[number];
 
 export const hasFileUpload = (op: OpenAPIV3.OperationObject) => {
     const reqBody = op.requestBody as RequestBodyObject;
@@ -60,7 +60,8 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
     return kebab(original.operationId!);
 };
 
-const replacePlaceholders = (str: string) => str.replace(/\{([^}]+)\}/g, `\${$1}`);
+// eslint-disable-next-line no-template-curly-in-string
+const replacePlaceholders = (str: string) => str.replaceAll(/{([^}]+)}/g, '${$1}');
 
 const operationGenerateTypeNames = (method: string, operation: OpenAPIV3.OperationObject) => {
     const isMutation = isOperationMutation(method as HttpMethod, operation);
@@ -89,7 +90,7 @@ const operationGenerateTypeNames = (method: string, operation: OpenAPIV3.Operati
 const generateInvalidatees = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
     if (!op.isMutation) return [];
 
-    const path = op['path'];
+    const path = op.path;
 
     if (!path.includes('{id}')) return [];
 
@@ -98,10 +99,10 @@ const generateInvalidatees = (op: AugmentedOperation, allOperations: AugmentedOp
     return allOperations.filter(e => {
         if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
 
-        if (e['path'] === subpath) return true;
-        if (e['path'] === `${subpath}/{id}`) return true;
-        if (e['path'] === `${subpath}:search`) return true;
-        if (e['path'] === `${subpath}:search-one`) return true;
+        if (e.path === subpath) return true;
+        if (e.path === `${subpath}/{id}`) return true;
+        if (e.path === `${subpath}:search`) return true;
+        if (e.path === `${subpath}:search-one`) return true;
 
         return false;
     });
@@ -115,13 +116,15 @@ export const isEmptyObject = (val: any): val is null => {
 };
 
 const hasPathParams = (op: OpenAPIV3.OperationObject) => {
-    return !!op.parameters?.find(e => {
-        if ('in' in e) {
-            return e.in === 'path';
-        }
+    return Boolean(
+        op.parameters?.find(e => {
+            if ('in' in e) {
+                return e.in === 'path';
+            }
 
-        return false;
-    });
+            return false;
+        })
+    );
 };
 
 export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject) => {
@@ -149,10 +152,10 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject) => {
         }));
     });
 
-    allOperations.forEach(operation => {
+    for (const operation of allOperations) {
         const invalidatess = generateInvalidatees(operation, allOperations);
         operation.invalidatees = invalidatess;
-    });
+    }
 
     return allOperations;
 };
@@ -162,14 +165,15 @@ export const removeLeadingSlash = (path: string) => path.replace('/', '');
 const extractSegment = (path: string) => {
     const segments = path.split('/');
     if (segments.length < 2) {
-        return undefined;
+        return;
     }
+
     return segments[1];
 };
 
 export const groupOperations = (flatOperation: AugmentedOperation[]) =>
     flatOperation.reduce((acc, cur) => {
-        const groupName = extractSegment(cur['path']);
+        const groupName = extractSegment(cur.path);
         if (!groupName) return acc;
 
         if (!(groupName in acc)) {
@@ -184,15 +188,15 @@ export const groupOperations = (flatOperation: AugmentedOperation[]) =>
 export const renderImports = (sourceFile: SourceFile, imports: ImportData[]) => {
     const map = new Map<string, ImportData[]>();
 
-    imports.forEach(el => {
+    for (const el of imports) {
         if (!map.has(el.from)) map.set(el.from, []);
 
-        if (!map.get(el.from)!.find(e => e.name === el.name)) map.get(el.from)!.push(el);
-    });
+        if (!map.get(el.from)!.some(e => e.name === el.name)) map.get(el.from)!.push(el);
+    }
 
     const importFroms = [...map.keys()];
 
-    importFroms.forEach(importFrom => {
+    for (const importFrom of importFroms) {
         const els = map.get(importFrom)!;
 
         if (els.length === 1 && els[0].isDefault) {
@@ -206,5 +210,5 @@ export const renderImports = (sourceFile: SourceFile, imports: ImportData[]) => 
                 moduleSpecifier: importFrom,
             });
         }
-    });
+    }
 };

@@ -1,5 +1,5 @@
-import { existsSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { existsSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 
 import { OverridePolicy } from '../types';
 
@@ -15,6 +15,7 @@ export interface ConfigSchema {
     override_policies: Record<Target, OverridePolicy | undefined>;
 }
 
+// eslint-disable-next-line unicorn/no-static-only-class
 export class Config {
     static DEFAULT: ConfigSchema = {
         openapi_path: '',
@@ -43,7 +44,7 @@ export class Config {
             return Config.DEFAULT;
         }
 
-        const content = await readFile(path, 'utf-8');
+        const content = await readFile(path, 'utf8');
 
         try {
             const data = JSON.parse(content) as ConfigSchema;
@@ -57,8 +58,8 @@ export class Config {
             }
 
             return data;
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error(error);
             return Config.DEFAULT;
         }
     }

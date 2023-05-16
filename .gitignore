@@ -9,3 +9,5 @@ out-tsc
 /lib
 /tmp
 oclif.manifest.json
+output
+openapi-generator.json

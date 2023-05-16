@@ -1,13 +1,13 @@
 import { FileInfo } from '@stoplight/json-schema-ref-parser';
 import { parse } from '@stoplight/yaml';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import { OpenAPI3 } from 'openapi-typescript';
 
 import { ISchemaLoader } from '../types';
 
 const valueOrArrayElement = (value: any) => {
-    if (Array.isArray(value) && value.length) return value[0];
-    if (Array.isArray(value) && !value.length) return null;
+    if (Array.isArray(value) && value.length > 0) return value[0];
+    if (Array.isArray(value) && value.length === 0) return null;
 
     return value;
 };
@@ -29,7 +29,7 @@ export class FileLoader implements ISchemaLoader {
     }
 
     public async loadIndex() {
-        const indexSchemaContent = await readFile(this.path, 'utf-8');
+        const indexSchemaContent = await readFile(this.path, 'utf8');
         const parsed = parse(indexSchemaContent);
 
         return valueOrArrayElement(parsed) as OpenAPI3;
@@ -38,12 +38,12 @@ export class FileLoader implements ISchemaLoader {
     public async readSubfile(file: FileInfo, cb: (error: any, result: any) => any) {
         if (file.url.includes('json-schema-ref-parser/dist/')) {
             const realPath = resolvePath(file.url.split('json-schema-ref-parser/dist/')[1], __dirname);
-            const res = await readFile(realPath, 'utf-8');
+            const res = await readFile(realPath, 'utf8');
             cb(undefined, res);
             return res;
         }
 
-        const res = readFile(file.url, 'utf-8');
+        const res = readFile(file.url, 'utf8');
         cb(undefined, res);
         return res;
     }

@@ -4,7 +4,7 @@ type ContentType = 'json' | 'text' | 'file';
 
 export class ApiClient {
     private readonly rps: number;
-    private lastRequestTime: number = 0;
+    private lastRequestTime = 0;
 
     constructor(rps: number) {
         this.rps = rps;
@@ -17,6 +17,7 @@ export class ApiClient {
 
         if (timeSinceLastRequest < minTimeBetweenRequests) {
             const timeToWait = minTimeBetweenRequests - timeSinceLastRequest;
+            // eslint-disable-next-line no-promise-executor-return
             await new Promise(resolve => setTimeout(resolve, timeToWait));
         }
 
@@ -27,10 +28,12 @@ export class ApiClient {
 
         if (contentType === 'json' || returnedContentType?.includes('application/json')) {
             return response.json() as Promise<T>;
-        } else if (contentType === 'text' || returnedContentType?.includes('text')) {
-            return response.text() as never as Promise<T>;
-        } else {
-            return response as unknown as Promise<T>;
         }
+
+        if (contentType === 'text' || returnedContentType?.includes('text')) {
+            return response.text() as never as Promise<T>;
+        }
+
+        return response as unknown as Promise<T>;
     }
 }

@@ -5,14 +5,14 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { augmentPathsOperations, groupOperations } from './helpers';
 import { ISchemaLoader, ParsedSchema, RefSchemaData } from './types';
 
+const transformPath = (path: string) => pascal(path.replace('.yaml', '').replaceAll('/', '_').toLowerCase());
+
 function parsePath(p: string) {
     let preparedPath = p.replaceAll('../', '').replaceAll('./', '');
 
     if (preparedPath.startsWith('#/')) {
         preparedPath = `common/${preparedPath.slice(2)}`;
     }
-
-    const transformPath = (path: string) => pascal(path.replace('.yaml', '').replaceAll('/', '_').toLowerCase());
 
     if (preparedPath.includes('#/')) {
         const [path, obj] = preparedPath.split('#/');
@@ -52,21 +52,29 @@ export class SchemaParser {
 
     countUniqueRefs(obj: any): number {
         const stack = [obj];
+
         while (stack.length > 0) {
             const current = stack.pop();
-            if (typeof current === 'object' && current !== null) {
-                if ('$ref' in current) {
-                    const ref = current['$ref'];
-                    const uniqueRef = ref.split('#')[0];
-                    this.uniqueRefs.add(uniqueRef);
+
+            if (typeof current !== 'object' || current === null) {
+                continue;
+            }
+
+            if ('$ref' in current) {
+                const ref = current.$ref;
+                const uniqueRef = ref.split('#')[0];
+                this.uniqueRefs.add(uniqueRef);
+            }
+
+            for (const key in current) {
+                if (!current.hasOwnProperty(key)) {
+                    continue;
                 }
-                for (const key in current) {
-                    if (current.hasOwnProperty(key)) {
-                        const value = current[key];
-                        if (typeof value === 'object' && value !== null) {
-                            stack.push(value);
-                        }
-                    }
+
+                const value = current[key];
+
+                if (typeof value === 'object' && value !== null) {
+                    stack.push(value);
                 }
             }
         }
@@ -75,10 +83,10 @@ export class SchemaParser {
     }
 
     countUniqueRefsInYaml(yamlString: string): number {
-        const regex = /(\$ref:\s*['"])([^#]+)(#[^'"]+)?(['"])/g;
+        const regex = /(\$ref:\s*["'])([^#]+)(#[^"']+)?(["'])/g;
         let match;
         while ((match = regex.exec(yamlString)) !== null) {
-            const ref = match[2].replace(/\n\s*/g, '');
+            const ref = match[2].replaceAll(/\n\s*/g, '');
             const uniqueRef = ref.split('.yaml')[0] + '.yaml';
             this.uniqueRefs.add(uniqueRef);
         }
@@ -150,7 +158,7 @@ export class SchemaParser {
 
         const grouped = new Map<string, { name: string; originalPath: string }[]>();
         const paths = [...new Set(derefedMap.keys())];
-        const parsedPaths = paths.map(parsePath);
+        const parsedPaths = paths.map(element => parsePath(element));
 
         for (const [path, name, originalPath] of parsedPaths) {
             if (!path) continue;
@@ -167,10 +175,10 @@ export class SchemaParser {
 
         const objectAccesedMap = new Map<object, RefSchemaData>();
 
-        [...grouped.entries()].forEach(([group, other]) => {
-            other.forEach(({ name, originalPath }) => {
+        for (const [group, other] of grouped.entries()) {
+            for (const { name, originalPath } of other) {
                 // Ignore path-specific schemas as they must not be common shared
-                if (group.startsWith('Schemas')) return;
+                if (group.startsWith('Schemas')) continue;
 
                 const obj = derefedMap.get(originalPath)!;
                 const fileName = kebab(group.replace('Common', '').replace('Schemas', '')) || 'index';
@@ -184,8 +192,8 @@ export class SchemaParser {
                 };
 
                 objectAccesedMap.set(obj, value);
-            });
-        });
+            }
+        }
 
         const allPaths = fullSchemaArr.paths;
 
