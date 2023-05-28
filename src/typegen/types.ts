@@ -1,6 +1,6 @@
 import { JSONSchema } from '@stoplight/json-schema-ref-parser';
 
-import { RefSchemaData } from '../types';
+import { RefSchemaData } from '../common/types';
 
 export interface AugmentedResponse {
     code: string;

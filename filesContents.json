@@ -1,0 +1,900 @@
+{
+  "units/types/sellers.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "units/enums/units_seller_status_enum.yaml",
+        "definitionCode": "/**\n * Статус продавца. Расшифровка значений:\n  * `1` - Продавец недооформлен, не дозаполнил информацию\n  * `2` - Продавец активен\n  * `3` - Продавец заблокирован\n */\nexport enum UnitsSellerStatusEnum {\n    CREATED = 1,\n    ACTIVATE = 2,\n    LOCKED = 3,\n}",
+        "dependencies": [],
+        "importFrom": "units/types/unitsSellerStatusEnum.ts",
+        "name": "UnitsSellerStatusEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/unitsSellerStatusEnum.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "common/types/commonSchemas.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/stores.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/storeWorkings.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/storePickupTimes.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/storeContacts.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/sellerUsers.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/sellerUserRoles.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/adminUsers.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "common/types/resourceMeta.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": []
+  },
+  "units/types/paths.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": []
+  },
+  "units/types/adminUserRoles.ts": {
+    "codeLines": {},
+    "dependencies": [
+      {
+        "$ref": "units/enums/units_admin_user_role_rights_access_enum.yaml",
+        "definitionCode": "/**\n * Права доступа. Расшифровка значений.\n  * `1xx` Для списка заказов:\n  * `101` - Пользователю доступен табличный список с фильтрами и поиском\n  * `102` - Пользователю доступна детальная страница заказа со всеми вкладками и данными для просмотра\n  * `103` - Пользователю доступна вкладка \"Главное\" для просмотра\n  * `104` - Пользователю доступна вкладка \"Клиент\" для просмотра\n  * `105` - Пользователю доступна вкладка \"Товары\" для просмотра\n  * `106` - Пользователю доступна вкладка \"Доставка\" для просмотра\n  * `107` - Пользователю доступна вкладка \"Комментарии\" для просмотра\n  * `108` - Пользователю доступна вкладка \"Вложения\" для просмотра\n  * `109` - Пользователю доступно только редактирование данных заказа (без действий)\n  * `110` - Пользователю доступна функция редактирование комментариев во вкладке \"Комментарии\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `111` - Пользователю доступна функция добавления/удаления проблемы к заказу и комментария  к проблеме во вкладке \"Комментариии\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `112` - Пользователю доступна функция редактирования способа доставки во вкладке \"Доставка\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `113` - Пользователю доступна функция редактирования комментария во вкладке \"Доставка\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `114` - Пользователю доступна функция редактирования полей клиента во вкладке \"Клиент\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `115` - Пользователю доступна функция загрузка вложений во вкладке \"Вложения\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `116` - Пользователю доступна функция удаления вложений во вкладке \"Вложения\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `117` - Пользователю доступно изменение статуса заказа на детальной странице + кнопка \"Действия\"\n  * `118` - Пользователю доступно создание заявки на возврат + кнопка \"Действия\"\n  * `120` - Пользователю доступно изменение статуса отгрузки на детальной странице заказ\n  * `2xx` Для возвратов:\n  * `201` - Пользователю доступен табличный список с фильтрами и поиском\n  * `202` - Пользователю доступная детальна страница возврата\n  * `203` - Пользователю доступна вкладка \"Главное\" для просмотра\n  * `204` - Пользователю доступна вкладка \"Товары\" для просмотра\n  * `205` - Пользователю доступна вкладка \"Вложения\" для просмотра\n  * `206` - Пользователю доступно только редактирование данных возврата (без действий)\n  * `207` - Пользователю доступна функция изменение ответственного за возврат во вкладке \"Главное\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `208` - Пользователю доступна функция загрузка вложений  во вкладке \"Вложения\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `209` - Пользователю доступна функция удаления вложений  во вкладке \"Вложения\" + кнопки \"Сохранить\"/\"Отменить\"\n  * `210` - Пользователю доступен табличный список с причинами возврата по кнопке\"Настройка причин возврата\"\n  * `211` - Пользователю доступно создание причин возврата + кнопка \"Добавить причину\"\n  * `212` - Пользователю доступно редактирование причин возврата + кнопка \"Изменить причину\"\n  * `3xx` Для настроек:\n  * `301` - Пользователю доступна для просмотра страница настроек\n  * `302` - Параметры корзины. Пользователю доступно редактирование параметра + кнопка \"Изменить параметр\"\n  * `303` - Срок оплаты заказа. Пользователю доступно редактирование параметра + кнопка \"Изменить параметр\"\n  * `304` - Срок оформления заказа. Пользователю доступно редактирование параметра + кнопка \"Изменить параметр\"\n  * `305` - Максимальное время обработки. Пользователю доступно редактирование параметра + кнопка \"Изменить параметр\"\n  * `4xx` Для каталога товаров:\n  * `401` - Пользователю доступен табличный список с фильтрами и поиском\n  * `402` - Пользователю доступна детальная страница товара со всеми со всеми вкладками и данными для просмотра\n  * `403` - Пользователь может создавать товар\n  * `404` - Пользователю доступна функция редактирование любых данных товара и совершения любых действий с ним\n  * `405` - Пользователю доступна вкладка \"Основные данные\" для просмотра\n  * `406` - Пользователю доступна вкладка \"Контент\" для просмотра\n  * `407` - Пользователю доступна вкладка \"Характеристики\" для просмотра\n  * `408` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `409` - Пользователю доступно полное редактирование во вкладке \"Контент\"\n  * `410` - Пользователю доступно полное редактирование во вкладке \"Характеристики\"\n  * `411` - Пользователю доступно полное редактирование во вкладке \"Основные данные\"\n  * `412` - Пользователю доступно только редактирование стоимости во вкладке \"Основные данные\"\n  * `413` - Пользователь может удалять товары\n  * `415` - Пользователю доступна функция \"Изменить атрибуты\" в табличном списке товаров\n  * `416` - Пользователю доступно добавление/удаление шильдиков у товара\n  * `417` - Пользователю доступна вкладка \"Шильдики\"\n  * `5xx` Для категорий товаров:\n  * `501` - Пользователю доступен табличный список с фильтрами и поиском\n  * `502` - Пользователю доступна детальная страница категории со всеми вкладками и данными для просмотра\n  * `503` - Пользователю доступна функция редактирование любых данных категории и совершения любых действий с ним\n  * `504` - Пользователь может создавать категории\n  * `505` - Пользователь может добавлять и редактировать атрибуты категории\n  * `506` - Пользователь может редактирование данные о категории (кроме активности)\n  * `507` - Пользователь может удалять категории\n  * `508` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `6xx` Для атрибутов товаров:\n  * `601` - Пользователю доступен табличный список с фильтрами и поиском\n  * `602` - Пользователю доступна детальная страница атрибутов со всеми со всеми вкладками и данными для просмотра\n  * `603` - Пользователь может редактирование данные о атрибутах (кроме активности и отображения на витрине)\n  * `604` - Пользователь может создать новый атрибут товара и сохранить его\n  * `605` - Пользователь может удалять атрибутов\n  * `606` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `607` - Пользователю доступно управление чек-боксом \"Отображение на витрине\"\n  * `7xx` Для пользователей:\n  * `701` - Пользователю доступен табличный список с фильтрами и поиском\n  * `702` - Пользователю доступна детальная страница пользователя со всеми со всеми вкладками и данными для просмотра\n  * `703` - Пользователю доступно редактирование пользователя кроме изменения активности , роли и пароля. удаления\n  * `704` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `705` - Пользователю доступно изменение пароля\n  * `706` - Пользователю доступно управление ролями пользователя\n  * `707` - Пользователю доступно создание пользователя\n  * `8xx` Для ролей:\n  * `801` - Пользователю доступен табличный список с фильтрами и поиском\n  * `802` - Пользователю доступна детальная страница роли со всеми со всеми вкладками и данными для просмотра\n  * `803` - Создание ролей\n  * `804` - Редактирование роли, кроме активности и удаления\n  * `805` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `806` - Пользователю доступно удаление роли\n  * `9xx` Для информационных страниц:\n  * `901` - Пользователю доступен табличный список с информационными страницами\n  * `902` - Пользователю доступна детальная страница информационной страницы со всеми данными для просмотра\n  * `903` - Пользователю доступно редактирование информационной страницы кроме изменения активности и удаления\n  * `904` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `905` - Пользователю доступно создание информационной страницы\n  * `906` - Пользователю доступно удаление информационной страницы\n  * `10xx` Для брендов:\n  * `1001` - Пользователю доступен табличный список с брендами с фильтрами и поиском\n  * `1002` - Пользователю доступна детальная страница бренда со всеми данными для просмотра\n  * `1003` - Пользователю доступно редактирование бренда (кроме изменения активности и удаления)\n  * `1004` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `1005` - Пользователю доступно создание бренда\n  * `1006` - Пользователю доступно удаление бренда\n  * `11xx` Для товарных склеек:\n  * `1101` - Пользователю доступен табличный список склеек с фильтрами и поиском\n  * `1102` - Пользователю доступна детальная страница склейки со всеми данными для просмотра\n  * `1103` - Пользователю доступно редактирование склейки (кроме изменения активности и удаления)\n  * `1104` - Пользователю доступно управление чек-боксом \"Активность\"\n  * `1105` - Пользователю доступно создание склейки\n  * `1106` - Пользователю доступно удаление склейки\n  * `12xx` Для клиентов:\n  * `1201` - Пользователю доступно удаление персональных данных клиента\n  * `13xx` Для скидок и промокодов:\n  * `1301` - Пользователю доступен табличный список со скидками\n  * `1302` - Пользователю доступна детальная страница скидки со всеми данными для просмотра и без возможности редактирования полей\n  * `1303` - Пользователю доступно создание скидки\n  * `1304` - Пользователю доступно редактирование скидки\n  * `1305` - Пользователю доступно удаление скидки\n  * `1306` - Пользователю доступно массовое обновление статусов скидки в табличном списке\n  * `1311` - Пользователю доступен табличный список с промокодами\n  * `1312` - Пользователю доступна детальная страница промокода со всеми данными для просмотра и без возможности редактирования полей\n  * `1313` - Пользователю доступно создание промокода\n  * `1314` - Пользователю доступно редактирование промокода\n  * `1315` - Пользователю доступно удаление промокода\n  * `16xx` Для шильдиков:\n  * `1601` - Пользователю доступен табличный список шильдиков с фильтрами и поиском\n  * `1602` - Пользователю доступна детальная страница товарного шильдика со всеми данными для просмотра\n  * `1603` - Пользователю доступно редактирование товарного шильдика\n  * `1604` - Пользователю доступно создание товарного шильдика\n  * `1605` - Пользователю доступно удаление товарного шильдика\n */\nexport enum UnitsAdminUserRoleRightsAccessEnum {\n    ORDER_LIST_READ = 101,\n    ORDER_DETAIL_READ = 102,\n    ORDER_DETAIL_MAIN_READ = 103,\n    ORDER_DETAIL_CLIENT_READ = 104,\n    ORDER_DETAIL_PRODUCTS_READ = 105,\n    ORDER_DETAIL_DELIVERY_READ = 106,\n    ORDER_DETAIL_COMMENTS_READ = 107,\n    ORDER_DETAIL_ATTACHMENTS_READ = 108,\n    ORDER_DETAIL_EDIT = 109,\n    ORDER_DETAIL_COMMENTS_EDIT = 110,\n    ORDER_DETAIL_PROBLEMATIC_EDIT = 111,\n    ORDER_DETAIL_DELIVERY_EDIT = 112,\n    ORDER_DETAIL_DELIVERY_COMMENTS_EDIT = 113,\n    ORDER_DETAIL_CLIENT_EDIT = 114,\n    ORDER_DETAIL_ATTACHMENTS_WRITE = 115,\n    ORDER_DETAIL_ATTACHMENTS_DELETE = 116,\n    ORDER_DETAIL_STATUS_EDIT = 117,\n    ORDER_DETAIL_REFUND_CREATE = 118,\n    ORDER_DETAIL_SHIPMENT_EDIT = 120,\n    REFUND_LIST_READ = 201,\n    REFUND_DETAIL_READ = 202,\n    REFUND_DETAIL_MAIN_READ = 203,\n    REFUND_DETAIL_PRODUCTS_READ = 204,\n    REFUND_DETAIL_ATTACHMENTS_READ = 205,\n    REFUND_DETAIL_EDIT = 206,\n    REFUND_DETAIL_RESPONSIBLE_EDIT = 207,\n    REFUND_DETAIL_ATTACHMENTS_WRITE = 208,\n    REFUND_DETAIL_ATTACHMENTS_DELETE = 209,\n    REFUND_DETAIL_REASONS_READ = 210,\n    REFUND_DETAIL_REASONS_CREATE = 211,\n    REFUND_DETAIL_REASONS_EDIT = 212,\n    SETTING_LIST_READ = 301,\n    SETTING_BASKET_EDIT = 302,\n    SETTING_PAYMENT_TIME_EDIT = 303,\n    SETTING_ORDER_CREATE_TIME_EDIT = 304,\n    SETTING_ORDER_PROCESS_TIME_EDIT = 305,\n    PRODUCT_CATALOG_LIST_READ = 401,\n    PRODUCT_CATALOG_DETAIL_READ = 402,\n    PRODUCT_CATALOG_PRODUCT_CREATE = 403,\n    PRODUCT_CATALOG_DETAIL_WRITE = 404,\n    PRODUCT_CATALOG_DETAIL_MAIN_DATA_READ = 405,\n    PRODUCT_CATALOG_DETAIL_CONTENT_READ = 406,\n    PRODUCT_CATALOG_DETAIL_FEATURE_READ = 407,\n    PRODUCT_CATALOG_DETAIL_ACTIVE_EDIT = 408,\n    PRODUCT_CATALOG_DETAIL_CONTENT_EDIT = 409,\n    PRODUCT_CATALOG_DETAIL_FEATURE_EDIT = 410,\n    PRODUCT_CATALOG_DETAIL_MAIN_DATA_EDIT = 411,\n    PRODUCT_CATALOG_DETAIL_PRICE_EDIT = 412,\n    PRODUCT_CATALOG_PRODUCT_DELETE = 413,\n    PRODUCT_CATALOG_MASS_PATCH = 415,\n    PRODUCT_CATALOG_DETAIL_NAMEPLATES_EDIT = 416,\n    PRODUCT_CATALOG_DETAIL_NAMEPLATES_READ = 417,\n    PRODUCT_CATEGORY_LIST_READ = 501,\n    PRODUCT_CATEGORY_DETAIL_READ = 502,\n    PRODUCT_CATEGORY_DETAIL_WRITE = 503,\n    PRODUCT_CATEGORY_CREATE = 504,\n    PRODUCT_CATEGORY_DETAIL_ATTRIBUTES_WRITE = 505,\n    PRODUCT_CATEGORY_DETAIL_EDIT = 506,\n    PRODUCT_CATEGORY_DELETE = 507,\n    PRODUCT_CATEGORY_DETAIL_ACTIVE_EDIT = 508,\n    PRODUCT_ATTRIBUTES_LIST_READ = 601,\n    PRODUCT_ATTRIBUTES_DETAIL_READ = 602,\n    PRODUCT_ATTRIBUTES_DETAIL_EDIT = 603,\n    PRODUCT_ATTRIBUTES_CREATE = 604,\n    PRODUCT_ATTRIBUTES_DELETE = 605,\n    PRODUCT_ATTRIBUTES_DETAIL_ACTIVE_EDIT = 606,\n    PRODUCT_ATTRIBUTES_DETAIL_SHOW_EDIT = 607,\n    USER_LIST_READ = 701,\n    USER_DETAIL_READ = 702,\n    USER_DETAIL_EDIT = 703,\n    USER_DETAIL_ACTIVE_EDIT = 704,\n    USER_DETAIL_PASSWORD_EDIT = 705,\n    USER_DETAIL_ROLE_EDIT = 706,\n    USER_CREATE = 707,\n    ROLE_LIST_READ = 801,\n    ROLE_DETAIL_READ = 802,\n    ROLE_CREATE = 803,\n    ROLE_DETAIL_EDIT = 804,\n    ROLE_DETAIL_ACTIVE_EDIT = 805,\n    ROLE_DELETE = 806,\n    PAGE_LIST_READ = 901,\n    PAGE_DETAIL_READ = 902,\n    PAGE_DETAIL_EDIT = 903,\n    PAGE_DETAIL_ACTIVE_EDIT = 904,\n    PAGE_CREATE = 905,\n    PAGE_DELETE = 906,\n    BRAND_LIST_READ = 1001,\n    BRAND_DETAIL_READ = 1002,\n    BRAND_DETAIL_EDIT = 1003,\n    BRAND_DETAIL_ACTIVE_EDIT = 1004,\n    BRAND_CREATE = 1005,\n    BRAND_DELETE = 1006,\n    PRODUCT_GROUP_LIST_READ = 1101,\n    PRODUCT_GROUP_DETAIL_READ = 1102,\n    PRODUCT_GROUP_DETAIL_EDIT = 1103,\n    PRODUCT_GROUP_DETAIL_ACTIVE_EDIT = 1104,\n    PRODUCT_GROUP_CREATE = 1105,\n    PRODUCT_GROUP_DELETE = 1106,\n    CUSTOMER_DELETE_PERSONAL_DATA = 1201,\n    DISCOUNT_LIST_READ = 1301,\n    DISCOUNT_DETAIL_READ = 1302,\n    DISCOUNT_CREATE = 1303,\n    DISCOUNT_DETAIL_EDIT = 1304,\n    DISCOUNT_DELETE = 1305,\n    DISCOUNT_MASS_STATUS_UPDATE = 1306,\n    PROMO_CODE_LIST_READ = 1311,\n    PROMO_CODE_DETAIL_READ = 1312,\n    PROMO_CODE_CREATE = 1313,\n    PROMO_CODE_DETAIL_EDIT = 1314,\n    PROMO_CODE_DELETE = 1315,\n    NAMEPLATE_LIST_READ = 1601,\n    NAMEPLATE_DETAIL_READ = 1602,\n    NAMEPLATE_DETAIL_EDIT = 1603,\n    NAMEPLATE_CREATE = 1604,\n    NAMEPLATE_DELETE = 1605,\n}",
+        "dependencies": [],
+        "importFrom": "units/types/unitsAdminUserRoleRightsAccessEnum.ts",
+        "name": "UnitsAdminUserRoleRightsAccessEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeCursorEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `cursor` - Пагинация используя cursor\n */\nexport enum PaginationTypeCursorEnum {\n    CURSOR = 'cursor',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeCursorEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/PaginationTypeOffsetEnum",
+        "definitionCode": "/**\n * * Pagination types:\n* `offset` - Пагинация используя offset\n */\nexport enum PaginationTypeOffsetEnum {\n    OFFSET = 'offset',\n}",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "PaginationTypeOffsetEnum",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyCursorPagination",
+        "definitionCode": "export interface RequestBodyCursorPagination {\n  cursor?: string;\n  limit: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeCursorEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyCursorPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      },
+      {
+        "$ref": "common_schemas.yaml#/RequestBodyOffsetPagination",
+        "definitionCode": "export interface RequestBodyOffsetPagination {\n  limit: number;\n  offset: number;\n  /**\n   * Тип пагинации\n  */\n  type: string & PaginationTypeOffsetEnum;\n}\n",
+        "dependencies": [],
+        "importFrom": "common/types/commonSchemas.ts",
+        "name": "RequestBodyOffsetPagination",
+        "externalImports": [
+          {
+            "from": "../../helpers",
+            "name": "Prettify"
+          }
+        ]
+      }
+    ],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  },
+  "units/types/unitsAdminUserRoleRightsAccessEnum.ts": {
+    "codeLines": {},
+    "dependencies": [],
+    "extraImports": [
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      },
+      {
+        "from": "../../helpers",
+        "name": "Prettify"
+      }
+    ]
+  }
+}

@@ -1,20 +1,203 @@
-import toJsonSchema from '@openapi-contrib/openapi-schema-to-json-schema';
-import type { JSONSchema4 } from 'json-schema';
-import { compile as compileTypescript } from 'json-schema-to-typescript';
-import kleur from 'kleur';
-import { existsSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { MediaTypeObject, RequestBodyObject } from 'openapi-typescript';
-import { CodeBlockWriter, Project } from 'ts-morph';
+/* eslint-disable max-depth */
 
-import { RequestContentType, renderImports } from '../helpers';
-import { AugmentedOperation, ImportData, OverridePolicy, RefSchemaData } from '../types';
+/* eslint-disable guard-for-in */
+import toJsonSchema from '@openapi-contrib/openapi-schema-to-json-schema';
+import { pascal } from 'case';
+import type { JSONSchema4 } from 'json-schema';
+import kleur from 'kleur';
+import { existsSync, writeFileSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+import { OpenAPIV3 } from 'openapi-types';
+import { Project } from 'ts-morph';
+
+import {
+    HttpMethod,
+    extractRefAnchor,
+    extractSegment,
+    refToPath,
+    renderImports,
+    resolveRefPath,
+} from '../common/helpers';
+import { ImportData, OverridePolicy, ParsedSchema } from '../common/types';
+import { ConfigSchema } from '../config/Config';
+import JsonSchemaRenderer, { InterfaceNameFunction } from './JsonSchemaRenderer';
+
+export interface TypeInfo {
+    /**
+     * Name of the type
+     * @example SearchProductsRequest
+     */
+    name: string;
+
+    /**
+     * Path to import relative to output folder
+     * @example cms/types/nameplateProducts
+     */
+    importFrom: string;
+
+    /**
+     * Full code that defines this type
+     * @example export type SearchProductsRequest = { ... }
+     */
+    definitionCode: string;
+
+    /**
+     * If this type is referenced, then @example "common_schemas.yaml#/RequestOffsetPagination"
+     */
+    $ref: string | null;
+
+    /**
+     * TypeInfo dependencies
+     */
+    dependencies: TypeInfo[];
+
+    /**
+     * Extraneous imports to make it work
+     */
+    externalImports: ImportData[];
+}
+
+type EndpointPath = string;
+type EndpointHttpMethod = HttpMethod;
+type Endpoint = `${EndpointHttpMethod}_${EndpointPath}`;
+
+type OperationTypes = {
+    request?: TypeInfo;
+    response?: TypeInfo;
+};
+
+/**
+ *
+ * @param refPath array of $ref paths
+ * @param suffix extra suffix, for example when its a key in the object
+ * @returns string representing name of the type
+ */
+const typeNameFunction: InterfaceNameFunction = (refPath, suffix) => {
+    let name = extractRefAnchor(resolveRefPath(refPath));
+
+    if (!name) {
+        name = basename(refPath.at(-1)!).replace('.yaml', '');
+        name = pascal(name);
+        // console.warn('warn! missing name for schema', schema, 'at', refPath, 'falling back to', name);
+    }
+
+    if (suffix && !name.includes('Enum')) {
+        name += pascal(suffix);
+    }
+
+    return name;
+};
 
 export class TypeRenderer {
     private overridePolicy: OverridePolicy;
+    private config: ConfigSchema;
 
-    constructor({ overridePolicy }: { overridePolicy: OverridePolicy }) {
+    private parsedSchema: ParsedSchema;
+
+    public endpointsToTypeCache: Map<Endpoint, OperationTypes> = new Map<Endpoint, OperationTypes>();
+
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    private jsonSchemaRenderer = new JsonSchemaRenderer(refPath => {
+        const $ref = resolveRefPath(refPath);
+
+        const result = this.deref({ $ref });
+        delete result.$ref;
+
+        return result;
+    }, typeNameFunction);
+
+    private refToTypesFile(ref: string) {
+        const [dir, file] = refToPath(ref);
+
+        const isEnum = dir.endsWith('enum/') || dir.endsWith('enums/');
+        const suffix = isEnum ? '' : 'types/';
+
+        return `${dir}${suffix}${file}.ts`;
+    }
+
+    renderJsonSchema(type: 'multipart/form-data' | 'application/json', refPath: string[], obj: object): TypeInfo {
+        const $ref = resolveRefPath(refPath);
+
+        const depsHolder = new Set<string[]>();
+        const importsHolder: ImportData[] = [];
+
+        const typeName = typeNameFunction(refPath);
+        const element = this.jsonSchemaRenderer.render(depsHolder, importsHolder, obj, refPath);
+
+        const code = type === 'multipart/form-data' ? `export type ${typeName} = FormData;` : element.definition;
+        const dependencies: TypeInfo[] = [];
+
+        const importFrom = this.refToTypesFile($ref!);
+
+        for (const dependency of element.deps) {
+            if (type === 'multipart/form-data') break;
+
+            const path = resolveRefPath(dependency.refPath);
+
+            const depImportFrom = this.refToTypesFile(path);
+
+            if (importFrom !== depImportFrom) {
+                console.log('importFrom=', importFrom, 'depImportFrom=', depImportFrom, dependency.name);
+            }
+
+            dependencies.push({
+                $ref: path,
+                definitionCode: dependency.definition,
+                dependencies: [],
+                importFrom: depImportFrom,
+                name: dependency.name,
+                externalImports: importsHolder,
+            });
+        }
+
+        const result: TypeInfo = {
+            $ref,
+            definitionCode: code,
+            dependencies,
+            importFrom,
+            name: typeName,
+            externalImports: importsHolder,
+        };
+
+        return result;
+    }
+
+    renderRefJsonSchema(type: 'multipart/form-data' | 'application/json', refs: string[]): TypeInfo {
+        const $ref = resolveRefPath(refs);
+
+        const obj = this.parsedSchema.refs.get($ref) as object;
+        return this.renderJsonSchema(type, refs, obj);
+    }
+
+    constructor({
+        overridePolicy,
+        parsedSchema,
+        config,
+    }: {
+        overridePolicy: OverridePolicy;
+        parsedSchema: ParsedSchema;
+        config: ConfigSchema;
+    }) {
         this.overridePolicy = overridePolicy;
+        this.parsedSchema = parsedSchema;
+        this.config = config;
+    }
+
+    deref<TCast>($refObj: any) {
+        if (typeof $refObj !== 'object' || !$refObj) throw new Error('$refObj must be an object');
+
+        if ('$ref' in $refObj) {
+            if (!$refObj.$ref) {
+                throw new Error('$ref must have value');
+            }
+
+            const $ref = ($refObj.$ref! as string).replace('../index.yaml#', 'index.yaml#');
+
+            return { ...(this.parsedSchema.refs.get($ref) as never as TCast & { $ref?: string }), $ref: $refObj.$ref };
+        }
+
+        return $refObj as never as TCast & { $ref?: string };
     }
 
     convertToJsonSchema(schema: any) {
@@ -65,243 +248,199 @@ export class TypeRenderer {
         return { data, meta };
     }
 
-    private async generateRequestType(operation: AugmentedOperation, imports: ImportData[]) {
-        const types = operation.typeNames;
-        const isWithParam = operation.hasPathParams;
+    private renderRequest(
+        groupName: string,
+        operationInfo: OpenAPIV3.PathItemObject,
+        method: OpenAPIV3.OperationObject
+    ) {
+        if (!method.requestBody) return;
 
-        if (operation.request) {
-            const requestBody = operation.original.requestBody as RequestBodyObject;
-            const content = requestBody.content as Record<RequestContentType, MediaTypeObject>;
+        const { content, $ref } = this.deref<OpenAPIV3.RequestBodyObject>(method.requestBody);
+        if (!content) return;
 
-            if (content['application/json'] && content['multipart/form-data'])
-                throw new Error(
-                    'Invalid operation has both json and multipart content in request body: ' +
-                        JSON.stringify(operation)
-                );
+        const valid = ['application/json', 'multipart/form-data'] as const;
 
-            // Form-data always resolves to FormData
-            if (content['multipart/form-data']?.schema) {
-                return `export type ${types.request} = {
-                        formData: FormData;
-                        ${isWithParam ? 'id: number | string;' : ''}
-                    }`;
+        for (const type of valid) {
+            if (content[type]) {
+                if (!content[type].schema) {
+                    console.error(kleur.red('no schema for request body'), type, groupName, method.operationId);
+                }
+
+                if ('$ref' in content[type].schema!) {
+                    const res = this.renderRefJsonSchema(type, [
+                        operationInfo.$ref,
+                        $ref,
+                        (content[type].schema! as any).$ref,
+                    ]);
+
+                    return res;
+                }
+
+                const res = this.renderJsonSchema(type, [operationInfo.$ref, $ref], content[type].schema!);
+                return res;
             }
-
-            // If reference, just import!
-            if (operation.request.refInfo) {
-                imports.push({
-                    from: operation.request.refInfo.importPath.replace('.ts', ''),
-                    name: operation.request.refInfo.name,
-                });
-                return `export type ${types.request} = ${operation.request.refInfo?.name};`;
-            }
-
-            if (content['application/json']?.schema && types.request) {
-                const jsonSchema = this.convertToJsonSchema(operation.request.jsonSchema);
-
-                const ts = await compileTypescript(jsonSchema, types.request, {
-                    bannerComment: '',
-                    additionalProperties: false,
-                });
-
-                return ts;
-            }
-        } else if (isWithParam && types.request) {
-            return `export type ${types.request} = { id: number | string };`;
         }
-
-        // console.error('warn: No request/path params found for operation:', operation);
-        return '';
     }
 
-    private async generateResponseType(operation: AugmentedOperation, imports: ImportData[]) {
-        if (operation.responses.length === 0)
-            throw new Error('Invalid operation: ' + JSON.stringify(operation) + '. It has no responses.');
+    /**
+     * Хранит в себе готовые к записи в файл данные - строки кода и импорты
+     */
+    private filesToContent: Record<
+        string,
+        {
+            codeLines: Set<string>;
+            dependencies: TypeInfo[];
+            extraImports: ImportData[];
+        }
+    > = {};
 
-        const types = operation.typeNames;
+    clear() {
+        this.filesToContent = {};
+    }
 
-        const datas: JSONSchema4[] = [];
-        const metas: JSONSchema4[] = [];
+    initFileContent(file: string) {
+        if (!this.filesToContent[file])
+            this.filesToContent[file] = {
+                codeLines: new Set<string>(),
+                dependencies: [],
+                extraImports: [],
+            };
+    }
 
-        const refed: string[] = [];
+    processRequest(httpMethod: HttpMethod, path: string, req: TypeInfo) {
+        this.initFileContent(req.importFrom);
 
-        for (const response of operation.responses) {
-            // If reference, just import!
-            if (response.refInfo) {
-                imports.push({
-                    from: response.refInfo.importPath.replace('.ts', ''),
-                    name: response.refInfo.name,
-                });
+        const curFile = this.filesToContent[req.importFrom];
 
-                if (!refed.includes(response.refInfo.name)) refed.push(response.refInfo.name);
+        curFile.extraImports.push(...req.externalImports);
+
+        const locals: TypeInfo[] = [];
+        const externals: TypeInfo[] = [];
+
+        for (const dep of req.dependencies) {
+            if (dep.importFrom === req.importFrom) locals.push(dep);
+            else externals.push(dep);
+        }
+
+        for (const dep of externals) {
+            if (!dep.$ref) {
+                console.warn('[warn] external dep', dep, 'without $ref');
                 continue;
             }
 
-            if (response.contentType === 'application/octet-stream') {
-                datas.length = 0;
-                metas.length = 0;
+            if (curFile.dependencies.some(e => e.definitionCode === dep.definitionCode)) continue;
 
-                refed.push('string');
-
-                break;
-            }
-
-            if (response.contentType === 'application/json') {
-                const jsonSchema = this.convertToJsonSchema(response.jsonSchema);
-
-                try {
-                    const { data, meta } = this.extractResponseJsonSchema(jsonSchema);
-                    if (data) datas.push(data);
-                    if (meta) metas.push(meta);
-                } catch {
-                    console.error(
-                        `${kleur.red(
-                            '[TypesGenerator] Формат возвращаемых данных ошибочно отличается от шаблона '
-                        )}${kleur.red().bold(operation.path)}`,
-                        `Используем взамен ${kleur.cyan(`type ${types.response} = object;`)}`
-                    );
-
-                    return `export type ${types.response} = object;`;
-                }
-            } else {
-                console.log(
-                    '[typegen/Parser]',
-                    operation.path,
-                    'has invalid response',
-                    kleur.italic(response.code),
-                    ': unsupported content-type',
-                    kleur.red(response.contentType)
-                );
-            }
-
-            // TODO: check and test
-            // return `export type ${types.response} = CommonResponse<any>;`;
+            curFile.dependencies.push(dep);
         }
 
-        // Pure referenced output
-        if (datas.length === 0 || metas.length === 0) {
-            return `export type ${types.response} = ${refed.join(' | ')};\n`;
+        for (const dep of locals) {
+            if (!dep.definitionCode) continue;
+            // curFile.codeLines.add('/* localCodeDep */');
+            curFile.codeLines.add(`${dep.definitionCode}`);
         }
 
-        const dataCode = await compileTypescript(
-            {
-                oneOf: datas,
-            },
-            types.responseData!,
-            {
-                bannerComment: '',
-                additionalProperties: false,
-            }
-        );
+        curFile.codeLines.add(req.definitionCode);
 
-        const metaCode = await compileTypescript(
-            {
-                oneOf: metas,
-            },
-            types.responseMeta!,
-            {
-                bannerComment: '',
-                additionalProperties: false,
-            }
-        );
+        // make sure all dependencies are rendered.
+        for (const dep of curFile.dependencies) {
+            const code = this.jsonSchemaRenderer.get(dep.name);
+            if (!code) continue;
 
-        const result = `
-        ${dataCode}
-        ${metaCode}
-        export type ${types.response} = CommonResponse<${types.responseData}, ${types.responseMeta}>;
-        `;
+            this.initFileContent(dep.importFrom);
+            const depFile = this.filesToContent[dep.importFrom];
 
-        return result;
+            depFile.codeLines.add(code);
+            depFile.extraImports.push(...dep.externalImports);
+        }
+
+        this.endpointsToTypeCache.get(`${httpMethod}_${path}`)!.request = req;
     }
 
-    async renderCommonDependencies(operations: AugmentedOperation[]) {
-        const dependencies = operations
-            .flatMap(e => [...e.responses.map(r => r.refInfo), ...(e.request?.refInfo ? [e.request.refInfo] : [])])
-            .filter(Boolean) as RefSchemaData[];
+    async render() {
+        this.clear();
 
-        const groupedByPath = new Map<string, RefSchemaData[]>();
-        const seenObjects = new Set<RefSchemaData>();
+        const schema = this.parsedSchema.unrefedSchema;
 
-        for (const dep of dependencies) {
-            if (!groupedByPath.has(dep.savedPath)) {
-                groupedByPath.set(dep.savedPath, []);
-            }
+        for (const path in schema.paths) {
+            const groupName = extractSegment(path)!;
 
-            if (seenObjects.has(dep)) continue;
-            seenObjects.add(dep);
+            if (groupName !== 'units') continue;
 
-            groupedByPath.get(dep.savedPath)!.push(dep);
-        }
+            const operationInfo = this.deref<OpenAPIV3.PathItemObject>(schema.paths[path]);
+            const httpMethods = Object.keys(operationInfo) as (HttpMethod | '$ref')[];
 
-        const folder = 'output/';
-        await mkdir(`${folder}commonTypes`, { recursive: true });
+            for (const httpMethod of httpMethods) {
+                if (httpMethod === '$ref') continue;
 
-        await Promise.all(
-            [...groupedByPath.keys()].map(async pathGroup => {
-                const deps = groupedByPath.get(pathGroup)!;
+                const method = operationInfo[httpMethod];
+                if (!method) continue;
 
-                const project = new Project();
-                const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
-                let allCodes = '';
-
-                for (const dep of deps) {
-                    const jsonSchema = this.convertToJsonSchema(dep.schema);
-
-                    // eslint-disable-next-line no-await-in-loop
-                    const ts = await compileTypescript(jsonSchema, dep.name, {
-                        bannerComment: '',
-                        additionalProperties: false,
-                    });
-
-                    allCodes += ts + '\n';
+                if (!this.endpointsToTypeCache.has(`${httpMethod}_${path}`)) {
+                    this.endpointsToTypeCache.set(`${httpMethod}_${path}`, {});
                 }
 
-                const content = sourceFile.getFullText() + '\n' + allCodes;
-                await writeFile(`${folder}${pathGroup}`, content);
-            })
-        );
-    }
+                const req = this.renderRequest(groupName, operationInfo, method);
+                if (req) this.processRequest(httpMethod, path, req);
 
-    async render(group: string, operations: AugmentedOperation[]) {
-        const folder = `output/${group}`;
-        await mkdir(folder, { recursive: true });
-        const filePath = `${folder}/types.ts`;
-
-        const isExisting = existsSync(filePath);
-
-        if (this.overridePolicy === 'skip' && isExisting) {
-            console.log(kleur.italic(kleur.bgWhite(kleur.black(group))), 'типы пропущены как существующие');
-            return;
+                // const res = this.renderResponse(groupName, operationInfo, method);
+                // if (res) {
+                //     groupedStuff[groupName].push(req);
+                //     this.operationIdTypeCache.get(method.operationId!)!.response = res;
+                // }
+            }
         }
 
-        const project = new Project();
-        const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
+        const filePaths = Object.keys(this.filesToContent);
 
-        const imports: ImportData[] = [
-            {
-                from: '@api/common/types',
-                name: 'CommonResponse',
-            },
-        ];
+        const tasks = filePaths.map(async path => {
+            const content = this.filesToContent[path];
 
-        const contentWriter = new CodeBlockWriter();
+            const deps = content.dependencies;
 
-        await Promise.all(
-            operations.map(async operation => {
-                const request = await this.generateRequestType(operation, imports);
-                const response = await this.generateResponseType(operation, imports);
+            const typeDeps = deps
+                .filter(({ importFrom }) => importFrom !== path)
+                .map(e => ({
+                    // two back because [group]/[types]/[file].ts
+                    from: '../../' + e.importFrom.replace('.ts', ''),
+                    name: e.name,
+                }));
 
-                contentWriter.write(request);
-                contentWriter.blankLine();
-                contentWriter.write(response);
-            })
+            const extraDeps = content.extraImports;
+
+            const project = new Project();
+            const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
+
+            renderImports(sourceFile, [...typeDeps, ...extraDeps]);
+
+            const fileContent = sourceFile.getFullText() + '\n' + [...content.codeLines.values()].join('\n') + '\n';
+            const filePath = join(this.config.output_path, path);
+
+            const folder = dirname(filePath);
+            await mkdir(folder, { recursive: true });
+
+            const isExisting = existsSync(filePath);
+            if (this.overridePolicy === 'skip' && isExisting) {
+                console.log(kleur.italic(kleur.bgWhite(kleur.black(path))), 'типы пропущены как существующие');
+                return;
+            }
+
+            return writeFile(filePath, fileContent);
+        });
+
+        await Promise.all(tasks);
+
+        await writeFile(
+            join(this.config.output_path, 'helpers.ts'),
+            `export type Prettify<T> = {
+                [K in keyof T]: T[K];
+            }`
         );
 
-        renderImports(sourceFile, imports);
-        sourceFile.formatText();
-
-        const content = sourceFile.getFullText() + '\n' + contentWriter.toString();
-
-        await writeFile(filePath, content);
+        writeFileSync('allStuff.json', this.jsonSchemaRenderer.getTotalText());
+        writeFileSync('filesContents.json', JSON.stringify(this.filesToContent, null, 2));
+        writeFileSync(
+            'operationIdsToTypes.json',
+            JSON.stringify(Object.fromEntries(this.endpointsToTypeCache.entries()), null, 2)
+        );
     }
 }

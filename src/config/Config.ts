@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { OverridePolicy } from '../types';
+import { OverridePolicy } from '../common/types';
 
 export enum Target {
     TYPES = 'types',
@@ -11,6 +11,7 @@ export enum Target {
 
 export interface ConfigSchema {
     openapi_path: string;
+    output_path: string;
     targets: Target[];
     override_policies: Record<Target, OverridePolicy | undefined>;
 }
@@ -19,6 +20,7 @@ export interface ConfigSchema {
 export class Config {
     static DEFAULT: ConfigSchema = {
         openapi_path: '',
+        output_path: '',
         targets: [],
         override_policies: {
             types: undefined,
@@ -35,6 +37,12 @@ export class Config {
         }
 
         await writeFile(path, JSON.stringify(Config.DEFAULT, null, 2));
+    }
+
+    static async save(config: ConfigSchema) {
+        const path = './openapi-generator.json';
+
+        await writeFile(path, JSON.stringify(config, null, 2));
     }
 
     static async load() {
@@ -55,6 +63,10 @@ export class Config {
 
             if (!Array.isArray(data.targets)) {
                 data.targets = Config.DEFAULT.targets;
+            }
+
+            if (typeof data.output_path !== 'string') {
+                data.output_path = Config.DEFAULT.output_path;
             }
 
             return data;
