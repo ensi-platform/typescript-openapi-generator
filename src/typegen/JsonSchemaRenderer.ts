@@ -1,35 +1,35 @@
-/* eslint-disable no-warning-comments */
 /* eslint-disable guard-for-in */
 type DerefFunction = (refPath: string[]) => object;
+type ResolveHelperDependency = (path: string) => string;
 export type InterfaceNameFunction = (refPath: string[], suffix?: string) => string;
-
-export type Dependency = {
-    refPath: string[];
-    definition: string;
-    name: string;
-    origin: any;
-};
 
 export type ImportStatement = {
     from: string;
     name: string;
 };
 
-type RenderElement = {
+export type RenderElement = {
     type: 'literal' | 'enum' | 'combination' | 'array' | 'object';
     refPath: string[];
     name: string;
     definition: string;
-    deps: Dependency[];
+    deps: RenderElement[];
+    extraImports: ImportStatement[];
 };
 
 export default class JsonSchemaRenderer {
     private deref: DerefFunction;
     private getInterfaceName: InterfaceNameFunction;
+    private resolveHelperDependency: ResolveHelperDependency;
 
-    constructor(deref: DerefFunction, getInterfaceName: InterfaceNameFunction) {
+    constructor(
+        deref: DerefFunction,
+        getInterfaceName: InterfaceNameFunction,
+        resolveHelperDependency: ResolveHelperDependency
+    ) {
         this.deref = deref;
         this.getInterfaceName = getInterfaceName;
+        this.resolveHelperDependency = resolveHelperDependency;
     }
 
     private namedCache = new Map<string, string>();
@@ -44,6 +44,12 @@ export default class JsonSchemaRenderer {
 
     public getTotalText() {
         return JSON.stringify(Object.fromEntries(this.namedCache.entries()), null, 2);
+    }
+
+    public getHelpersCode() {
+        return `export type Prettify<T> = {
+            [K in keyof T]: T[K];
+        }`;
     }
 
     processEnumKey(value: string | number) {
@@ -81,6 +87,7 @@ export default class JsonSchemaRenderer {
             definition: code,
             deps: [],
             refPath: currentRefPath,
+            extraImports: [],
         };
     }
 
@@ -92,8 +99,7 @@ export default class JsonSchemaRenderer {
         schema: any,
         currentSchema: any,
         currentRefPath: string[],
-        processSchema: (currentSchema: any, currentRefPath: string[], suffix?: string) => RenderElement,
-        imports: ImportStatement[]
+        processSchema: (currentSchema: any, currentRefPath: string[], suffix?: string) => RenderElement
     ): RenderElement {
         const isRoot = currentSchema === schema;
 
@@ -105,37 +111,47 @@ export default class JsonSchemaRenderer {
 
         const name = results.map(e => e.name).join(` ${combinationKey} `);
 
-        console.log('Combination has results:');
-        console.log(results);
-
-        const deps = results.flatMap(e => e.deps);
-
-        for (const e of results) {
-            const dep: Dependency = {
-                definition: e.definition,
-                name: e.name,
-                refPath: e.refPath,
-                origin: 'combination',
-            };
-
-            deps.push(dep);
-        }
-
-        // TODO: better code split for resolution
-        if (!imports.some(e => e.name === 'Prettify' && e.from === '../../helpers')) {
-            imports.push({
-                from: '../../helpers',
-                name: 'Prettify',
-            });
-        }
+        const helperPath = this.resolveHelperDependency('helpers');
 
         return {
             type: 'combination',
             definition: isRoot ? `${description}export type ${typeName} = Prettify<${name}>;` : '',
             name: isRoot ? typeName : name,
-            deps,
+            deps: results.filter(e => e.type !== 'literal'),
             refPath: currentRefPath,
+            extraImports: isRoot
+                ? [
+                      {
+                          from: helperPath,
+                          name: 'Prettify',
+                      },
+                  ]
+                : [],
         };
+    }
+
+    renderExample(schema: any) {
+        if (!schema?.example) return '';
+
+        let prefix = '';
+        let suffix = '';
+
+        switch (schema.type) {
+            case 'integer':
+            case 'null':
+            case 'boolean':
+            case 'number': {
+                break;
+            }
+
+            case 'string': {
+                prefix = '"';
+                suffix = '"';
+                break;
+            }
+        }
+
+        return `${prefix}${schema.example}${suffix}`;
     }
 
     // eslint-disable-next-line max-params
@@ -146,11 +162,11 @@ export default class JsonSchemaRenderer {
         currentRefPath: string[],
         processSchema: (currentSchema: any, currentRefPath: string[], suffix?: string) => RenderElement
     ): RenderElement {
-        // if (currentSchema.type === undefined) {
-        //     console.warn('[!] warn: schema without type found at', currentRefPath);
-        // }
+        if (currentSchema.type === undefined) {
+            // console.warn('[!] warn: schema without type found at', currentRefPath);
+        }
 
-        const deps: Dependency[] = [];
+        const deps: RenderElement[] = [];
 
         let code = `${description}export interface ` + typeName + ' {\n';
 
@@ -161,17 +177,9 @@ export default class JsonSchemaRenderer {
             const propertySchema = currentSchema.properties[key];
             // const propertyRefPath = [...currentRefPath, '[properties]', key];
 
-            console.log('    in object! key=', key, 'schema=', propertySchema);
-
             const isRefed = '$ref' in propertySchema;
 
-            const {
-                definition,
-                name,
-                refPath,
-                deps: otherDeps,
-                type,
-            } = processSchema(propertySchema, currentRefPath, isRefed ? undefined : key);
+            const element = processSchema(propertySchema, currentRefPath, isRefed ? undefined : key);
 
             const shouldEscapeKey = !/^[$A-Z_a-z][\w$]*$/.test(key);
 
@@ -181,30 +189,17 @@ export default class JsonSchemaRenderer {
             const fullKey = keyPrefix + key + keySuffix;
 
             if (propertySchema.description) {
-                const exampleBlock = propertySchema.example ? `   * @example ${propertySchema.example}\n` : '';
+                const exampleBlock = propertySchema.example
+                    ? `   * @example ${this.renderExample(propertySchema)}\n`
+                    : '';
                 code += `  /**\n   * ${propertySchema.description}\n${exampleBlock}  */\n`;
             }
 
             const isOptional = propertySchema.nullable || false;
 
-            code += `  ${fullKey}${isOptional ? '?' : ''}: ${name};\n`;
+            code += `  ${fullKey}${isOptional ? '?' : ''}: ${element.name};\n`;
 
-            if (isRefed) {
-                console.log('....$ref key, no add otherDeps');
-                console.log('type=', type, 'name=', name);
-                console.log('otherDeps=', otherDeps);
-            }
-
-            deps.push(...otherDeps.filter(e => e.definition));
-
-            if (definition) {
-                deps.push({
-                    definition,
-                    name: name,
-                    refPath,
-                    origin: 'object',
-                });
-            }
+            if (element.type !== 'literal') deps.push(element);
         }
 
         code += '}\n';
@@ -221,37 +216,51 @@ export default class JsonSchemaRenderer {
             definition: code,
             deps,
             refPath: currentRefPath,
+            extraImports: [],
         };
     }
 
-    render(refDependencies: Set<string[]>, imports: ImportStatement[], schema: object, rootRefPath: string[] = []) {
-        console.log('render()', JSON.stringify(schema));
+    preTreatSchema(schema: object) {
+        if (!('type' in schema)) return schema;
 
-        const processSchema = (currentSchema: any, currentRefPath: string[], suffix?: string): RenderElement => {
+        if (schema.type === 'int') {
+            schema.type = 'integer';
+        }
+
+        if (Array.isArray(schema.type)) {
+            if (schema.type.includes('null'))
+                return {
+                    ...schema,
+                    type: schema.type.find(e => e !== 'null'),
+                    nullable: true,
+                };
+
+            throw new Error('Invalid type tuple: ' + JSON.stringify(schema));
+        }
+
+        return schema as any;
+    }
+
+    render(schema: object, rootRefPath: string[] = []) {
+        const processSchema = (origCurrentSchema: any, currentRefPath: string[], suffix?: string): RenderElement => {
+            const currentSchema = this.preTreatSchema(origCurrentSchema);
+
             const typeName = this.getInterfaceName(currentRefPath, suffix);
-            const description = currentSchema.description ? `/**\n * ${currentSchema.description} */\n` : '';
 
-            console.log('processSchema', typeName);
+            const description = currentSchema.description ? `/**\n * ${currentSchema.description} */\n` : '';
 
             if (currentSchema.hasOwnProperty('$ref')) {
                 const newRefPath = [...currentRefPath, currentSchema.$ref];
-
-                refDependencies.add(newRefPath);
                 const newSchema = this.deref(newRefPath);
-
-                console.log('   it is $ref, processing derefed part!');
 
                 return processSchema(newSchema, newRefPath, suffix);
             }
 
             if (currentSchema.enum) {
-                console.log('   it is enum');
                 return this.renderEnum(typeName, currentRefPath, currentSchema, description);
             }
 
             if (currentSchema.allOf) {
-                console.log('   it is allOf');
-
                 return this.renderCombination(
                     '&',
                     typeName,
@@ -259,14 +268,11 @@ export default class JsonSchemaRenderer {
                     schema,
                     currentSchema,
                     currentRefPath,
-                    processSchema,
-                    imports
+                    processSchema
                 );
             }
 
             if (currentSchema.oneOf || currentSchema.anyOf) {
-                console.log('   it is oneOf/anyOf');
-
                 return this.renderCombination(
                     '|',
                     typeName,
@@ -274,27 +280,22 @@ export default class JsonSchemaRenderer {
                     schema,
                     currentSchema,
                     currentRefPath,
-                    processSchema,
-                    imports
+                    processSchema
                 );
             }
 
             switch (currentSchema.type) {
                 case undefined:
                 case 'object': {
-                    console.log('   it is object');
-
                     return this.renderObject(typeName, description, currentSchema, currentRefPath, processSchema);
                 }
 
                 case 'array': {
-                    const { definition, name, refPath, deps } = processSchema(
-                        currentSchema.items,
-                        currentRefPath,
-                        suffix
-                    );
+                    const element = processSchema(currentSchema.items, currentRefPath, suffix);
 
-                    const isComplexType = name.includes('&') || name.includes('|');
+                    const { name, type } = element;
+
+                    const isComplexType = type === 'combination';
                     const namePrefix = isComplexType ? '(' : '';
                     const nameSuffix = isComplexType ? ')' : '';
 
@@ -302,16 +303,9 @@ export default class JsonSchemaRenderer {
                         type: 'array',
                         definition: '',
                         name: `${namePrefix}${name}${nameSuffix}[]`,
-                        deps: [
-                            ...deps,
-                            {
-                                definition,
-                                name: name,
-                                refPath,
-                                origin: 'array',
-                            },
-                        ],
+                        deps: type === 'literal' ? [] : [element],
                         refPath: currentRefPath,
+                        extraImports: [],
                     };
                 }
 
@@ -322,6 +316,7 @@ export default class JsonSchemaRenderer {
                         name: 'number',
                         deps: [],
                         refPath: currentRefPath,
+                        extraImports: [],
                     };
                 }
 
@@ -335,6 +330,7 @@ export default class JsonSchemaRenderer {
                         name: currentSchema.type,
                         deps: [],
                         refPath: currentRefPath,
+                        extraImports: [],
                     };
                 }
 
@@ -344,11 +340,6 @@ export default class JsonSchemaRenderer {
             }
         };
 
-        const result = processSchema(schema, rootRefPath);
-
-        // cleanup result
-        result.deps = result.deps.filter(e => e.definition);
-
-        return result;
+        return processSchema(schema, rootRefPath);
     }
 }

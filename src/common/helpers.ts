@@ -1,5 +1,5 @@
 import { $Refs } from '@stoplight/json-schema-ref-parser';
-import { camel, kebab, pascal } from 'case';
+import { camel, kebab } from 'case';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
 import type { OpenAPIV3 } from 'openapi-types';
@@ -85,30 +85,6 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
 // eslint-disable-next-line no-template-curly-in-string
 const replacePlaceholders = (str: string) => str.replaceAll(/{([^}]+)}/g, '${$1}');
 
-const operationGenerateTypeNames = (method: string, operation: OpenAPIV3.OperationObject) => {
-    const isMutation = isOperationMutation(method as HttpMethod, operation);
-
-    const response = pascal(operation.operationId + '_response');
-    const responseData = pascal(operation.operationId + '_response_data');
-    const responseMeta = pascal(operation.operationId + '_response_meta');
-    let request: string | null = pascal(operation.operationId + '_request');
-
-    if (isMutation) {
-        return { request, response, responseData, responseMeta };
-    }
-
-    if (!operation.requestBody) {
-        request = null;
-    }
-
-    return {
-        request,
-        response,
-        responseData,
-        responseMeta,
-    };
-};
-
 const generateInvalidatees = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
     if (!op.isMutation) return [];
 
@@ -181,7 +157,6 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
                 responses: [],
                 request: null,
                 pathWithVariables: replacePlaceholders(pathName),
-                typeNames: operationGenerateTypeNames(httpMethod, reqInfo),
                 invalidatees: [],
                 isFileUpload: hasFileUpload(reqInfo, refs),
                 hasPathParams: hasPathParams(reqInfo),
@@ -265,7 +240,7 @@ export const resolveRefPath = (p: string[]) => {
         const path = paths[i];
 
         const [cleanPath, newLastAnchor] = path.split('#/');
-        lastAnchor = newLastAnchor;
+        lastAnchor = newLastAnchor?.split('/').at(-1) || '';
 
         const base = basename(cleanPath);
         const hasFile = base.endsWith('.yaml');

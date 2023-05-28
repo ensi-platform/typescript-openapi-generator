@@ -21,7 +21,6 @@ export type AugmentedOperation = {
     original: OperationObject;
     path: string;
     pathWithVariables: string;
-    typeNames: { request: string | null; response: string; responseData: string; responseMeta: string };
     method: string;
     group: string;
     isMutation: boolean;

@@ -1,11 +1,10 @@
 import RefParser from '@apidevtools/json-schema-ref-parser';
 import { $Refs } from '@stoplight/json-schema-ref-parser';
-import { kebab, pascal } from 'case';
-import { writeFileSync } from 'fs';
+import { pascal } from 'case';
 import type { OpenAPIV3 } from 'openapi-types';
 
 import { augmentPathsOperations, groupOperations } from './helpers';
-import { ISchemaLoader, ParsedSchema, RefSchemaData } from './types';
+import { ISchemaLoader, ParsedSchema } from './types';
 
 const transformPath = (path: string) => pascal(path.replace('.yaml', '').replaceAll('/', '_').toLowerCase());
 

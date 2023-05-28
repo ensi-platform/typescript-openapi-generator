@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-destructuring */
 import input from '@inquirer/input';
 import { checkbox, select } from '@inquirer/prompts';
 import { Args, Command } from '@oclif/core';
@@ -113,23 +114,6 @@ export default class Generate extends Command {
         }
     }
 
-    async renderTypes() {
-        const typeGen = new TypeRenderer({
-            overridePolicy: this.conf.override_policies[Target.TYPES]!,
-            parsedSchema: this.parsedSchema,
-            config: this.conf,
-        });
-
-        await typeGen.render();
-
-        console.log('⏳ Запускаем eslint --fix...');
-        try {
-            await runEslintAutoFix(this.conf.output_path);
-        } catch {}
-
-        console.log('✔️ Типы сгенерированы!');
-    }
-
     async run(): Promise<void> {
         this.conf = await Config.load();
 
@@ -158,12 +142,47 @@ export default class Generate extends Command {
         console.log('   100% зависимостей загружено!');
 
         const { groups, derefedPathGroupedOps } = this.parsedSchema;
-        await this.renderTypes();
+
+        const typeRenderer = new TypeRenderer({
+            overridePolicy: this.conf.override_policies[Target.TYPES]!,
+            parsedSchema: this.parsedSchema,
+            config: this.conf,
+        });
+
+        await typeRenderer.render();
+
+        console.log('✔️ Типы сгенерированы!');
 
         if (targets.includes(Target.REACT_QUERY)) {
             const hookGen = new ReactQueryHookGenerator({
                 config: this.conf,
                 overridePolicy: override_policies[Target.REACT_QUERY]!,
+                typeFetcher: operation => {
+                    const types = typeRenderer.getTypesForRequest(operation.path, operation.method as any)!;
+                    if (types) return types;
+                    return {
+                        request: {
+                            $ref: null,
+                            definition: '',
+                            deps: [],
+                            extraImports: [],
+                            importFrom: '',
+                            name: 'Record<string, any>',
+                            refPath: [],
+                            type: 'literal',
+                        },
+                        response: {
+                            $ref: null,
+                            definition: '',
+                            deps: [],
+                            extraImports: [],
+                            importFrom: '',
+                            name: 'Record<string, any>',
+                            refPath: [],
+                            type: 'literal',
+                        },
+                    };
+                },
             });
 
             await Promise.all(
@@ -174,6 +193,13 @@ export default class Generate extends Command {
 
             console.log('✔️ Хуки сгенерированы!');
         }
+
+        console.log('⏳ Запускаем eslint --fix...');
+        try {
+            await runEslintAutoFix(this.conf.output_path);
+        } catch {}
+
+        console.log('✔️ Файлы приведены в соответствие с вашим prettier/eslint!');
 
         if (this.isSomePrompted) {
             await Config.save(this.conf);

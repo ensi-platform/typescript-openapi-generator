@@ -9,14 +9,27 @@ import { ParameterDeclarationStructure, Project, SourceFile, VariableDeclaration
 import { SEARCH_OPCODES, parseOpcode, renderImports } from '../common/helpers';
 import { AugmentedOperation, ImportData, OverridePolicy } from '../common/types';
 import { ConfigSchema } from '../config/Config';
+import { OperationTypes } from '../typegen/TypeRenderer';
+
+export type TypeFetcher = (operation: AugmentedOperation) => OperationTypes;
 
 export class ReactQueryHookGenerator {
     private config: ConfigSchema;
     private overridePolicy: OverridePolicy;
+    private typeFetcher: TypeFetcher;
 
-    constructor({ config, overridePolicy }: { config: ConfigSchema; overridePolicy: OverridePolicy }) {
+    constructor({
+        config,
+        overridePolicy,
+        typeFetcher,
+    }: {
+        typeFetcher: TypeFetcher;
+        config: ConfigSchema;
+        overridePolicy: OverridePolicy;
+    }) {
         this.config = config;
         this.overridePolicy = overridePolicy;
+        this.typeFetcher = typeFetcher;
     }
 
     async checkFilePathForGroup(group: string) {
@@ -141,7 +154,15 @@ export class ReactQueryHookGenerator {
         const queryParams = this.getQueryParams(operation);
 
         const name = operation.hookName;
-        const types = operation.typeNames;
+        const { request, response } = this.typeFetcher(operation);
+
+        if (!request) {
+            throw new Error(`Request does not exist for ${operation.path} ${operation.method}`);
+        }
+
+        if (!response) {
+            throw new Error(`Response does not exist for ${operation.path} ${operation.method}`);
+        }
 
         const dataParamInfo = {
             type: null as string | null,
@@ -150,13 +171,13 @@ export class ReactQueryHookGenerator {
         };
 
         if (operation.hasPathParams && operation.original.requestBody) {
-            dataParamInfo.type = `{ id: number | string } & ${types.request}`;
+            dataParamInfo.type = `{ id: number | string } & ${request.name}`;
             dataParamInfo.definition = '({ id, ...data })';
         } else if (operation.hasPathParams) {
-            dataParamInfo.type = types.request;
+            dataParamInfo.type = request.name;
             dataParamInfo.definition = '({ id, })';
         } else if (operation.original.requestBody) {
-            dataParamInfo.type = types.request;
+            dataParamInfo.type = request.name;
             dataParamInfo.definition = '(data)';
         }
 
@@ -182,7 +203,7 @@ export class ReactQueryHookGenerator {
                             writer.blankLine();
                         }
 
-                        writer.writeLine(`return useMutation<${types.response}, FetchError, ${dataParamInfo.type}>(`);
+                        writer.writeLine(`return useMutation<${response.name}, FetchError, ${dataParamInfo.type}>(`);
 
                         writer.writeLine(
                             `${dataParamInfo.definition} => ${this.getApiCallCode(
@@ -228,7 +249,7 @@ export class ReactQueryHookGenerator {
     ) {
         const queryParams = this.getQueryParams(operation);
         const name = operation.hookName;
-        const types = operation.typeNames;
+        const types = this.typeFetcher(operation);
 
         const dataParamInfo = {
             type: null as string | null,
@@ -236,13 +257,13 @@ export class ReactQueryHookGenerator {
         };
 
         if (operation.hasPathParams && operation.original.requestBody) {
-            dataParamInfo.type = `{ id: number | string } & ${types.request}`;
+            dataParamInfo.type = `{ id: number | string } & ${types.request!.name}`;
             dataParamInfo.name = '{ id, ...data }';
         } else if (operation.hasPathParams) {
             dataParamInfo.type = '{ id: number | string }';
             dataParamInfo.name = '{ id, }';
         } else if (operation.original.requestBody) {
-            dataParamInfo.type = types.request;
+            dataParamInfo.type = types.request!.name;
             dataParamInfo.name = 'data';
         }
 
@@ -350,18 +371,18 @@ export class ReactQueryHookGenerator {
             if (queryParams.length > 0 && operation.isMutation)
                 throw new Error('Mutations with queryParams are not supported yet: check ' + JSON.stringify(operation));
 
-            const types = operation.typeNames;
+            const types = this.typeFetcher(operation);
 
             if (types.request) {
                 imports.push({
-                    from: './types',
-                    name: types.request,
+                    from: types.request!.importFrom.replace('.ts', ''),
+                    name: types.request!.name,
                 });
             }
 
             imports.push({
-                from: './types',
-                name: types.response,
+                from: types.response!.importFrom.replace('.ts', ''),
+                name: types.response!.name,
             });
 
             if (operation.isMutation) {
