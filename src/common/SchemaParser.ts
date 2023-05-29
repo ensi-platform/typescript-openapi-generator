@@ -204,8 +204,6 @@ export class SchemaParser {
 
         if (!allPaths) throw new Error('[SchemaParser] No paths found in openapi schema.');
 
-        console.log('[SchemaParser] found paths:', Object.keys(allPaths).length);
-
         const operations = augmentPathsOperations(allPaths, refs);
         const derefedPathGroupedOps = groupOperations(operations);
         const groups = Object.keys(derefedPathGroupedOps);

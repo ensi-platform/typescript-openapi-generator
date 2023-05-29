@@ -12,7 +12,7 @@ export type RenderElement = {
     type: 'literal' | 'enum' | 'combination' | 'array' | 'object';
     refPath: string[];
     name: string;
-    definition: string;
+    definition: { description: string; code: string };
     deps: RenderElement[];
     extraImports: ImportStatement[];
 };
@@ -78,13 +78,13 @@ export default class JsonSchemaRenderer {
                     : schemaEnum.map(e => `    ${e},`);
         }
 
-        const code = `${description}export enum ${typeName} {\n${enumDeclaration.join('\n')}\n}`;
+        const code = `export enum ${typeName} {\n${enumDeclaration.join('\n')}\n}`;
         this.namedCache.set(typeName, code);
 
         return {
             type: 'enum',
             name: typeName,
-            definition: code,
+            definition: { code, description },
             deps: [],
             refPath: currentRefPath,
             extraImports: [],
@@ -115,7 +115,10 @@ export default class JsonSchemaRenderer {
 
         return {
             type: 'combination',
-            definition: isRoot ? `${description}export type ${typeName} = Prettify<${name}>;` : '',
+            definition: {
+                code: isRoot ? `export type ${typeName} = Prettify<${name}>;` : '',
+                description,
+            },
             name: isRoot ? typeName : name,
             deps: results.filter(e => e.type !== 'literal'),
             refPath: currentRefPath,
@@ -168,7 +171,7 @@ export default class JsonSchemaRenderer {
 
         const deps: RenderElement[] = [];
 
-        let code = `${description}export interface ` + typeName + ' {\n';
+        let code = `export interface ${typeName} {\n`;
 
         let isKeysWritten = false;
         for (const key in currentSchema.properties) {
@@ -205,7 +208,7 @@ export default class JsonSchemaRenderer {
         code += '}\n';
 
         if (!isKeysWritten) {
-            code = `${description}export type ${typeName} = Record<string, any>;`;
+            code = `export type ${typeName} = Record<string, any>;`;
         }
 
         this.namedCache.set(typeName, code);
@@ -213,7 +216,10 @@ export default class JsonSchemaRenderer {
         return {
             type: 'object',
             name: typeName,
-            definition: code,
+            definition: {
+                description,
+                code,
+            },
             deps,
             refPath: currentRefPath,
             extraImports: [],
@@ -301,7 +307,7 @@ export default class JsonSchemaRenderer {
 
                     return {
                         type: 'array',
-                        definition: '',
+                        definition: { code: '', description: '' },
                         name: `${namePrefix}${name}${nameSuffix}[]`,
                         deps: type === 'literal' ? [] : [element],
                         refPath: currentRefPath,
@@ -312,7 +318,7 @@ export default class JsonSchemaRenderer {
                 case 'integer': {
                     return {
                         type: 'literal',
-                        definition: '',
+                        definition: { code: '', description: '' },
                         name: 'number',
                         deps: [],
                         refPath: currentRefPath,
@@ -326,7 +332,7 @@ export default class JsonSchemaRenderer {
                 case 'string': {
                     return {
                         type: 'literal',
-                        definition: '',
+                        definition: { code: '', description: '' },
                         name: currentSchema.type,
                         deps: [],
                         refPath: currentRefPath,

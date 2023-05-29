@@ -128,7 +128,10 @@ export class TypeRenderer {
         if (type === 'multipart/form-data') {
             return {
                 $ref: null,
-                definition: `/**\n* ${description}\n **/\nexport type ${typeName} = FormData;`,
+                definition: {
+                    description: `/**\n* ${description}\n **/\n`,
+                    code: `export type ${typeName} = FormData;`,
+                },
                 deps: [],
                 importFrom: this.refToTypesFile(resolveRefPath(refPath)),
                 name: typeName,
@@ -141,7 +144,10 @@ export class TypeRenderer {
         if (type === 'application/octet-stream') {
             return {
                 $ref: null,
-                definition: `/**\n* ${description}\n **/\nexport type ${typeName} = string;`,
+                definition: {
+                    description: `/**\n* ${description}\n **/\n`,
+                    code: `export type ${typeName} = strimg;`,
+                },
                 deps: [],
                 importFrom: this.refToTypesFile(resolveRefPath(refPath)),
                 name: typeName,
@@ -322,7 +328,7 @@ export class TypeRenderer {
         this.filesToContent = {};
     }
 
-    initFileContent(file: string) {
+    upsertFileContent(file: string) {
         if (!this.filesToContent[file])
             this.filesToContent[file] = {
                 codeLines: new Set<string>(),
@@ -333,13 +339,8 @@ export class TypeRenderer {
     }
 
     renderTypeToFile(req: TypeInfo) {
-        // it causes the problem!
-        if (req.name === 'AdminUsersSearchResponse') {
-            console.log('rendering req', req.name);
-        }
-
         const traverse = (typeInfo: TypeInfo) => {
-            const file = this.initFileContent(typeInfo.importFrom);
+            const file = this.upsertFileContent(typeInfo.importFrom);
 
             if (typeInfo.deps) {
                 for (const dep of typeInfo.deps) traverse(dep);
@@ -350,8 +351,9 @@ export class TypeRenderer {
                 file.imports.push(...typeInfo.extraImports);
             }
 
-            if (typeInfo.definition) {
-                file.codeLines.add(typeInfo.definition);
+            if (typeInfo.definition.code && !file.codeLines.has(typeInfo.definition.code)) {
+                file.codeLines.add(typeInfo.definition.description);
+                file.codeLines.add(typeInfo.definition.code);
             }
 
             return typeInfo;
@@ -395,13 +397,23 @@ export class TypeRenderer {
                 if (req) {
                     this.renderTypeToFile(req);
 
-                    endpointTypes[httpMethod]!.request = { ...req, deps: [], extraImports: [], definition: '' };
+                    endpointTypes[httpMethod]!.request = {
+                        ...req,
+                        deps: [],
+                        extraImports: [],
+                        definition: { code: '', description: '' },
+                    };
                 }
 
                 const res = this.renderResponse(groupName, operationInfo, method);
                 if (res) {
                     this.renderTypeToFile(res);
-                    endpointTypes[httpMethod]!.response = { ...res, deps: [], extraImports: [], definition: '' };
+                    endpointTypes[httpMethod]!.response = {
+                        ...res,
+                        deps: [],
+                        extraImports: [],
+                        definition: { code: '', description: '' },
+                    };
                 }
             }
         }
@@ -435,10 +447,5 @@ export class TypeRenderer {
         await Promise.all(tasks);
 
         await writeFile(join(this.config.output_path, 'helpers.ts'), this.jsonSchemaRenderer.getHelpersCode());
-
-        await writeFile(
-            'operationIdsToTypes.json',
-            JSON.stringify(Object.fromEntries(this.pathsToEndpointsTypeCache.entries()), null, 2)
-        );
     }
 }

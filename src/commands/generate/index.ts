@@ -149,6 +149,8 @@ export default class Generate extends Command {
             config: this.conf,
         });
 
+        console.log('⏳ Генерируем типы...');
+
         await typeRenderer.render();
 
         console.log('✔️ Типы сгенерированы!');
@@ -159,31 +161,11 @@ export default class Generate extends Command {
                 overridePolicy: override_policies[Target.REACT_QUERY]!,
                 typeFetcher: operation => {
                     const types = typeRenderer.getTypesForRequest(operation.path, operation.method as any)!;
-                    if (types) return types;
-                    return {
-                        request: {
-                            $ref: null,
-                            definition: '',
-                            deps: [],
-                            extraImports: [],
-                            importFrom: '',
-                            name: 'Record<string, any>',
-                            refPath: [],
-                            type: 'literal',
-                        },
-                        response: {
-                            $ref: null,
-                            definition: '',
-                            deps: [],
-                            extraImports: [],
-                            importFrom: '',
-                            name: 'Record<string, any>',
-                            refPath: [],
-                            type: 'literal',
-                        },
-                    };
+                    return types;
                 },
             });
+
+            console.log('⏳ Генерируем хуки react-query...');
 
             await Promise.all(
                 groups.map(group => {

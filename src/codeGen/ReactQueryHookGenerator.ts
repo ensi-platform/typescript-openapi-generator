@@ -1,7 +1,7 @@
 import kleur from 'kleur';
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { OpenAPIV3 } from 'openapi-types';
 import prettier from 'prettier';
 import { ParameterDeclarationStructure, Project, SourceFile, VariableDeclarationKind } from 'ts-morph';
@@ -133,7 +133,7 @@ export class ReactQueryHookGenerator {
 
         if (queryParams.length > 0) args.push('params');
 
-        return `apiClient.${method}(${escapedPath}, {${args.join(', ')}})`;
+        return `${this.config['react-query'].api_client_name}.${method}(${escapedPath}, {${args.join(', ')}})`;
     }
 
     getQueryParams(operation: AugmentedOperation) {
@@ -154,15 +154,33 @@ export class ReactQueryHookGenerator {
         const queryParams = this.getQueryParams(operation);
 
         const name = operation.hookName;
-        const { request, response } = this.typeFetcher(operation);
+        const { request: typeRequest, response: typeResponse } = this.typeFetcher(operation);
 
-        if (!request) {
-            throw new Error(`Request does not exist for ${operation.path} ${operation.method}`);
+        if (!typeRequest) {
+            // console.warn(
+            //     `Request does not exist for ${operation.path} ${operation.method}, falling back to Record<string, any>`
+            // );
         }
 
-        if (!response) {
-            throw new Error(`Response does not exist for ${operation.path} ${operation.method}`);
+        if (!typeResponse) {
+            // console.warn(
+            //     `Response does not exist for ${operation.path} ${operation.method}, falling back to Record<string, any>`
+            // );
         }
+
+        const defaultType = {
+            $ref: null,
+            definition: '',
+            deps: [],
+            extraImports: [],
+            importFrom: '',
+            name: 'Record<string, any>',
+            refPath: [],
+            type: 'literal',
+        };
+
+        const request = typeRequest || defaultType;
+        const response = typeResponse || defaultType;
 
         const dataParamInfo = {
             type: null as string | null,
@@ -174,7 +192,7 @@ export class ReactQueryHookGenerator {
             dataParamInfo.type = `{ id: number | string } & ${request.name}`;
             dataParamInfo.definition = '({ id, ...data })';
         } else if (operation.hasPathParams) {
-            dataParamInfo.type = request.name;
+            dataParamInfo.type = '{ id: number | string }';
             dataParamInfo.definition = '({ id, })';
         } else if (operation.original.requestBody) {
             dataParamInfo.type = request.name;
@@ -201,6 +219,10 @@ export class ReactQueryHookGenerator {
                             });
 
                             writer.blankLine();
+                        }
+
+                        for (const hook of this.config['react-query'].hooks) {
+                            writer.writeLine(hook);
                         }
 
                         writer.writeLine(`return useMutation<${response.name}, FetchError, ${dataParamInfo.type}>(`);
@@ -249,7 +271,33 @@ export class ReactQueryHookGenerator {
     ) {
         const queryParams = this.getQueryParams(operation);
         const name = operation.hookName;
-        const types = this.typeFetcher(operation);
+        const { request: typeRequest, response: typeResponse } = this.typeFetcher(operation);
+
+        if (!typeRequest) {
+            // console.warn(
+            //     `Request does not exist for ${operation.path} ${operation.method}, falling back to Record<string, any>`
+            // );
+        }
+
+        if (!typeResponse) {
+            // console.warn(
+            //     `Response does not exist for ${operation.path} ${operation.method}, falling back to Record<string, any>`
+            // );
+        }
+
+        const defaultType = {
+            $ref: null,
+            definition: '',
+            deps: [],
+            extraImports: [],
+            importFrom: '',
+            name: 'Record<string, any>',
+            refPath: [],
+            type: 'literal',
+        };
+
+        const request = typeRequest || defaultType;
+        const response = typeResponse || defaultType;
 
         const dataParamInfo = {
             type: null as string | null,
@@ -257,13 +305,13 @@ export class ReactQueryHookGenerator {
         };
 
         if (operation.hasPathParams && operation.original.requestBody) {
-            dataParamInfo.type = `{ id: number | string } & ${types.request!.name}`;
+            dataParamInfo.type = `{ id: number | string } & ${request.name}`;
             dataParamInfo.name = '{ id, ...data }';
         } else if (operation.hasPathParams) {
             dataParamInfo.type = '{ id: number | string }';
             dataParamInfo.name = '{ id, }';
         } else if (operation.original.requestBody) {
-            dataParamInfo.type = types.request!.name;
+            dataParamInfo.type = request.name;
             dataParamInfo.name = 'data';
         }
 
@@ -296,7 +344,11 @@ export class ReactQueryHookGenerator {
                 },
             ],
             statements: writer => {
-                writer.writeLine(`return useQuery<${types.response}, FetchError>({`);
+                for (const hook of this.config['react-query'].hooks) {
+                    writer.writeLine(hook);
+                }
+
+                writer.writeLine(`return useQuery<${response.name}, FetchError>({`);
                 writer.indent(2);
 
                 if (operation.original.operationId! in queryKeys) {
@@ -331,9 +383,10 @@ export class ReactQueryHookGenerator {
         const imports: ImportData[] = [
             { from: 'react-query', name: 'useMutation' },
             { from: 'react-query', name: 'useQuery' },
-            { from: '@api/common/types', name: 'FetchError' },
-            { from: '@api/', name: 'apiClient' },
+            { from: '@api/commonTypes', name: 'FetchError' },
         ];
+
+        imports.push(...this.config['react-query'].imports);
 
         const searchOperations = flatOperations.filter(e => SEARCH_OPCODES.includes(parseOpcode(e)));
 
@@ -345,7 +398,7 @@ export class ReactQueryHookGenerator {
 
             if (pathParameters.length > 0 && searchOperation.original.requestBody) {
                 throw new Error(
-                    `Unsupported route definition: path parameters + requestBody. 
+                    `[group=${group}] Unsupported route definition: path parameters + requestBody. 
                     Please move your path parameters (${JSON.stringify(pathParameters)}) into request body`
                 );
             }
@@ -373,15 +426,29 @@ export class ReactQueryHookGenerator {
 
             const types = this.typeFetcher(operation);
 
+            // eslint-disable-next-line unicorn/consistent-function-scoping
+            const resolveImport = (path: string) => {
+                const fullPath = join(this.config.output_path, path).replaceAll('\\', '/');
+                const filePathNorm = filePath.replaceAll('\\', '/');
+
+                let relativePath = relative(dirname(filePathNorm), fullPath).replaceAll('\\', '/');
+
+                if (relativePath[0] !== '.') {
+                    relativePath = './' + relativePath;
+                }
+
+                return relativePath;
+            };
+
             if (types.request) {
                 imports.push({
-                    from: types.request!.importFrom.replace('.ts', ''),
-                    name: types.request!.name,
+                    from: resolveImport(types.request.importFrom).replace('.ts', ''),
+                    name: types.request.name,
                 });
             }
 
             imports.push({
-                from: types.response!.importFrom.replace('.ts', ''),
+                from: resolveImport(types.response!.importFrom).replace('.ts', ''),
                 name: types.response!.name,
             });
 
