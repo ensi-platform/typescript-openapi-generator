@@ -101,9 +101,16 @@ export default class JsonSchemaRenderer {
         currentRefPath: string[],
         processSchema: (currentSchema: any, currentRefPath: string[], suffix?: string) => RenderElement
     ): RenderElement {
-        const isRoot = currentSchema === schema;
+        console.log();
 
+        console.log('COMBINATION!!!', typeName, currentRefPath);
+        console.log();
+        let renderAsInline = currentSchema !== schema;
         const arr = (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) as any[];
+
+        if (arr.length > 2) {
+            renderAsInline = false;
+        }
 
         const results = arr.map((subSchema: any) =>
             processSchema(subSchema, currentRefPath, subSchema.$ref ? undefined : 'Combination')
@@ -113,23 +120,37 @@ export default class JsonSchemaRenderer {
 
         const helperPath = this.resolveHelperDependency('helpers');
 
-        return {
+        const common = {
             type: 'combination',
-            definition: {
-                code: isRoot ? `export type ${typeName} = Prettify<${name}>;` : '',
-                description,
-            },
-            name: isRoot ? typeName : name,
             deps: results.filter(e => e.type !== 'literal'),
             refPath: currentRefPath,
-            extraImports: isRoot
-                ? [
-                      {
-                          from: helperPath,
-                          name: 'Prettify',
-                      },
-                  ]
-                : [],
+        } as const;
+
+        if (renderAsInline) {
+            return {
+                ...common,
+                definition: {
+                    code: '',
+                    description: '',
+                },
+                name: name,
+                extraImports: [],
+            };
+        }
+
+        return {
+            ...common,
+            definition: {
+                code: `export type ${typeName} = Prettify<${name}>;`,
+                description,
+            },
+            name: typeName,
+            extraImports: [
+                {
+                    from: helperPath,
+                    name: 'Prettify',
+                },
+            ],
         };
     }
 
@@ -183,6 +204,10 @@ export default class JsonSchemaRenderer {
             const isRefed = '$ref' in propertySchema;
 
             const element = processSchema(propertySchema, currentRefPath, isRefed ? undefined : key);
+
+            if (element.type === 'combination') {
+                console.log('rendered element', element, 'at key=', key, 'schema was=', propertySchema);
+            }
 
             const shouldEscapeKey = !/^[$A-Z_a-z][\w$]*$/.test(key);
 

@@ -1,8 +1,6 @@
 import { $Refs, FileInfo, JSONSchema } from '@stoplight/json-schema-ref-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import { OpenAPI3, OperationObject } from 'openapi-typescript';
-
-import { AugmentedRequest, AugmentedResponse } from '../typegen/types';
+import { OpenAPI3 } from 'openapi-typescript';
 
 export interface ISchemaLoader {
     loadIndex: () => Promise<OpenAPI3>;
@@ -18,9 +16,11 @@ export interface ImportData {
 }
 
 export type AugmentedOperation = {
-    original: OperationObject;
+    original: OpenAPIV3.OperationObject;
     path: string;
-    pathWithVariables: string;
+    pathSubstituted: string;
+    pathVariables: string[];
+    queryParams: OpenAPIV3.ParameterObject[];
     method: string;
     group: string;
     isMutation: boolean;
@@ -28,16 +28,13 @@ export type AugmentedOperation = {
     hookName: string;
     queryKey: string | undefined;
 
-    responses: AugmentedResponse[];
-    request: AugmentedRequest | null;
-
     isFileUpload: boolean;
     hasPathParams: boolean;
 
-    invalidatees: AugmentedOperation[];
+    invalidationTargets: AugmentedOperation[];
 };
 
-export type OverridePolicy = 'override' | 'skip'; // TODO: augment
+export type OverridePolicy = 'override' | 'skip';
 
 export interface RefSchemaData {
     group: string;

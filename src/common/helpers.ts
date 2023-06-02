@@ -6,6 +6,7 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { PathItemObject, RequestBodyObject } from 'openapi-typescript';
 import { SourceFile } from 'ts-morph';
 
+import { extractPathVariables, replacePathVariables } from './pathVariables';
 import { AugmentedOperation, ImportData } from './types';
 
 export enum HttpMethod {
@@ -82,26 +83,17 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
     return kebab(original.operationId!);
 };
 
-// eslint-disable-next-line no-template-curly-in-string
-const replacePlaceholders = (str: string) => str.replaceAll(/{([^}]+)}/g, '${$1}');
-
-const generateInvalidatees = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
+const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
     if (!op.isMutation) return [];
 
-    const path = op.path;
-
-    // TODO: доработать тот момент когда нет {id}
-
-    if (!path.includes('{id}')) return [];
-    const subpath = path.split('/{id}')[0];
-
     return allOperations.filter(e => {
+        if (e.group !== op.group) return false;
         if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
 
-        if (e.path === subpath) return true;
-        if (e.path === `${subpath}/{id}`) return true;
-        if (e.path === `${subpath}:search`) return true;
-        if (e.path === `${subpath}:search-one`) return true;
+        if (e.path.endsWith('id}')) return true;
+        if (e.path.endsWith('Id}')) return true;
+        if (e.path.endsWith(':search')) return true;
+        if (e.path.endsWith(':search-one')) return true;
 
         return false;
     });
@@ -126,6 +118,12 @@ const hasPathParams = (op: OpenAPIV3.OperationObject) => {
     );
 };
 
+const extractQueryParams = (req: OpenAPIV3.OperationObject) =>
+    (req.parameters?.filter(e => {
+        if (!('in' in e)) return false;
+        return e.in === 'query';
+    }) as OpenAPIV3.ParameterObject[] | undefined) || [];
+
 export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs, debug = false) => {
     const pathNames = Object.keys(paths);
 
@@ -142,7 +140,7 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
         if (debug) console.log('path:', pathName, 'group=', groupName);
 
         return httpMethods.map<AugmentedOperation>(httpMethod => {
-            const reqInfo = operationInfo[httpMethod as any];
+            const reqInfo = operationInfo[httpMethod] as OpenAPIV3.OperationObject;
 
             if (debug) console.log('reqInfo=', reqInfo);
 
@@ -150,14 +148,14 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
                 original: reqInfo,
                 hookName: generateHookName(reqInfo),
                 queryKey: extractQueryKey(reqInfo),
+                queryParams: extractQueryParams(reqInfo),
                 group: groupName,
                 path: pathName,
                 method: httpMethod,
                 isMutation: isOperationMutation(httpMethod, reqInfo),
-                responses: [],
-                request: null,
-                pathWithVariables: replacePlaceholders(pathName),
-                invalidatees: [],
+                pathSubstituted: replacePathVariables(pathName),
+                pathVariables: extractPathVariables(pathName),
+                invalidationTargets: [],
                 isFileUpload: hasFileUpload(reqInfo, refs),
                 hasPathParams: hasPathParams(reqInfo),
             };
@@ -165,7 +163,7 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
     });
 
     for (const operation of allOperations) {
-        operation.invalidatees = generateInvalidatees(operation, allOperations);
+        operation.invalidationTargets = generateInvalidationTargets(operation, allOperations);
     }
 
     return allOperations;

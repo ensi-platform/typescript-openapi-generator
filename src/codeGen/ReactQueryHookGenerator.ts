@@ -6,10 +6,11 @@ import { OpenAPIV3 } from 'openapi-types';
 import prettier from 'prettier';
 import { ParameterDeclarationStructure, Project, SourceFile, VariableDeclarationKind } from 'ts-morph';
 
-import { SEARCH_OPCODES, parseOpcode, renderImports } from '../common/helpers';
+import { renderImports } from '../common/helpers';
 import { AugmentedOperation, ImportData, OverridePolicy } from '../common/types';
 import { ConfigSchema } from '../config/Config';
 import { OperationTypes } from '../typegen/TypeRenderer';
+import { QueryKeysSchema, createCallQueryKey, generateQueryKeysConstant, generateQueryKeysSchema } from './queryKeys';
 
 export type TypeFetcher = (operation: AugmentedOperation) => OperationTypes;
 
@@ -17,6 +18,8 @@ export class ReactQueryHookGenerator {
     private config: ConfigSchema;
     private overridePolicy: OverridePolicy;
     private typeFetcher: TypeFetcher;
+
+    private queryKeysSchema!: QueryKeysSchema;
 
     constructor({
         config,
@@ -47,78 +50,10 @@ export class ReactQueryHookGenerator {
         return filePath;
     }
 
-    createCallQueryKey(operation: AugmentedOperation, forInvalidation = false) {
-        const isHavePathParams = operation.hasPathParams;
-        const id = forInvalidation ? 'data?.id' : 'id';
-
-        // Always invalidate search of multiple entities.
-        if (forInvalidation && operation.path.endsWith(':search'))
-            return `QueryKeys.${operation.original.operationId}()`;
-
-        if (operation.original.requestBody && isHavePathParams) {
-            return `QueryKeys.${operation.original.operationId}(${id}, data)`;
-        }
-
-        if (isHavePathParams) {
-            return `QueryKeys.${operation.original.operationId}(${id})`;
-        }
-
-        if (operation.original.requestBody) {
-            return `QueryKeys.${operation.original.operationId}(data)`;
-        }
-
-        return `QueryKeys.${operation.original.operationId}()`;
-    }
-
-    generateQueryKeysConstant(
-        sourceFile: SourceFile,
-        queryKeys: Record<
-            string,
-            AugmentedOperation & {
-                hasPathParams: boolean;
-                hasBody: boolean;
-            }
-        >
-    ) {
-        sourceFile.addVariableStatement({
-            isExported: true,
-            declarationKind: VariableDeclarationKind.Const,
-            declarations: [
-                {
-                    name: 'QueryKeys',
-                    initializer: writer => {
-                        const entries = Object.entries(queryKeys);
-                        writer.writeLine('{');
-
-                        for (const [key, op] of entries) {
-                            if (op.hasBody && op.hasPathParams) {
-                                writer.writeLine(
-                                    `${key}: (id?: number | string, data?: any) => (id || data) ? ['${op.queryKey}', id, data] : ['${op.queryKey}'],`
-                                );
-                            } else if (op.hasPathParams) {
-                                writer.writeLine(
-                                    `${key}: (id?: number | string) => id ? ['${op.queryKey}', id] : ['${op.queryKey}'],`
-                                );
-                            } else if (op.hasBody) {
-                                writer.writeLine(
-                                    `${key}: (data?: any) => data ? ['${op.queryKey}', data] : ['${op.queryKey}'],`
-                                );
-                            } else {
-                                writer.writeLine(`${key}: () => ['${op.queryKey}'],`);
-                            }
-                        }
-
-                        writer.writeLine('}');
-                    },
-                },
-            ],
-        });
-    }
-
     getApiCallCode(operation: AugmentedOperation, queryParams: OpenAPIV3.ParameterObject[], withData = false) {
         const escapedPath = operation.hasPathParams
-            ? `\`${operation.pathWithVariables}\``
-            : `'${operation.pathWithVariables}'`;
+            ? `\`${operation.pathSubstituted}\``
+            : `'${operation.pathSubstituted}'`;
 
         const method = operation.method.toLowerCase();
         const args: string[] = [];
@@ -136,22 +71,8 @@ export class ReactQueryHookGenerator {
         return `${this.config['react-query'].api_client_name}.${method}(${escapedPath}, {${args.join(', ')}})`;
     }
 
-    getQueryParams(operation: AugmentedOperation) {
-        return (
-            (operation.original.parameters?.filter(e => {
-                if (!('in' in e)) return false;
-                return e.in === 'query';
-            }) as OpenAPIV3.ParameterObject[] | undefined) || []
-        );
-    }
-
-    addMutation(
-        operation: AugmentedOperation,
-        searchOperations: AugmentedOperation[],
-        imports: ImportData[],
-        sourceFile: SourceFile
-    ) {
-        const queryParams = this.getQueryParams(operation);
+    addMutation(operation: AugmentedOperation, imports: ImportData[], sourceFile: SourceFile) {
+        const queryParams = operation.queryParams;
 
         const name = operation.hookName;
         const { request: typeRequest, response: typeResponse } = this.typeFetcher(operation);
@@ -188,12 +109,15 @@ export class ReactQueryHookGenerator {
             hasRequestBody: Boolean(operation.original.requestBody),
         };
 
+        const vars = operation.pathVariables;
+        const varsTypes = vars.map(variable => `${variable}: number | string`).join(',');
+
         if (operation.hasPathParams && operation.original.requestBody) {
-            dataParamInfo.type = `{ id: number | string } & ${request.name}`;
-            dataParamInfo.definition = '({ id, ...data })';
+            dataParamInfo.type = `{ ${varsTypes} } & ${request.name}`;
+            dataParamInfo.definition = `({ ${vars.join(',')}, ...data })`;
         } else if (operation.hasPathParams) {
-            dataParamInfo.type = '{ id: number | string }';
-            dataParamInfo.definition = '({ id, })';
+            dataParamInfo.type = `{ ${varsTypes} }`;
+            dataParamInfo.definition = `({ ${vars.join(',')} })`;
         } else if (operation.original.requestBody) {
             dataParamInfo.type = request.name;
             dataParamInfo.definition = '(data)';
@@ -208,7 +132,8 @@ export class ReactQueryHookGenerator {
                     initializer: writer => {
                         writer.write('() => {');
 
-                        const opsToInvalidate = searchOperations.length > 0 ? operation.invalidatees : [];
+                        const opsToInvalidate =
+                            this.queryKeysSchema.searchOperations.length > 0 ? operation.invalidationTargets : [];
 
                         if (opsToInvalidate.length > 0) {
                             writer.writeLine('const queryClient = useQueryClient();');
@@ -240,7 +165,7 @@ export class ReactQueryHookGenerator {
                             writer.writeLine('onSuccess: ({ data }) => {');
                             for (const op of opsToInvalidate) {
                                 writer.write('queryClient.invalidateQueries(');
-                                writer.write(this.createCallQueryKey(op, true));
+                                writer.write(createCallQueryKey(op, 'mutation'));
                                 writer.write(');');
                                 writer.blankLine();
                             }
@@ -258,18 +183,8 @@ export class ReactQueryHookGenerator {
         });
     }
 
-    addQuery(
-        operation: AugmentedOperation,
-        queryKeys: Record<
-            string,
-            AugmentedOperation & {
-                hasPathParams: boolean;
-                hasBody: boolean;
-            }
-        >,
-        sourceFile: SourceFile
-    ) {
-        const queryParams = this.getQueryParams(operation);
+    addQuery(operation: AugmentedOperation, sourceFile: SourceFile) {
+        const queryParams = operation.queryParams;
         const name = operation.hookName;
         const { request: typeRequest, response: typeResponse } = this.typeFetcher(operation);
 
@@ -301,18 +216,21 @@ export class ReactQueryHookGenerator {
 
         const dataParamInfo = {
             type: null as string | null,
-            name: 'data',
+            definition: 'data',
         };
 
+        const vars = operation.pathVariables;
+        const varsTypes = vars.map(variable => `${variable}: number | string`).join(',');
+
         if (operation.hasPathParams && operation.original.requestBody) {
-            dataParamInfo.type = `{ id: number | string } & ${request.name}`;
-            dataParamInfo.name = '{ id, ...data }';
+            dataParamInfo.type = `{ ${varsTypes} } & ${request.name}`;
+            dataParamInfo.definition = `{ ${vars.join(',')}, ...data }`;
         } else if (operation.hasPathParams) {
-            dataParamInfo.type = '{ id: number | string }';
-            dataParamInfo.name = '{ id, }';
+            dataParamInfo.type = `{ ${varsTypes} }`;
+            dataParamInfo.definition = `{ ${vars.join(',')} }`;
         } else if (operation.original.requestBody) {
             dataParamInfo.type = request.name;
-            dataParamInfo.name = 'data';
+            dataParamInfo.definition = 'data';
         }
 
         sourceFile.addFunction({
@@ -324,7 +242,7 @@ export class ReactQueryHookGenerator {
                 ...(dataParamInfo.type
                     ? ([
                           {
-                              name: dataParamInfo.name,
+                              name: dataParamInfo.definition,
                               type: dataParamInfo.type,
                           },
                       ] as ParameterDeclarationStructure[])
@@ -351,8 +269,8 @@ export class ReactQueryHookGenerator {
                 writer.writeLine(`return useQuery<${response.name}, FetchError>({`);
                 writer.indent(2);
 
-                if (operation.original.operationId! in queryKeys) {
-                    const call = this.createCallQueryKey(operation);
+                if (operation.original.operationId! in this.queryKeysSchema.items) {
+                    const call = createCallQueryKey(operation, 'query');
 
                     if (call) {
                         writer.write(`queryKey: ${call},`);
@@ -388,38 +306,11 @@ export class ReactQueryHookGenerator {
 
         imports.push(...this.config['react-query'].imports);
 
-        const searchOperations = flatOperations.filter(e => SEARCH_OPCODES.includes(parseOpcode(e)));
-
-        type OperationId = string;
-        const queryKeys = searchOperations.reduce((acc, searchOperation) => {
-            const pathParameters =
-                (searchOperation.original.parameters as OpenAPIV3.ParameterObject[])?.filter(e => e.in === 'path') ||
-                [];
-
-            if (pathParameters.length > 0 && searchOperation.original.requestBody) {
-                throw new Error(
-                    `[group=${group}] Unsupported route definition: path parameters + requestBody. 
-                    Please move your path parameters (${JSON.stringify(pathParameters)}) into request body`
-                );
-            }
-
-            if (pathParameters.length > 1) {
-                throw new Error('Unsupported multiple path parameters.');
-            }
-
-            acc[searchOperation.original.operationId!] = {
-                ...searchOperation,
-                hasPathParams: pathParameters.length > 0,
-                hasBody: Boolean(searchOperation.original.requestBody),
-            };
-
-            return acc;
-        }, {} as Record<OperationId, AugmentedOperation & { hasPathParams: boolean; hasBody: boolean }>);
-
-        this.generateQueryKeysConstant(sourceFile, queryKeys);
+        this.queryKeysSchema = generateQueryKeysSchema(flatOperations);
+        generateQueryKeysConstant(this.queryKeysSchema, sourceFile);
 
         for (const operation of flatOperations) {
-            const queryParams = this.getQueryParams(operation);
+            const queryParams = operation.queryParams;
 
             if (queryParams.length > 0 && operation.isMutation)
                 throw new Error('Mutations with queryParams are not supported yet: check ' + JSON.stringify(operation));
@@ -453,9 +344,9 @@ export class ReactQueryHookGenerator {
             });
 
             if (operation.isMutation) {
-                this.addMutation(operation, searchOperations, imports, sourceFile);
+                this.addMutation(operation, imports, sourceFile);
             } else {
-                this.addQuery(operation, queryKeys, sourceFile);
+                this.addQuery(operation, sourceFile);
             }
         }
 
