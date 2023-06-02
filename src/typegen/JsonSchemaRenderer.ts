@@ -101,10 +101,6 @@ export default class JsonSchemaRenderer {
         currentRefPath: string[],
         processSchema: (currentSchema: any, currentRefPath: string[], suffix?: string) => RenderElement
     ): RenderElement {
-        console.log();
-
-        console.log('COMBINATION!!!', typeName, currentRefPath);
-        console.log();
         let renderAsInline = currentSchema !== schema;
         const arr = (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) as any[];
 
@@ -204,10 +200,6 @@ export default class JsonSchemaRenderer {
             const isRefed = '$ref' in propertySchema;
 
             const element = processSchema(propertySchema, currentRefPath, isRefed ? undefined : key);
-
-            if (element.type === 'combination') {
-                console.log('rendered element', element, 'at key=', key, 'schema was=', propertySchema);
-            }
 
             const shouldEscapeKey = !/^[$A-Z_a-z][\w$]*$/.test(key);
 
