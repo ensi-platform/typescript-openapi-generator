@@ -180,8 +180,26 @@ export class TypeRenderer {
     renderRefJsonSchema(description: string, type: ContentType, refs: string[]): TypeInfo {
         const $ref = resolveRefPath(refs);
 
-        const obj = this.parsedSchema.refs.get($ref) as Record<string, any>;
-        return this.renderJsonSchema(description, type, refs, obj);
+        try {
+            const obj = this.parsedSchema.refs.get($ref) as Record<string, any>;
+
+            return this.renderJsonSchema(description, type, refs, obj);
+        } catch (error) {
+            if ($ref.startsWith('index.yaml#')) {
+                const schema = $ref.split('#/')[1];
+                const root = this.parsedSchema.refs.get('') as Record<string, any>;
+
+                if (root.components && root.components.schemas && schema in root.components.schemas) {
+                    const obj = root.components.schemas[schema] as Record<string, any>;
+                    return this.renderJsonSchema(description, type, refs, obj);
+                }
+            }
+
+            console.error(
+                `incorrect openapi schema. You try to resolve '${$ref}' with type ${type}, but its not in schemas`
+            );
+            throw error;
+        }
     }
 
     constructor({

@@ -228,6 +228,8 @@ export const resolveRefPath = (p: string[]) => {
     if (p.length === 0) return '';
     const paths = p.filter(Boolean);
 
+    if (paths.length > 21) throw new Error('Possible circular dependency: more than 21 paths in ref resolver.')
+
     let lastAnchor = '';
     let prevHasFileIndex = -1;
 

@@ -14,6 +14,11 @@ const valueOrArrayElement = (value: any) => {
 };
 
 const sanitizeUrl = (url: string) => {
+    if (process.platform === 'linux') {
+        const cwd = process.cwd() + '/';
+        return url.split(cwd)[1];
+    }
+
     if (url.includes('/json-schema-ref-parser/dist/')) return url.split('/json-schema-ref-parser/dist/')[1];
     if (url.includes('/json-schema-ref-parser/')) return url.split('/json-schema-ref-parser/')[1];
 
