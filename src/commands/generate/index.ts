@@ -128,7 +128,7 @@ export default class Generate extends Command {
 
         const { openapi_path, targets, override_policies } = this.conf;
 
-        const loader = getSchemaLoaderForOrigin(openapi_path);
+        const loader = getSchemaLoaderForOrigin(openapi_path, this.conf);
         const indexDocument = await loader.loadIndex();
         console.log('Загружен документ', indexDocument.info);
 

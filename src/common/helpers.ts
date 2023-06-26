@@ -6,6 +6,7 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { PathItemObject, RequestBodyObject } from 'openapi-typescript';
 import { SourceFile } from 'ts-morph';
 
+import { ConfigSchema } from '../config/Config';
 import { extractPathVariables, replacePathVariables } from './pathVariables';
 import { AugmentedOperation, ImportData } from './types';
 
@@ -83,11 +84,25 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
     return kebab(original.operationId!);
 };
 
+function removeTrailingSlash(str: string): string {
+    return str.endsWith('/') ? str.slice(0, -1) : str;
+}
+
+function extractInvalidatePrefix(oldPath: string): string {
+    const path = removeTrailingSlash(oldPath);
+    if (path.split('/').length < 2) return path;
+
+    const lastSlashIndex = path.lastIndexOf('/');
+    return path.slice(0, lastSlashIndex);
+}
+
 const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
     if (!op.isMutation) return [];
 
-    return allOperations.filter(e => {
-        if (e.group !== op.group) return false;
+    const prefix = extractInvalidatePrefix(op.path);
+
+    const results = allOperations.filter(e => {
+        if (!e.path.startsWith(prefix)) return false;
         if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
 
         if (e.path.endsWith('id}')) return true;
@@ -97,6 +112,8 @@ const generateInvalidationTargets = (op: AugmentedOperation, allOperations: Augm
 
         return false;
     });
+
+    return results;
 };
 
 export const isEmptyObject = (val: any): val is null => {
@@ -124,7 +141,7 @@ const extractQueryParams = (req: OpenAPIV3.OperationObject) =>
         return e.in === 'query';
     }) as OpenAPIV3.ParameterObject[] | undefined) || [];
 
-export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs, debug = false) => {
+export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs, config: ConfigSchema) => {
     const pathNames = Object.keys(paths);
 
     const allOperations = pathNames.flatMap(pathName => {
@@ -137,12 +154,8 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
 
         const httpMethods = Object.keys(operationInfo) as HttpMethod[];
 
-        if (debug) console.log('path:', pathName, 'group=', groupName);
-
         return httpMethods.map<AugmentedOperation>(httpMethod => {
             const reqInfo = operationInfo[httpMethod] as OpenAPIV3.OperationObject;
-
-            if (debug) console.log('reqInfo=', reqInfo);
 
             return {
                 original: reqInfo,
@@ -162,8 +175,10 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
         });
     });
 
-    for (const operation of allOperations) {
-        operation.invalidationTargets = generateInvalidationTargets(operation, allOperations);
+    if (config['react-query'].generate_invalidations) {
+        for (const operation of allOperations) {
+            operation.invalidationTargets = generateInvalidationTargets(operation, allOperations);
+        }
     }
 
     return allOperations;
@@ -228,7 +243,7 @@ export const resolveRefPath = (p: string[]) => {
     if (p.length === 0) return '';
     const paths = p.filter(Boolean);
 
-    if (paths.length > 21) throw new Error('Possible circular dependency: more than 21 paths in ref resolver.')
+    if (paths.length > 21) throw new Error('Possible circular dependency: more than 21 paths in ref resolver.');
 
     let lastAnchor = '';
     let prevHasFileIndex = -1;

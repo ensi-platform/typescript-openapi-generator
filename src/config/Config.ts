@@ -14,7 +14,9 @@ export interface ConfigSchema {
     output_path: string;
     targets: Target[];
     override_policies: Record<Target, OverridePolicy | undefined>;
+    is_unix: boolean;
     ['react-query']: {
+        generate_invalidations: boolean;
         imports: ImportData[];
         hooks: string[];
         api_client_name: string;
@@ -24,6 +26,7 @@ export interface ConfigSchema {
 // eslint-disable-next-line unicorn/no-static-only-class
 export class Config {
     static DEFAULT: ConfigSchema = {
+        is_unix: ['darwin', 'linux'].includes(process.platform),
         openapi_path: '',
         output_path: '',
         targets: [],
@@ -33,6 +36,7 @@ export class Config {
             enums: undefined,
         },
         'react-query': {
+            generate_invalidations: true,
             api_client_name: 'apiClient',
             hooks: [],
             imports: [],
@@ -67,6 +71,10 @@ export class Config {
         try {
             const data = JSON.parse(content) as ConfigSchema;
 
+            if (typeof data.is_unix !== 'boolean') {
+                data.is_unix = Config.DEFAULT.is_unix;
+            }
+
             if (typeof data.override_policies !== 'object') {
                 data.override_policies = Config.DEFAULT.override_policies;
             }
@@ -81,6 +89,10 @@ export class Config {
 
             if (typeof data['react-query'] !== 'object') {
                 data['react-query'] = Config.DEFAULT['react-query'];
+            }
+
+            if (typeof data['react-query'].generate_invalidations !== 'boolean') {
+                data['react-query'].generate_invalidations = Config.DEFAULT['react-query'].generate_invalidations;
             }
 
             if (typeof data['react-query'].api_client_name !== 'string') {

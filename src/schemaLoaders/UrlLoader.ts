@@ -5,6 +5,7 @@ import { OpenAPI3 } from 'openapi-typescript';
 
 import { ApiClient } from '../common/ApiClient';
 import { ISchemaLoader } from '../common/types';
+import { ConfigSchema } from '../config/Config';
 
 const valueOrArrayElement = (value: any) => {
     if (Array.isArray(value) && value.length > 0) return value[0];
@@ -13,9 +14,10 @@ const valueOrArrayElement = (value: any) => {
     return value;
 };
 
-const sanitizeUrl = (url: string) => {
-    if (process.platform === 'linux') {
+const sanitizeUrl = (url: string, config: ConfigSchema) => {
+    if (config.is_unix) {
         const cwd = process.cwd() + '/';
+
         return url.split(cwd)[1];
     }
 
@@ -28,8 +30,10 @@ const sanitizeUrl = (url: string) => {
 export class UrlLoader implements ISchemaLoader {
     private url!: string;
     private apiClient = new ApiClient(1);
+    private config: ConfigSchema;
 
-    constructor(url: string) {
+    constructor(url: string, config: ConfigSchema) {
+        this.config = config;
         this.url = url.replace('/index.yaml', '');
 
         if (this.url.at(-1) === '/') this.url = this.url.slice(0, Math.max(0, this.url.length - 1));
@@ -48,7 +52,7 @@ export class UrlLoader implements ISchemaLoader {
     }
 
     public async readSubfile(file: FileInfo, cb: (error: any, result: any) => any) {
-        const portionUrl = `${this.url}/${sanitizeUrl(file.url)}`;
+        const portionUrl = `${this.url}/${sanitizeUrl(file.url, this.config)}`;
 
         try {
             const res = await this.apiClient.fetch<string>(portionUrl);
