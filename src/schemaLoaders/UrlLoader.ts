@@ -1,6 +1,7 @@
 // https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml
 import { FileInfo } from '@stoplight/json-schema-ref-parser';
 import { parse } from '@stoplight/yaml';
+import { resolve } from 'node:path';
 import { OpenAPI3 } from 'openapi-typescript';
 
 import { ApiClient } from '../common/ApiClient';
@@ -17,8 +18,14 @@ const valueOrArrayElement = (value: any) => {
 const sanitizeUrl = (url: string, config: ConfigSchema) => {
     if (config.is_unix) {
         const cwd = process.cwd() + '/';
+        const parentCwd = resolve(cwd, '..');
+        const sanitized = url.split(cwd)[1];
 
-        return url.split(cwd)[1];
+        if (!sanitized) {
+            return url.split(parentCwd)[1];
+        }
+
+        return sanitized;
     }
 
     if (url.includes('/json-schema-ref-parser/dist/')) return url.split('/json-schema-ref-parser/dist/')[1];

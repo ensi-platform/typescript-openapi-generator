@@ -132,7 +132,7 @@ export default class Generate extends Command {
         const indexDocument = await loader.loadIndex();
         console.log('Загружен документ', indexDocument.info);
 
-        const schemaParser = new SchemaParser(indexDocument, loader, p => {
+        const schemaParser = new SchemaParser(this.conf, indexDocument, loader, p => {
             console.log(`   ${p}% зависимостей...`);
         });
 

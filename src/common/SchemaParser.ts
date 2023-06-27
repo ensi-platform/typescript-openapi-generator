@@ -3,6 +3,7 @@ import { $Refs } from '@stoplight/json-schema-ref-parser';
 import { pascal } from 'case';
 import type { OpenAPIV3 } from 'openapi-types';
 
+import { ConfigSchema } from '../config/Config';
 import { augmentPathsOperations, groupOperations } from './helpers';
 import { ISchemaLoader, ParsedSchema } from './types';
 
@@ -43,8 +44,15 @@ export class SchemaParser {
     private schemaLoader: ISchemaLoader;
     private onProgress?: (progress: number) => void;
     private readonly uniqueRefs = new Set<string>();
+    private config: ConfigSchema;
 
-    constructor(schemaObject: object, schemaLoader: ISchemaLoader, onProgress?: (progress: number) => void) {
+    constructor(
+        config: ConfigSchema,
+        schemaObject: object,
+        schemaLoader: ISchemaLoader,
+        onProgress?: (progress: number) => void
+    ) {
+        this.config = config;
         this.schemaObject = schemaObject;
         this.schemaLoader = schemaLoader;
 
@@ -204,7 +212,7 @@ export class SchemaParser {
 
         if (!allPaths) throw new Error('[SchemaParser] No paths found in openapi schema.');
 
-        const operations = augmentPathsOperations(allPaths, refs);
+        const operations = augmentPathsOperations(allPaths, refs, this.config);
         const derefedPathGroupedOps = groupOperations(operations);
         const groups = Object.keys(derefedPathGroupedOps);
 
