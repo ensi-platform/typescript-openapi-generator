@@ -1,1 +1,1 @@
-"# typescript-openapi-generator" 
+# typescript-openapi-generator
