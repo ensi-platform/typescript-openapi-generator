@@ -1,48 +1,240 @@
-import toJsonSchema from '@openapi-contrib/openapi-schema-to-json-schema';
+/* eslint-disable guard-for-in */
+import { pascal } from 'case';
 import type { JSONSchema4 } from 'json-schema';
-import { compile as compileTypescript } from 'json-schema-to-typescript';
 import kleur from 'kleur';
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { MediaTypeObject, RequestBodyObject } from 'openapi-typescript';
-import { CodeBlockWriter, Project } from 'ts-morph';
+import { basename, dirname, join } from 'node:path';
+import { OpenAPIV3 } from 'openapi-types';
+import { Project } from 'ts-morph';
 
-import { RequestContentType, renderImports } from '../helpers';
-import { AugmentedOperation, ImportData, OverridePolicy, RefSchemaData } from '../types';
+import {
+    HttpMethod,
+    extractRefAnchor,
+    extractSegment,
+    refToPath,
+    renderImports,
+    resolveRefPath,
+} from '../common/helpers';
+import { ImportData, OverridePolicy, ParsedSchema } from '../common/types';
+import { ConfigSchema } from '../config/Config';
+import JsonSchemaRenderer, { InterfaceNameFunction, RenderElement } from './JsonSchemaRenderer';
+
+export type TypeInfo = Omit<RenderElement, 'deps'> & {
+    importFrom: string;
+    $ref: string | null;
+    deps: TypeInfo[];
+};
+
+export type OperationTypes = {
+    request?: TypeInfo;
+    response?: TypeInfo;
+};
+
+/**
+ *
+ * @param refPath array of $ref paths
+ * @param suffix extra suffix, for example when its a key in the object
+ * @returns string representing name of the type
+ */
+const typeNameFunction: InterfaceNameFunction = (refPath, suffix) => {
+    let name = extractRefAnchor(resolveRefPath(refPath));
+
+    if (!name) {
+        name = basename(refPath.at(-1)!).replace('.yaml', '');
+        name = pascal(name);
+        // console.warn('warn! missing name for schema', schema, 'at', refPath, 'falling back to', name);
+    }
+
+    if (suffix) {
+        name += pascal(suffix);
+    }
+
+    return name;
+};
+
+type ContentType = 'multipart/form-data' | 'application/json' | 'application/octet-stream';
 
 export class TypeRenderer {
     private overridePolicy: OverridePolicy;
+    private config: ConfigSchema;
 
-    constructor({ overridePolicy }: { overridePolicy: OverridePolicy }) {
-        this.overridePolicy = overridePolicy;
+    private parsedSchema: ParsedSchema;
+
+    private pathsToEndpointsTypeCache = new Map<string, Partial<Record<HttpMethod, OperationTypes>>>();
+
+    public getTypesForRequest(path: string, method: HttpMethod) {
+        return this.pathsToEndpointsTypeCache.get(path)?.[method.toLowerCase() as HttpMethod];
     }
 
-    convertToJsonSchema(schema: any) {
-        const res = toJsonSchema(schema, {
-            cloneSchema: false,
-            strictMode: false,
-            keepNotSupported: ['nullable'],
-            beforeTransform: schema => {
-                if (!('type' in schema)) return schema;
+    private jsonSchemaRenderer = new JsonSchemaRenderer(
+        // eslint-disable-next-line unicorn/consistent-function-scoping
+        refPath => {
+            const $ref = resolveRefPath(refPath);
 
-                if (schema.type === 'int') {
-                    schema.type = 'integer';
+            const result = this.deref({ $ref });
+            delete result.$ref;
+
+            return result;
+        },
+        typeNameFunction,
+        // eslint-disable-next-line unicorn/consistent-function-scoping
+        path => `../../${path}`
+    );
+
+    private typeInfoImportsResolver(root: TypeInfo, currentFile: string) {
+        const result: ImportData[] = [];
+        const importableTypes = new Set(['object', 'enum']);
+
+        const traverse = (cur: TypeInfo) => {
+            const isExternal = cur.importFrom !== currentFile;
+            const isImportable = importableTypes.has(cur.type);
+
+            const isExternalImport = isExternal && isImportable;
+
+            // eslint-disable-next-line unicorn/no-negated-condition
+            if (!isExternalImport) {
+                for (const dep of cur.deps) {
+                    traverse(dep);
                 }
+            } else {
+                result.push({
+                    // two back because [group]/[types]/[file].ts
+                    from: '../../' + cur.importFrom.replace('.ts', ''),
+                    name: cur.name,
+                });
+            }
+        };
 
-                if (Array.isArray(schema.type)) {
-                    if (schema.type.includes('null'))
-                        return {
-                            type: schema.type.find(e => e !== 'null'),
-                            nullable: true,
-                        };
-                    throw new Error('Invalid type tuple: ' + JSON.stringify(schema));
+        traverse(root);
+
+        return result;
+    }
+
+    private refToTypesFile(ref: string) {
+        const [dir, file] = refToPath(ref);
+
+        const isEnum = dir.endsWith('enum/') || dir.endsWith('enums/');
+        const suffix = isEnum ? '' : 'types/';
+
+        return `${dir}${suffix}${file}.ts`;
+    }
+
+    renderJsonSchema(description: string, type: ContentType, refPath: string[], schema: Record<string, any>): TypeInfo {
+        const typeName = typeNameFunction(refPath);
+
+        schema.description = description;
+
+        if (type === 'multipart/form-data') {
+            return {
+                $ref: null,
+                definition: {
+                    description: `/**\n* ${description}\n **/\n`,
+                    code: `export type ${typeName} = FormData;`,
+                },
+                deps: [],
+                importFrom: this.refToTypesFile(resolveRefPath(refPath)),
+                name: typeName,
+                refPath,
+                type: 'object',
+                extraImports: [],
+            };
+        }
+
+        if (type === 'application/octet-stream') {
+            return {
+                $ref: null,
+                definition: {
+                    description: `/**\n* ${description}\n **/\n`,
+                    code: `export type ${typeName} = strimg;`,
+                },
+                deps: [],
+                importFrom: this.refToTypesFile(resolveRefPath(refPath)),
+                name: typeName,
+                refPath,
+                type: 'object',
+                extraImports: [],
+            };
+        }
+
+        const element = this.jsonSchemaRenderer.render(schema, refPath);
+
+        const traverse = (rendered: RenderElement): TypeInfo => {
+            const $ref = resolveRefPath(rendered.refPath);
+            const importFrom = this.refToTypesFile($ref!);
+
+            const newTree: TypeInfo = { ...rendered, $ref, importFrom, deps: [] };
+
+            if (rendered.deps && rendered.deps.length > 0) {
+                newTree.deps = rendered.deps.map(child => traverse(child));
+            }
+
+            return newTree;
+        };
+
+        const result = traverse(element);
+
+        return result;
+    }
+
+    renderRefJsonSchema(description: string, type: ContentType, refs: string[]): TypeInfo {
+        const $ref = resolveRefPath(refs);
+
+        try {
+            const obj = this.parsedSchema.refs.get($ref) as Record<string, any>;
+
+            return this.renderJsonSchema(description, type, refs, obj);
+        } catch (error) {
+            if ($ref.startsWith('index.yaml#')) {
+                const schema = $ref.split('#/')[1];
+                const root = this.parsedSchema.refs.get('') as Record<string, any>;
+
+                if (root.components && root.components.schemas && schema in root.components.schemas) {
+                    const obj = root.components.schemas[schema] as Record<string, any>;
+                    return this.renderJsonSchema(description, type, refs, obj);
                 }
+            }
 
-                return schema as any;
-            },
-        });
-        delete res.$schema;
-        return res;
+            console.error(
+                `incorrect openapi schema. You try to resolve '${$ref}' with type ${type}, but its not in schemas`
+            );
+            throw error;
+        }
+    }
+
+    constructor({
+        overridePolicy,
+        parsedSchema,
+        config,
+    }: {
+        overridePolicy: OverridePolicy;
+        parsedSchema: ParsedSchema;
+        config: ConfigSchema;
+    }) {
+        this.overridePolicy = overridePolicy;
+        this.parsedSchema = parsedSchema;
+        this.config = config;
+    }
+
+    deref<TCast>($refObj: any) {
+        if (typeof $refObj !== 'object' || !$refObj) throw new Error('$refObj must be an object');
+
+        if ('$ref' in $refObj) {
+            if (!$refObj.$ref) {
+                throw new Error('$ref must have value');
+            }
+
+            const $ref = ($refObj.$ref! as string).replace('../index.yaml#', 'index.yaml#');
+
+            return {
+                ...(this.parsedSchema.refs.get($ref) as never as TCast & {
+                    $ref?: string;
+                }),
+                $ref: $refObj.$ref,
+            };
+        }
+
+        return $refObj as never as TCast & { $ref?: string };
     }
 
     extractResponseJsonSchema(schema: JSONSchema4) {
@@ -65,243 +257,213 @@ export class TypeRenderer {
         return { data, meta };
     }
 
-    private async generateRequestType(operation: AugmentedOperation, imports: ImportData[]) {
-        const types = operation.typeNames;
-        const isWithParam = operation.hasPathParams;
+    private renderRequest(
+        groupName: string,
+        operationInfo: OpenAPIV3.PathItemObject,
+        method: OpenAPIV3.OperationObject
+    ) {
+        if (!method.requestBody) return;
 
-        if (operation.request) {
-            const requestBody = operation.original.requestBody as RequestBodyObject;
-            const content = requestBody.content as Record<RequestContentType, MediaTypeObject>;
+        const { content, $ref } = this.deref<OpenAPIV3.RequestBodyObject>(method.requestBody);
+        if (!content) return;
 
-            if (content['application/json'] && content['multipart/form-data'])
-                throw new Error(
-                    'Invalid operation has both json and multipart content in request body: ' +
-                        JSON.stringify(operation)
-                );
+        const valid = ['application/json', 'multipart/form-data'] as const;
 
-            // Form-data always resolves to FormData
-            if (content['multipart/form-data']?.schema) {
-                return `export type ${types.request} = {
-                        formData: FormData;
-                        ${isWithParam ? 'id: number | string;' : ''}
-                    }`;
-            }
-
-            // If reference, just import!
-            if (operation.request.refInfo) {
-                imports.push({
-                    from: operation.request.refInfo.importPath.replace('.ts', ''),
-                    name: operation.request.refInfo.name,
-                });
-                return `export type ${types.request} = ${operation.request.refInfo?.name};`;
-            }
-
-            if (content['application/json']?.schema && types.request) {
-                const jsonSchema = this.convertToJsonSchema(operation.request.jsonSchema);
-
-                const ts = await compileTypescript(jsonSchema, types.request, {
-                    bannerComment: '',
-                    additionalProperties: false,
-                });
-
-                return ts;
-            }
-        } else if (isWithParam && types.request) {
-            return `export type ${types.request} = { id: number | string };`;
-        }
-
-        // console.error('warn: No request/path params found for operation:', operation);
-        return '';
-    }
-
-    private async generateResponseType(operation: AugmentedOperation, imports: ImportData[]) {
-        if (operation.responses.length === 0)
-            throw new Error('Invalid operation: ' + JSON.stringify(operation) + '. It has no responses.');
-
-        const types = operation.typeNames;
-
-        const datas: JSONSchema4[] = [];
-        const metas: JSONSchema4[] = [];
-
-        const refed: string[] = [];
-
-        for (const response of operation.responses) {
-            // If reference, just import!
-            if (response.refInfo) {
-                imports.push({
-                    from: response.refInfo.importPath.replace('.ts', ''),
-                    name: response.refInfo.name,
-                });
-
-                if (!refed.includes(response.refInfo.name)) refed.push(response.refInfo.name);
-                continue;
-            }
-
-            if (response.contentType === 'application/octet-stream') {
-                datas.length = 0;
-                metas.length = 0;
-
-                refed.push('string');
-
-                break;
-            }
-
-            if (response.contentType === 'application/json') {
-                const jsonSchema = this.convertToJsonSchema(response.jsonSchema);
-
-                try {
-                    const { data, meta } = this.extractResponseJsonSchema(jsonSchema);
-                    if (data) datas.push(data);
-                    if (meta) metas.push(meta);
-                } catch {
-                    console.error(
-                        `${kleur.red(
-                            '[TypesGenerator] Формат возвращаемых данных ошибочно отличается от шаблона '
-                        )}${kleur.red().bold(operation.path)}`,
-                        `Используем взамен ${kleur.cyan(`type ${types.response} = object;`)}`
-                    );
-
-                    return `export type ${types.response} = object;`;
-                }
-            } else {
-                console.log(
-                    '[typegen/Parser]',
-                    operation.path,
-                    'has invalid response',
-                    kleur.italic(response.code),
-                    ': unsupported content-type',
-                    kleur.red(response.contentType)
-                );
-            }
-
-            // TODO: check and test
-            // return `export type ${types.response} = CommonResponse<any>;`;
-        }
-
-        // Pure referenced output
-        if (datas.length === 0 || metas.length === 0) {
-            return `export type ${types.response} = ${refed.join(' | ')};\n`;
-        }
-
-        const dataCode = await compileTypescript(
-            {
-                oneOf: datas,
-            },
-            types.responseData!,
-            {
-                bannerComment: '',
-                additionalProperties: false,
-            }
-        );
-
-        const metaCode = await compileTypescript(
-            {
-                oneOf: metas,
-            },
-            types.responseMeta!,
-            {
-                bannerComment: '',
-                additionalProperties: false,
-            }
-        );
-
-        const result = `
-        ${dataCode}
-        ${metaCode}
-        export type ${types.response} = CommonResponse<${types.responseData}, ${types.responseMeta}>;
-        `;
-
-        return result;
-    }
-
-    async renderCommonDependencies(operations: AugmentedOperation[]) {
-        const dependencies = operations
-            .flatMap(e => [...e.responses.map(r => r.refInfo), ...(e.request?.refInfo ? [e.request.refInfo] : [])])
-            .filter(Boolean) as RefSchemaData[];
-
-        const groupedByPath = new Map<string, RefSchemaData[]>();
-        const seenObjects = new Set<RefSchemaData>();
-
-        for (const dep of dependencies) {
-            if (!groupedByPath.has(dep.savedPath)) {
-                groupedByPath.set(dep.savedPath, []);
-            }
-
-            if (seenObjects.has(dep)) continue;
-            seenObjects.add(dep);
-
-            groupedByPath.get(dep.savedPath)!.push(dep);
-        }
-
-        const folder = 'output/';
-        await mkdir(`${folder}commonTypes`, { recursive: true });
-
-        await Promise.all(
-            [...groupedByPath.keys()].map(async pathGroup => {
-                const deps = groupedByPath.get(pathGroup)!;
-
-                const project = new Project();
-                const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
-                let allCodes = '';
-
-                for (const dep of deps) {
-                    const jsonSchema = this.convertToJsonSchema(dep.schema);
-
-                    // eslint-disable-next-line no-await-in-loop
-                    const ts = await compileTypescript(jsonSchema, dep.name, {
-                        bannerComment: '',
-                        additionalProperties: false,
-                    });
-
-                    allCodes += ts + '\n';
+        for (const type of valid) {
+            if (content[type]) {
+                if (!content[type].schema) {
+                    console.error(kleur.red('no schema for request body'), type, groupName, method.operationId);
                 }
 
-                const content = sourceFile.getFullText() + '\n' + allCodes;
-                await writeFile(`${folder}${pathGroup}`, content);
-            })
-        );
+                const description =
+                    method.summary || method.description || operationInfo.summary || operationInfo.description || '';
+
+                if ('$ref' in content[type].schema!) {
+                    const res = this.renderRefJsonSchema(description, type, [
+                        operationInfo.$ref,
+                        $ref,
+                        (content[type].schema! as any).$ref,
+                    ]);
+
+                    return res;
+                }
+
+                const res = this.renderJsonSchema(description, type, [operationInfo.$ref, $ref], content[type].schema!);
+                return res;
+            }
+        }
     }
 
-    async render(group: string, operations: AugmentedOperation[]) {
-        const folder = `output/${group}`;
-        await mkdir(folder, { recursive: true });
-        const filePath = `${folder}/types.ts`;
+    private renderResponse(
+        groupName: string,
+        operationInfo: OpenAPIV3.PathItemObject,
+        method: OpenAPIV3.OperationObject
+    ) {
+        if (!method.responses) return;
 
-        const isExisting = existsSync(filePath);
+        const codes = Object.keys(method.responses);
 
-        if (this.overridePolicy === 'skip' && isExisting) {
-            console.log(kleur.italic(kleur.bgWhite(kleur.black(group))), 'типы пропущены как существующие');
-            return;
+        const description =
+            method.summary || method.description || operationInfo.summary || operationInfo.description || '';
+
+        for (const code of codes) {
+            const { content, $ref } = this.deref<OpenAPIV3.ResponseObject>(method.responses[code]);
+            if (!content) continue;
+
+            const valid = ['application/json', 'application/octet-stream'] as const;
+
+            for (const type of valid) {
+                if (!content[type]) continue;
+
+                if ('$ref' in content[type].schema!) {
+                    const res = this.renderRefJsonSchema(description, type, [
+                        operationInfo.$ref,
+                        $ref,
+                        (content[type].schema! as any).$ref,
+                    ]);
+
+                    return res;
+                }
+
+                const res = this.renderJsonSchema(description, type, [operationInfo.$ref, $ref], content[type].schema!);
+                return res;
+            }
+        }
+    }
+
+    /**
+     * Хранит в себе готовые к записи в файл данные - строки кода и импорты
+     */
+    private filesToContent: Record<
+        string,
+        {
+            codeLines: Set<string>;
+            imports: ImportData[];
+        }
+    > = {};
+
+    clear() {
+        this.filesToContent = {};
+    }
+
+    upsertFileContent(file: string) {
+        if (!this.filesToContent[file])
+            this.filesToContent[file] = {
+                codeLines: new Set<string>(),
+                imports: [],
+            };
+
+        return this.filesToContent[file];
+    }
+
+    renderTypeToFile(req: TypeInfo) {
+        const traverse = (typeInfo: TypeInfo) => {
+            const file = this.upsertFileContent(typeInfo.importFrom);
+
+            if (typeInfo.deps) {
+                for (const dep of typeInfo.deps) traverse(dep);
+                file.imports.push(...this.typeInfoImportsResolver(typeInfo, typeInfo.importFrom));
+            }
+
+            if (typeInfo.extraImports) {
+                file.imports.push(...typeInfo.extraImports);
+            }
+
+            if (typeInfo.definition.code && !file.codeLines.has(typeInfo.definition.code)) {
+                file.codeLines.add(typeInfo.definition.description);
+                file.codeLines.add(typeInfo.definition.code);
+            }
+
+            return typeInfo;
+        };
+
+        traverse(req);
+    }
+
+    upsertPathToEndpointTypeCache(path: string) {
+        if (!this.pathsToEndpointsTypeCache.has(path)) {
+            this.pathsToEndpointsTypeCache.set(path, {});
         }
 
-        const project = new Project();
-        const sourceFile = project.createSourceFile('types.ts', '', { overwrite: true });
+        return this.pathsToEndpointsTypeCache.get(path)!;
+    }
 
-        const imports: ImportData[] = [
-            {
-                from: '@api/common/types',
-                name: 'CommonResponse',
-            },
-        ];
+    async render() {
+        this.clear();
 
-        const contentWriter = new CodeBlockWriter();
+        const schema = this.parsedSchema.unrefedSchema;
 
-        await Promise.all(
-            operations.map(async operation => {
-                const request = await this.generateRequestType(operation, imports);
-                const response = await this.generateResponseType(operation, imports);
+        for (const path in schema.paths) {
+            const groupName = extractSegment(path)!;
 
-                contentWriter.write(request);
-                contentWriter.blankLine();
-                contentWriter.write(response);
-            })
-        );
+            const operationInfo = this.deref<OpenAPIV3.PathItemObject>(schema.paths[path]);
+            const httpMethods = Object.keys(operationInfo) as (HttpMethod | '$ref')[];
 
-        renderImports(sourceFile, imports);
-        sourceFile.formatText();
+            for (const httpMethod of httpMethods) {
+                if (httpMethod === '$ref') continue;
 
-        const content = sourceFile.getFullText() + '\n' + contentWriter.toString();
+                const method = operationInfo[httpMethod];
+                if (!method) continue;
 
-        await writeFile(filePath, content);
+                const endpointTypes = this.upsertPathToEndpointTypeCache(path);
+
+                if (!endpointTypes[httpMethod]) {
+                    endpointTypes[httpMethod] = {};
+                }
+
+                const req = this.renderRequest(groupName, operationInfo, method);
+                if (req) {
+                    this.renderTypeToFile(req);
+
+                    endpointTypes[httpMethod]!.request = {
+                        ...req,
+                        deps: [],
+                        extraImports: [],
+                        definition: { code: '', description: '' },
+                    };
+                }
+
+                const res = this.renderResponse(groupName, operationInfo, method);
+                if (res) {
+                    this.renderTypeToFile(res);
+                    endpointTypes[httpMethod]!.response = {
+                        ...res,
+                        deps: [],
+                        extraImports: [],
+                        definition: { code: '', description: '' },
+                    };
+                }
+            }
+        }
+
+        const filePaths = Object.keys(this.filesToContent);
+
+        const tasks = filePaths.map(async path => {
+            const content = this.filesToContent[path];
+            const project = new Project();
+            const sourceFile = project.createSourceFile('types.ts', '', {
+                overwrite: true,
+            });
+
+            renderImports(sourceFile, content.imports);
+
+            const fileContent = sourceFile.getFullText() + '\n' + [...content.codeLines.values()].join('\n') + '\n';
+            const filePath = join(this.config.output_path, path);
+
+            const folder = dirname(filePath);
+            await mkdir(folder, { recursive: true });
+
+            const isExisting = existsSync(filePath);
+            if (this.overridePolicy === 'skip' && isExisting) {
+                console.log(kleur.italic(kleur.bgWhite(kleur.black(path))), 'типы пропущены как существующие');
+                return;
+            }
+
+            return writeFile(filePath, fileContent);
+        });
+
+        await Promise.all(tasks);
+
+        await writeFile(join(this.config.output_path, 'helpers.ts'), this.jsonSchemaRenderer.getHelpersCode());
     }
 }

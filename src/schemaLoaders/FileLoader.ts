@@ -3,7 +3,7 @@ import { parse } from '@stoplight/yaml';
 import { readFile } from 'node:fs/promises';
 import { OpenAPI3 } from 'openapi-typescript';
 
-import { ISchemaLoader } from '../types';
+import { ISchemaLoader } from '../common/types';
 
 const valueOrArrayElement = (value: any) => {
     if (Array.isArray(value) && value.length > 0) return value[0];

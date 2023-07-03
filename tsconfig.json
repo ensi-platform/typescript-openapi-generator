@@ -19,6 +19,9 @@
         "skipLibCheck": true,
         "strict": true
     },
-    "include": ["src"],
+    "ts-node": {
+        "files": true
+    },
+    "include": ["src", "global.d.ts"],
     "exclude": ["node_modules"]
 }
