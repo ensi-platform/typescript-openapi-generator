@@ -90,10 +90,15 @@ function removeTrailingSlash(str: string): string {
 
 function extractInvalidatePrefix(oldPath: string): string {
     const path = removeTrailingSlash(oldPath);
-    if (path.split('/').length < 2) return path;
 
-    const lastSlashIndex = path.lastIndexOf('/');
-    return path.slice(0, lastSlashIndex);
+    const lastIndexOfColon = path.lastIndexOf(':');
+    if (lastIndexOfColon !== -1) return path.slice(0, lastIndexOfColon);
+
+    if (path.split('/').length <= 3) return path;
+
+    const lastIndexOfSlash = path.lastIndexOf('/');
+
+    return path.slice(0, lastIndexOfSlash);
 }
 
 const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
