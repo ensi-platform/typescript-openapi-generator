@@ -1,9 +1,9 @@
 # typescript-openapi-generator
 
-`typescript-openapi-generator` это пакет, который генерирует файлы с typescript определениями и файлы с хуками [react-query](https://tanstack.com/query) из определений [OpenAPI](https://spec.openapis.org/oas/v3.1.0) для работы с API в рамках платформы [ENSI](ensi.tech).
+`typescript-openapi-generator` это пакет, который генерирует файлы с typescript определениями и файлы с хуками [react-query](https://tanstack.com/query) из файлов спецификаций [OpenAPI](https://spec.openapis.org/oas/v3.1.0) для работы с API в рамках платформы [ENSI](https://ensi.tech).
 
 ## Для кого этот пакет нужен?
-Для frontend разработчиков, работающих с [ENSI](ensi.tech).
+Для frontend разработчиков, работающих с [ENSI](https://ensi.tech).
 
 ## Для чего этот пакет нужен?
 
