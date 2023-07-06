@@ -15,11 +15,11 @@
 
 1. Установите пакет с помощью npm
 ```
-npm i -g @ensi/typescript-openapi-generator
+npm i -g @ensi-platform/typescript-openapi-generator
 ```
 или yarn
 ```
-yarn global add @ensi/typescript-openapi-generator
+yarn global add @ensi-platform/typescript-openapi-generator
 ```
 
 2. Перейдите в существующий, или создайте проект [admin-gui-frontend](https://gitlab.com/greensight/ensi/admin-gui/admin-gui-frontend/)

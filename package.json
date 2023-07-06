@@ -1,5 +1,5 @@
 {
-    "name": "@ensi/typescript-openapi-generator",
+    "name": "@ensi-platform/typescript-openapi-generator",
     "version": "1.0.0",
     "description": "Generate TS types and react-query hooks from OpenAPIV3 specification\nFor more information use: https://docs.ensi.tech/",
     "author": "Ensi",

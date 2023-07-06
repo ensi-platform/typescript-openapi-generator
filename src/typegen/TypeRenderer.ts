@@ -146,7 +146,7 @@ export class TypeRenderer {
                 $ref: null,
                 definition: {
                     description: `/**\n* ${description}\n **/\n`,
-                    code: `export type ${typeName} = strimg;`,
+                    code: `export type ${typeName} = string;`,
                 },
                 deps: [],
                 importFrom: this.refToTypesFile(resolveRefPath(refPath)),

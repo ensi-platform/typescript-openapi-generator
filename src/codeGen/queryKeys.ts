@@ -87,7 +87,6 @@ export function generateQueryKeysConstant(schema: QueryKeysSchema, sourceFile: S
 }
 
 export function createCallQueryKey(operation: AugmentedOperation, type: 'query' | 'mutation') {
-    console.log(type, operation);
     const isHavePathParams = operation.hasPathParams;
 
     const keyPrefix = type === 'mutation' ? 'data?.' : '';
