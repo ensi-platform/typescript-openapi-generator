@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import { resolveRefPath } from '../common/helpers';
 
 /* eslint-disable guard-for-in */
@@ -5,10 +6,12 @@ type DerefFunction = (refPath: string[]) => object;
 type ResolveHelperDependency = (path: string) => string;
 export type InterfaceNameFunction = (refPath: string[], suffix?: string) => string;
 
+type VisitedKey<Ref extends string = string, Suffix extends string = string> = `${Ref}_${Suffix}`;
+
 type SchemaProcessor = (
     currentSchema: any,
     currentRefPath: string[],
-    visitedRefs: Map<string, RenderElement>,
+    visitedRefs: Map<VisitedKey, RenderElement>,
     suffix?: string
 ) => RenderElement;
 
@@ -21,9 +24,11 @@ export type RenderElement = {
     type: 'literal' | 'enum' | 'combination' | 'array' | 'object' | 'circular';
     refPath: string[];
     name: string;
+    usedSuffix: string | undefined;
     definition: { description: string; code: string };
     deps: RenderElement[];
     extraImports: ImportStatement[];
+    needsParenthesis: boolean;
 };
 
 export default class JsonSchemaRenderer {
@@ -56,7 +61,21 @@ export default class JsonSchemaRenderer {
     }
 
     public getHelpersCode() {
-        return `export type Prettify<T> = {
+        return `
+        export interface CommonResponseMeta {
+            pagination?: {
+                limit: number;
+                offset: number;
+                total: number;
+            };
+        }
+        
+        export interface CommonResponse<T, M = CommonResponseMeta> {
+            data: T;    
+            meta: M;
+        }
+        
+        export type Prettify<T> = {
             [K in keyof T]: T[K];
         }`;
     }
@@ -69,7 +88,55 @@ export default class JsonSchemaRenderer {
         return result;
     }
 
-    renderEnum(typeName: string, currentRefPath: string[], currentSchema: any, description: string): RenderElement {
+    renderCommonResponse(
+        processSchema: SchemaProcessor,
+        visitedRefs: Map<VisitedKey, RenderElement>,
+        typeName: string,
+        currentRefPath: string[],
+        currentSchema: any,
+        description: string,
+        usedSuffix?: string
+    ): RenderElement {
+        const dataSchema = currentSchema.properties.data;
+        const metaSchema = currentSchema.properties.meta;
+
+        const isDataRefed = '$ref' in dataSchema;
+        const isMetaRefed = '$ref' in metaSchema;
+
+        const dataType = processSchema(dataSchema, currentRefPath, visitedRefs, isDataRefed ? undefined : 'data');
+        const metaType = processSchema(metaSchema, currentRefPath, visitedRefs, isMetaRefed ? undefined : 'meta');
+
+        const deps: RenderElement[] = [dataType, metaType];
+
+        const helperPath = this.resolveHelperDependency('helpers');
+
+        return {
+            definition: {
+                description,
+                code: `export type ${typeName} = CommonResponse<${dataType.name}, ${metaType.name}>;`,
+            },
+            deps,
+            extraImports: [
+                {
+                    from: helperPath,
+                    name: 'CommonResponse',
+                },
+            ],
+            name: typeName,
+            needsParenthesis: false,
+            refPath: currentRefPath,
+            type: 'object',
+            usedSuffix,
+        };
+    }
+
+    renderEnum(
+        typeName: string,
+        currentRefPath: string[],
+        currentSchema: any,
+        description: string,
+        usedSuffix?: string
+    ): RenderElement {
         const schemaEnum = currentSchema.enum as (string | number)[];
         const enumVarNames = currentSchema['x-enum-varnames'];
 
@@ -92,6 +159,8 @@ export default class JsonSchemaRenderer {
 
         return {
             type: 'enum',
+            usedSuffix,
+            needsParenthesis: false,
             name: typeName,
             definition: { code, description },
             deps: [],
@@ -100,7 +169,6 @@ export default class JsonSchemaRenderer {
         };
     }
 
-    // eslint-disable-next-line max-params
     renderCombination(
         combinationKey: '|' | '&',
         typeName: string,
@@ -108,8 +176,9 @@ export default class JsonSchemaRenderer {
         schema: any,
         currentSchema: any,
         currentRefPath: string[],
-        visitedRefs: Map<string, RenderElement>,
-        processSchema: SchemaProcessor
+        visitedRefs: Map<VisitedKey, RenderElement>,
+        processSchema: SchemaProcessor,
+        usedSuffix?: string
     ): RenderElement {
         let renderAsInline = currentSchema !== schema;
         const arr = (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) as any[];
@@ -119,7 +188,12 @@ export default class JsonSchemaRenderer {
         }
 
         const results = arr.map((subSchema: any) =>
-            processSchema(subSchema, currentRefPath, visitedRefs, subSchema.$ref ? undefined : 'Combination')
+            processSchema(
+                subSchema,
+                [...currentRefPath, subSchema.$ref],
+                visitedRefs,
+                subSchema.$ref ? undefined : 'Combination'
+            )
         );
 
         const name = results.map(e => e.name).join(` ${combinationKey} `);
@@ -132,9 +206,11 @@ export default class JsonSchemaRenderer {
         const helperPath = this.resolveHelperDependency('helpers');
 
         const common = {
-            type: 'combination',
+            type: results.length > 1 ? 'combination' : 'literal',
             deps: results.filter(e => e.type !== 'literal'),
             refPath: currentRefPath,
+            usedSuffix,
+            needsParenthesis: renderAsInline,
         } as const;
 
         if (renderAsInline) {
@@ -144,7 +220,7 @@ export default class JsonSchemaRenderer {
                     code: '',
                     description: '',
                 },
-                name: name,
+                name,
                 extraImports: [],
             };
         }
@@ -189,14 +265,14 @@ export default class JsonSchemaRenderer {
         return `${prefix}${schema.example}${suffix}`;
     }
 
-    // eslint-disable-next-line max-params
     renderObject(
         typeName: string,
         description: string,
         currentSchema: any,
         currentRefPath: string[],
-        visitedRefs: Map<string, RenderElement>,
-        processSchema: SchemaProcessor
+        visitedRefs: Map<VisitedKey, RenderElement>,
+        processSchema: SchemaProcessor,
+        usedSuffix?: string
     ): RenderElement {
         if (currentSchema.type === undefined) {
             // console.warn('[!] warn: schema without type found at', currentRefPath);
@@ -207,14 +283,35 @@ export default class JsonSchemaRenderer {
         let code = `export interface ${typeName} {\n`;
 
         let isKeysWritten = false;
+
+        const propKeys = Object.keys(currentSchema.properties || {});
+        const endsWithResponse = typeName.endsWith('Response');
+
+        if (endsWithResponse && propKeys.includes('data') && propKeys.includes('meta')) {
+            const result = this.renderCommonResponse(
+                processSchema,
+                visitedRefs,
+                typeName,
+                currentRefPath,
+                currentSchema,
+                description,
+                usedSuffix
+            );
+            this.namedCache.set(typeName, result.definition.code);
+
+            return result;
+        }
+
+        const required = Array.isArray(currentSchema.required) ? (currentSchema.required as any[]) : [];
+
         for (const key in currentSchema.properties) {
             isKeysWritten = true;
 
             const propertySchema = currentSchema.properties[key];
             // const propertyRefPath = [...currentRefPath, '[properties]', key];
+            const isOptional = propertySchema.nullable === true || !required.includes(key);
 
             const isRefed = '$ref' in propertySchema;
-
             const element = processSchema(propertySchema, currentRefPath, visitedRefs, isRefed ? undefined : key);
 
             const shouldEscapeKey = !/^[$A-Z_a-z][\w$]*$/.test(key);
@@ -230,8 +327,6 @@ export default class JsonSchemaRenderer {
                     : '';
                 code += `  /**\n   * ${propertySchema.description}\n${exampleBlock}  */\n`;
             }
-
-            const isOptional = propertySchema.nullable || false;
 
             code += `  ${fullKey}${isOptional ? '?' : ''}: ${element.name};\n`;
 
@@ -253,9 +348,11 @@ export default class JsonSchemaRenderer {
                 description,
                 code,
             },
+            needsParenthesis: false,
             deps,
             refPath: currentRefPath,
             extraImports: [],
+            usedSuffix,
         };
     }
 
@@ -302,13 +399,14 @@ export default class JsonSchemaRenderer {
 
             const refPathStr = this.refPathToRef(currentRefPath);
 
-            if (visited.has(refPathStr)) {
-                return visited.get(refPathStr)!;
-            }
-
             const currentSchema = this.preTreatSchema(origCurrentSchema);
-
             const typeName = this.getInterfaceName(currentRefPath, suffix);
+
+            const hashKey = `${refPathStr}_${suffix}` as const;
+
+            if (visited.has(hashKey)) {
+                return visited.get(hashKey)!;
+            }
 
             const description = currentSchema.description ? `/**\n * ${currentSchema.description} */\n` : '';
 
@@ -316,13 +414,13 @@ export default class JsonSchemaRenderer {
                 const newRefPath = [...currentRefPath, currentSchema.$ref];
                 const newSchema = this.deref(newRefPath);
                 const result = processSchema(newSchema, newRefPath, visited, suffix);
-                visited.set(refPathStr, result);
+                visited.set(hashKey, result);
                 return result;
             }
 
             if (currentSchema.enum) {
-                const result = this.renderEnum(typeName, currentRefPath, currentSchema, description);
-                visited.set(refPathStr, result);
+                const result = this.renderEnum(typeName, currentRefPath, currentSchema, description, suffix);
+                visited.set(hashKey, result);
                 return result;
             }
 
@@ -335,9 +433,10 @@ export default class JsonSchemaRenderer {
                     currentSchema,
                     currentRefPath,
                     visited,
-                    processSchema
+                    processSchema,
+                    suffix
                 );
-                visited.set(refPathStr, result);
+                visited.set(hashKey, result);
                 return result;
             }
 
@@ -350,9 +449,10 @@ export default class JsonSchemaRenderer {
                     currentSchema,
                     currentRefPath,
                     visited,
-                    processSchema
+                    processSchema,
+                    suffix
                 );
-                visited.set(refPathStr, result);
+                visited.set(hashKey, result);
                 return result;
             }
 
@@ -365,15 +465,18 @@ export default class JsonSchemaRenderer {
                         currentSchema,
                         currentRefPath,
                         visited,
-                        processSchema
+                        processSchema,
+                        suffix
                     );
-                    visited.set(refPathStr, result);
+                    visited.set(hashKey, result);
                     return result;
                 }
 
                 case 'array': {
                     if (!currentSchema.items) {
                         const result: RenderElement = {
+                            needsParenthesis: false,
+                            usedSuffix: suffix,
                             type: 'array',
                             definition: {
                                 code: '',
@@ -384,33 +487,36 @@ export default class JsonSchemaRenderer {
                             extraImports: [],
                             name: 'any[]',
                         };
-                        visited.set(refPathStr, result);
+                        visited.set(hashKey, result);
                         return result;
                     }
 
                     const element = processSchema(currentSchema.items, currentRefPath, visited, suffix);
 
-                    const { name, type } = element;
+                    const { name, needsParenthesis, type } = element;
 
-                    const isComplexType = type === 'combination';
-                    const namePrefix = isComplexType ? '(' : '';
-                    const nameSuffix = isComplexType ? ')' : '';
+                    const namePrefix = needsParenthesis ? '(' : '';
+                    const nameSuffix = needsParenthesis ? ')' : '';
 
                     const result: RenderElement = {
+                        needsParenthesis: false,
                         type: 'array',
+                        usedSuffix: suffix,
                         definition: { code: '', description: '' },
                         name: `${namePrefix}${name}${nameSuffix}[]`,
                         deps: type === 'literal' ? [] : [element],
                         refPath: currentRefPath,
                         extraImports: [],
                     };
-                    visited.set(refPathStr, result);
+                    visited.set(hashKey, result);
                     return result;
                 }
 
                 case 'integer': {
                     return {
+                        needsParenthesis: false,
                         type: 'literal',
+                        usedSuffix: suffix,
                         definition: { code: '', description: '' },
                         name: 'number',
                         deps: [],
@@ -424,7 +530,9 @@ export default class JsonSchemaRenderer {
                 case 'number':
                 case 'string': {
                     return {
+                        needsParenthesis: false,
                         type: 'literal',
+                        usedSuffix: suffix,
                         definition: { code: '', description: '' },
                         name: currentSchema.type,
                         deps: [],
@@ -439,7 +547,7 @@ export default class JsonSchemaRenderer {
             }
         };
 
-        const set = new Map<string, RenderElement>();
+        const set = new Map<VisitedKey, RenderElement>();
         const element = processSchema(schema, rootRefPath, set);
 
         return element;

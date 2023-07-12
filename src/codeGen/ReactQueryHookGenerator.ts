@@ -59,7 +59,7 @@ export class ReactQueryHookGenerator {
         const args: string[] = [];
 
         if (withData) {
-            if (operation.isFileUpload) {
+            if (operation.isFileUpload && operation.hasPathParams) {
                 args.push('data: data.formData');
             } else {
                 args.push('data');
