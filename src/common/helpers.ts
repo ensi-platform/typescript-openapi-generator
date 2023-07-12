@@ -246,9 +246,10 @@ const hasYamlFileRegExp = /(\/[_a-z-]+\.yaml)/gi;
 
 export const resolveRefPath = (p: string[]) => {
     if (p.length === 0) return '';
-    const paths = p.filter(Boolean);
+    const repeatingPaths = p.filter(Boolean);
+    const paths = [...new Set(repeatingPaths).values()];
 
-    if (paths.length > 21) throw new Error('Possible circular dependency: more than 21 paths in ref resolver.');
+    if (paths.length > 21) throw new Error(`Possible circular dependency: more than 21 paths in ref resolver\n${paths.join(', ')}`);
 
     let lastAnchor = '';
     let prevHasFileIndex = -1;

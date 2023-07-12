@@ -84,7 +84,7 @@ export class TypeRenderer {
 
     private typeInfoImportsResolver(root: TypeInfo, currentFile: string) {
         const result: ImportData[] = [];
-        const importableTypes = new Set(['object', 'enum']);
+        const importableTypes = new Set(['object', 'enum', 'combination']);
 
         const traverse = (cur: TypeInfo) => {
             const isExternal = cur.importFrom !== currentFile;
@@ -128,6 +128,8 @@ export class TypeRenderer {
         if (type === 'multipart/form-data') {
             return {
                 $ref: null,
+                needsParenthesis: false,
+                usedSuffix: undefined,
                 definition: {
                     description: `/**\n* ${description}\n **/\n`,
                     code: `export type ${typeName} = FormData;`,
@@ -144,6 +146,8 @@ export class TypeRenderer {
         if (type === 'application/octet-stream') {
             return {
                 $ref: null,
+                needsParenthesis: false,
+                usedSuffix: undefined,
                 definition: {
                     description: `/**\n* ${description}\n **/\n`,
                     code: `export type ${typeName} = string;`,
@@ -196,7 +200,9 @@ export class TypeRenderer {
             }
 
             console.error(
-                `incorrect openapi schema. You try to resolve '${$ref}' with type ${type}, but its not in schemas`
+                `incorrect openapi schema. You try to resolve '${$ref}' (${refs.join(
+                    '->'
+                )}) with type ${type}, but its not in schemas`
             );
             throw error;
         }
@@ -279,17 +285,17 @@ export class TypeRenderer {
                     method.summary || method.description || operationInfo.summary || operationInfo.description || '';
 
                 if ('$ref' in content[type].schema!) {
-                    const res = this.renderRefJsonSchema(description, type, [
-                        operationInfo.$ref,
-                        $ref,
-                        (content[type].schema! as any).$ref,
-                    ]);
-
-                    return res;
+                    const newRefPath = [operationInfo.$ref, $ref, (content[type].schema! as any).$ref].filter(Boolean);
+                    return this.renderRefJsonSchema(description, type, newRefPath);
                 }
 
-                const res = this.renderJsonSchema(description, type, [operationInfo.$ref, $ref], content[type].schema!);
-                return res;
+                const newRefPath = [operationInfo.$ref, $ref].filter(Boolean);
+
+                if (method.operationId === 'searchAdminUserRoles') {
+                    console.log('no ref in there, the ref path is', newRefPath);
+                }
+
+                return this.renderJsonSchema(description, type, newRefPath, content[type].schema!);
             }
         }
     }
@@ -396,6 +402,8 @@ export class TypeRenderer {
         for (const path in schema.paths) {
             const groupName = extractSegment(path)!;
 
+            // if (!groupName.includes('units')) continue;
+
             const operationInfo = this.deref<OpenAPIV3.PathItemObject>(schema.paths[path]);
             const httpMethods = Object.keys(operationInfo) as (HttpMethod | '$ref')[];
 
@@ -404,6 +412,7 @@ export class TypeRenderer {
 
                 const method = operationInfo[httpMethod];
                 if (!method) continue;
+                // if (method.operationId !== 'searchAdminUserRoles') continue;
 
                 const endpointTypes = this.upsertPathToEndpointTypeCache(path);
 
