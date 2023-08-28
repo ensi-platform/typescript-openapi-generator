@@ -67,6 +67,7 @@
         "lodash.keyby": "^4.6.0",
         "node-fetch-commonjs": "^3.2.4",
         "openapi-typescript": "^6.1.0",
+        "p-queue-compat": "^1.0.223",
         "prettier": "^2.8.8",
         "ts-morph": "^18.0.0",
         "yaml": "^2.1.1",
