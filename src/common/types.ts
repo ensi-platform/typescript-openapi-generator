@@ -1,13 +1,5 @@
-import { $Refs, FileInfo, JSONSchema } from '@stoplight/json-schema-ref-parser';
+import { JSONSchema } from '@stoplight/json-schema-ref-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import { OpenAPI3 } from 'openapi-typescript';
-
-export interface ISchemaLoader {
-    loadIndex: () => Promise<OpenAPI3>;
-    readSubfile: (file: FileInfo, cb: (error: any, result: any) => any) => Promise<string>;
-
-    getType: () => 'file' | 'http';
-}
 
 export interface ImportData {
     from: string;
@@ -45,11 +37,3 @@ export interface RefSchemaData {
     schema: JSONSchema;
 }
 
-export type ParsedSchema = {
-    refs: $Refs;
-    derefedSchema: OpenAPIV3.Document;
-    unrefedSchema: OpenAPIV3.Document;
-    operations: AugmentedOperation[];
-    derefedPathGroupedOps: Record<string, AugmentedOperation[]>;
-    groups: string[];
-};

@@ -1,9 +1,8 @@
-import { $Refs } from '@stoplight/json-schema-ref-parser';
-import { camel, kebab } from 'case';
+import { kebab } from 'case';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
 import type { OpenAPIV3 } from 'openapi-types';
-import { PathItemObject, RequestBodyObject } from 'openapi-typescript';
+import { RequestBodyObject } from 'openapi-typescript';
 import { SourceFile } from 'ts-morph';
 
 import { ConfigSchema } from '../config/Config';
@@ -43,16 +42,9 @@ export const parseOpcode = (operation: OpenAPIV3.OperationObject | AugmentedOper
 export const SUPPORTED_REQUEST_CONTENT = ['multipart/form-data', 'application/json'] as const;
 export type RequestContentType = (typeof SUPPORTED_REQUEST_CONTENT)[number];
 
-export const hasFileUpload = (op: OpenAPIV3.OperationObject, refs: $Refs) => {
-    const unresolvedReqBody = op.requestBody;
-    if (!unresolvedReqBody) return false;
-
-    const reqBody =
-        '$ref' in unresolvedReqBody
-            ? (refs.get(
-                  unresolvedReqBody.$ref.replace('../index.yaml#/', 'index.yaml#/')
-              ) as never as RequestBodyObject)
-            : (unresolvedReqBody as RequestBodyObject);
+export const hasFileUpload = (op: OpenAPIV3.OperationObject) => {
+    const reqBody = op.requestBody as RequestBodyObject;
+    if (!reqBody) return false;
 
     const contentKey: RequestContentType = 'multipart/form-data';
     if (!(contentKey in reqBody.content)) return false;
@@ -146,18 +138,19 @@ const extractQueryParams = (req: OpenAPIV3.OperationObject) =>
         return e.in === 'query';
     }) as OpenAPIV3.ParameterObject[] | undefined) || [];
 
-export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs, config: ConfigSchema) => {
+export const removeTrailingLineBreak = (str: string) => {
+    if (str.endsWith('\n')) return str.slice(0, -1);
+    return str;
+};
+
+export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, config: ConfigSchema) => {
     const pathNames = Object.keys(paths);
 
     const allOperations = pathNames.flatMap(pathName => {
         const groupName = extractSegment(pathName)!;
-        const unresolvedOperationInfo = paths[pathName]!;
+        const operationInfo = paths[pathName]!;
 
-        const operationInfo = unresolvedOperationInfo.$ref
-            ? (refs.get(unresolvedOperationInfo?.$ref) as PathItemObject)
-            : (unresolvedOperationInfo as PathItemObject);
-
-        const httpMethods = Object.keys(operationInfo) as HttpMethod[];
+        const httpMethods = (Object.keys(operationInfo) as HttpMethod[]).filter(e => (e as any) !== '$reference');
 
         return httpMethods.map<AugmentedOperation>(httpMethod => {
             const reqInfo = operationInfo[httpMethod] as OpenAPIV3.OperationObject;
@@ -174,7 +167,7 @@ export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, refs: $Refs
                 pathSubstituted: replacePathVariables(pathName),
                 pathVariables: extractPathVariables(pathName),
                 invalidationTargets: [],
-                isFileUpload: hasFileUpload(reqInfo, refs),
+                isFileUpload: hasFileUpload(reqInfo),
                 hasPathParams: hasPathParams(reqInfo),
             };
         });
@@ -246,9 +239,11 @@ const hasYamlFileRegExp = /(\/[_a-z-]+\.yaml)/gi;
 
 export const resolveRefPath = (p: string[]) => {
     if (p.length === 0) return '';
-    const paths = p.filter(Boolean);
+    const repeatingPaths = p.filter(Boolean);
+    const paths = [...new Set(repeatingPaths).values()];
 
-    if (paths.length > 21) throw new Error('Possible circular dependency: more than 21 paths in ref resolver.');
+    if (paths.length > 21)
+        throw new Error(`Possible circular dependency: more than 21 paths in ref resolver\n${paths.join(', ')}`);
 
     let lastAnchor = '';
     let prevHasFileIndex = -1;
@@ -282,31 +277,17 @@ export const resolveRefPath = (p: string[]) => {
     return join(...result).replaceAll('\\', '/') + anchorString;
 };
 
-type Directory = string;
-type FileName = string;
-
-export const refToPath = (ref: string): [Directory, FileName] => {
-    const refWithoutAnchor = ref.split('#/')[0];
-
-    const fileName = basename(refWithoutAnchor);
-    const fileNameNoExt = fileName.replaceAll('.yaml', '');
-    const pathWithoutFile = refWithoutAnchor.replaceAll(fileName, '');
-
-    const path = join(pathWithoutFile).replaceAll('\\', '/');
-
-    const outDirectory =
-        path
-            .split('/')
-            .filter(e => e.toLowerCase() !== 'schemas')
-            .map(e => camel(e))[0] || 'common';
-
-    const outFileName = camel(fileNameNoExt);
-
-    return [`${outDirectory}/`, outFileName];
-};
-
 export const extractRefAnchor = (ref: string) => {
     return ref.split('#/')[1];
+};
+
+export const getStackTrace = () => {
+    try {
+        throw new Error('bla');
+    } catch (error: any) {
+        const lines = error.stack.split('\n') as string[];
+        return lines.map(e => e.trimStart().replace('at ', '')).slice(2);
+    }
 };
 
 export const runEslintAutoFix = async (directoryPath: string) => {
@@ -329,4 +310,15 @@ export const runEslintAutoFix = async (directoryPath: string) => {
             reject(err);
         });
     });
+};
+
+export const resolvePath = (path: string[]) => {
+    const totalPath = path.join('/');
+    try {
+        const url = new URL(totalPath, 'http://localhost:3000');
+        return url.pathname;
+    } catch {
+        console.error('Invalid path, cant process URL:', path);
+        return '';
+    }
 };

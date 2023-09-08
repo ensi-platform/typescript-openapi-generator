@@ -1,12 +1,11 @@
 // https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml
-import { FileInfo } from '@stoplight/json-schema-ref-parser';
 import { parse } from '@stoplight/yaml';
-import { resolve } from 'node:path';
 import { OpenAPI3 } from 'openapi-typescript';
 
 import { ApiClient } from '../common/ApiClient';
-import { ISchemaLoader } from '../common/types';
 import { ConfigSchema } from '../config/Config';
+import { Reference } from '../deref';
+import { ISchemaLoader } from './types';
 
 const valueOrArrayElement = (value: any) => {
     if (Array.isArray(value) && value.length > 0) return value[0];
@@ -15,23 +14,9 @@ const valueOrArrayElement = (value: any) => {
     return value;
 };
 
-const sanitizeUrl = (url: string, config: ConfigSchema) => {
-    if (config.is_unix) {
-        const cwd = process.cwd() + '/';
-        const parentCwd = resolve(cwd, '..');
-        const sanitized = url.split(cwd)[1];
-
-        if (!sanitized) {
-            return url.split(parentCwd)[1];
-        }
-
-        return sanitized;
-    }
-
-    if (url.includes('/json-schema-ref-parser/dist/')) return url.split('/json-schema-ref-parser/dist/')[1];
-    if (url.includes('/json-schema-ref-parser/')) return url.split('/json-schema-ref-parser/')[1];
-
-    return url;
+const removeLeadingSlash = (str: string) => {
+    if (str.startsWith('/')) return str.slice(1);
+    return str;
 };
 
 export class UrlLoader implements ISchemaLoader {
@@ -58,17 +43,31 @@ export class UrlLoader implements ISchemaLoader {
         return valueOrArrayElement(parsed) as OpenAPI3;
     }
 
-    public async readSubfile(file: FileInfo, cb: (error: any, result: any) => any) {
-        const portionUrl = `${this.url}/${sanitizeUrl(file.url, this.config)}`;
+    private requestCache = new Map<string, Promise<string>>();
+    private objectCache = new Map<string, Record<string, any>>();
 
-        try {
-            const res = await this.apiClient.fetch<string>(portionUrl);
-            cb(undefined, res);
-            return res;
-        } catch (error: any) {
-            console.error(error);
-            cb(error, undefined);
-            return '';
+    public async loadJson(absolutePath: Reference['absolutePath']) {
+        const url = `${this.url}/${removeLeadingSlash(absolutePath)}`;
+
+        if (this.objectCache.has(url)) return this.objectCache.get(url)!;
+
+        if (this.requestCache.has(url)) {
+            const res = await this.requestCache.get(url)!;
+            const obj = parse(res) as Record<string, any>;
+
+            this.objectCache.set(url, obj);
+
+            return obj;
         }
+
+        const request = this.apiClient.fetch<string>(url);
+        this.requestCache.set(url, request);
+
+        const res = await this.apiClient.fetch<string>(url);
+        const obj = parse(res) as Record<string, any>;
+
+        this.objectCache.set(url, obj);
+
+        return obj;
     }
 }

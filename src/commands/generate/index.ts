@@ -2,12 +2,14 @@
 import input from '@inquirer/input';
 import { checkbox, select } from '@inquirer/prompts';
 import { Args, Command } from '@oclif/core';
+import { OpenAPIV3 } from 'openapi-types';
 
 import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
-import { SchemaParser } from '../../common/SchemaParser';
+import { ParsedSchema, SchemaParser } from '../../common/SchemaParser';
 import { runEslintAutoFix } from '../../common/helpers';
-import { OverridePolicy, ParsedSchema } from '../../common/types';
+import { OverridePolicy } from '../../common/types';
 import { Config, ConfigSchema, Target } from '../../config/Config';
+import { traverseAndModify } from '../../deref';
 import { getSchemaLoaderForOrigin } from '../../schemaLoaders';
 import { TypeRenderer } from '../../typegen/TypeRenderer';
 
@@ -129,17 +131,45 @@ export default class Generate extends Command {
         const { openapi_path, targets, override_policies } = this.conf;
 
         const loader = getSchemaLoaderForOrigin(openapi_path, this.conf);
-        const indexDocument = await loader.loadIndex();
+        const indexDocument = (await loader.loadIndex()) as OpenAPIV3.Document;
         console.log('Загружен документ', indexDocument.info);
-
-        const schemaParser = new SchemaParser(this.conf, indexDocument, loader, p => {
-            console.log(`   ${p}% зависимостей...`);
-        });
-
         console.log('Загружаем зависимые компоненты...');
 
+        let lastPercent = 0;
+
+        await traverseAndModify(
+            indexDocument,
+            async ref => {
+                const result = await loader.loadJson(ref.absolutePath);
+
+                if (!ref.target) return result;
+
+                if (result.components && ref.target.startsWith('components')) {
+                    const target = ref.target.split('/').pop()!;
+                    // eslint-disable-next-line guard-for-in
+                    for (const key in result.components) {
+                        const component = result.components[key];
+
+                        if (target in component) return component[target];
+                    }
+                }
+
+                return result[ref.target];
+            },
+            progress => {
+                const percent = Number(progress.percent.toFixed(0));
+
+                if (percent - lastPercent < 10) return;
+                lastPercent = percent;
+
+                console.log(
+                    `   ${progress.completedRuns} / ${progress.totalRuns} (${percent}%) зависимостей загружено!`
+                );
+            }
+        );
+
+        const schemaParser = new SchemaParser(this.conf, indexDocument);
         this.parsedSchema = await schemaParser.parse();
-        console.log('   100% зависимостей загружено!');
 
         const { groups, derefedPathGroupedOps } = this.parsedSchema;
 
