@@ -17,8 +17,6 @@ const uncachedRefToTypesFile = (ref: Reference) => {
 
 
     const file = originalFile === 'enums' ? 'enums/index' : originalFile;
-    console.log(originalFile, file);
-
 
     const isEnum = dir.endsWith('enum') || dir.endsWith('enums') || file.toLowerCase().includes('enum');
     const suffix = isEnum ? '' : 'types/';

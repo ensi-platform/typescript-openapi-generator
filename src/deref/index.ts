@@ -37,6 +37,7 @@ export interface Reference {
     }
      */
     extraKey?: string;
+    inObjectNamed?: string;
 }
 
 export type DerefedObject<T> = (T extends Record<string, any>

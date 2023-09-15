@@ -270,6 +270,8 @@ export type RequireKeys<T extends object, K extends keyof T> =
         return `${prefix}${schema.example}${suffix}`;
     }
 
+    renderObjects = new WeakMap<object, RenderElement>();
+
     renderObject(
         typeName: string,
         description: string,
@@ -278,6 +280,25 @@ export type RequireKeys<T extends object, K extends keyof T> =
         processSchema: SchemaProcessor,
         demandedRefs: Set<string>
     ): RenderElement {
+        if (this.renderObjects.has(currentSchema)) {
+            this.renderObjects.delete(currentSchema);
+
+            return {
+                definition: {
+                    code: '',
+                    description: '',
+                },
+                deps: [],
+                extraImports: [],
+                name: reference.inObjectNamed || typeName,
+                type: 'object',
+                needsParenthesis: false,
+                reference,
+            };
+        }
+
+        this.renderObjects.set(currentSchema, null as any);
+
         const deps: RenderElement[] = [];
 
         let code = `export interface ${typeName} {\n`;
@@ -296,6 +317,8 @@ export type RequireKeys<T extends object, K extends keyof T> =
                 description,
                 demandedRefs
             );
+
+            this.renderObjects.set(currentSchema, result);
 
             return result;
         }
@@ -329,7 +352,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
             const currentReference = propertyReference || reference;
 
-            const newReference: Reference = { ...currentReference, extraKey: key };
+            const newReference: Reference = { ...currentReference, extraKey: key, inObjectNamed: typeName };
 
             const element = processSchema(propertySchema, newReference, demandedRefs);
             demandedRefs.delete(ref || '');
@@ -361,7 +384,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
         if (!isKeysWritten) {
             if (required.length > 0) {
-                return {
+                const element: RenderElement = {
                     type: 'objectOfRequired',
                     name: '',
                     definition: {
@@ -374,12 +397,15 @@ export type RequireKeys<T extends object, K extends keyof T> =
                     reference,
                     extraData: required,
                 };
+
+                this.renderObjects.set(currentSchema, element);
+                return element;
             }
 
             code = `export type ${typeName} = Record<string, any>;`;
         }
 
-        return {
+        const element: RenderElement = {
             type: 'object',
             name: typeName,
             definition: {
@@ -388,9 +414,15 @@ export type RequireKeys<T extends object, K extends keyof T> =
             },
             needsParenthesis: false,
             deps,
-            reference,
+            reference: {
+                ...reference,
+                inObjectNamed: typeName,
+            },
             extraImports: [],
         };
+
+        this.renderObjects.set(currentSchema, element);
+        return element;
     }
 
     normalizeSchema(schema: object) {
