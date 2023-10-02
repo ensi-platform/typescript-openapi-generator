@@ -105,7 +105,7 @@ export class ReactQueryHookGenerator {
 
         const dataParamInfo = {
             type: null as string | null,
-            definition: '',
+            definition: '()',
             hasRequestBody: Boolean(operation.original.requestBody),
         };
 
