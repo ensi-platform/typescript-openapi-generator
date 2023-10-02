@@ -548,7 +548,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
                     const element = processSchema(schema.items, reference, demandedRefs);
 
-                    const { name, needsParenthesis, type } = element;
+                    const { name, needsParenthesis } = element;
 
                     const namePrefix = needsParenthesis ? '(' : '';
                     const nameSuffix = needsParenthesis ? ')' : '';
@@ -558,7 +558,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
                         type: 'array',
                         definition: { code: '', description: '' },
                         name: `${namePrefix}${name}${nameSuffix}[]`,
-                        deps: type === 'literal' ? [] : [element],
+                        deps: [element],
                         reference,
                         extraImports: [],
                     };
