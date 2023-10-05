@@ -312,8 +312,10 @@ export class ReactQueryHookGenerator {
         for (const operation of flatOperations) {
             const queryParams = operation.queryParams;
 
-            if (queryParams.length > 0 && operation.isMutation)
-                throw new Error('Mutations with queryParams are not supported yet: check ' + JSON.stringify(operation));
+            if (queryParams.length > 0 && operation.isMutation) {
+                console.error('Mutations with queryParams are not supported yet: check operation', operation.path);
+                continue;
+            }
 
             const types = this.typeFetcher(operation);
 
@@ -331,15 +333,20 @@ export class ReactQueryHookGenerator {
                 return relativePath;
             };
 
+            if (!types.response) {
+                console.error('No response found in operation ' + operation.path + ', of group ' + operation.group);
+                continue;
+            }
+
             if (types.request) {
                 imports.push({
                     from: resolveImport(types.request.importFrom).replace('.ts', ''),
-                    name: types.request.name,
+                    name: types.request.name.replace('[]', ''),
                 });
             }
 
             imports.push({
-                from: resolveImport(types.response!.importFrom).replace('.ts', ''),
+                from: resolveImport(types.response.importFrom).replace('.ts', ''),
                 name: types.response!.name,
             });
 
