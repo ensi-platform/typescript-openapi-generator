@@ -47,7 +47,8 @@ export class UrlLoader implements ISchemaLoader {
     private objectCache = new Map<string, Record<string, any>>();
 
     public async loadJson(absolutePath: Reference['absolutePath']) {
-        const url = `${this.url}/${removeLeadingSlash(absolutePath)}`;
+        const safePath = removeLeadingSlash(absolutePath) || 'index.yaml';
+        const url = `${this.url}/${safePath}`;
 
         if (this.objectCache.has(url)) return this.objectCache.get(url)!;
 

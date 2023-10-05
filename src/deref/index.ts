@@ -63,11 +63,13 @@ function parseReference(value: any, relativeReference?: Reference): Reference {
         absolutePath = relativeReference.absolutePath;
         target = newTarget;
     } else {
-        const [filePath, anchor] = ref.split('.yaml');
+        const safeRef = ref.endsWith('.yaml') ? ref : `${ref}.yaml`;
+
+        const [filePath, anchor] = safeRef.split('.yaml');
         const file = `${filePath}.yaml`;
 
         absolutePath = path.join('', file).replaceAll('\\', '/');
-        target = anchor.split('#/')[1];
+        target = anchor?.split('#/')[1];
 
         const relativeFile = relativeReference?.absolutePath || '.';
         const baseName = path.basename(relativeFile);
