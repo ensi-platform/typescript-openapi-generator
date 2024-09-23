@@ -1,4 +1,3 @@
-/* eslint-disable guard-for-in */
 import { pascal } from 'case';
 import type { JSONSchema4 } from 'json-schema';
 import kleur from 'kleur';
@@ -9,18 +8,11 @@ import { OpenAPIV3 } from 'openapi-types';
 import { Project } from 'ts-morph';
 
 import { ParsedSchema } from '../common/SchemaParser';
-import {
-    HttpMethod,
-    extractRefAnchor,
-    extractSegment,
-    removeTrailingLineBreak,
-    renderImports,
-} from '../common/helpers';
-import { ImportData, OverridePolicy } from '../common/types';
+import { HttpMethod, extractRefAnchor, removeTrailingLineBreak, renderImports } from '../common/helpers';
+import { AugmentedOperation, ImportData, OverridePolicy } from '../common/types';
 import { ConfigSchema } from '../config/Config';
 import { Reference } from '../deref';
 import JsonSchemaRenderer, { InterfaceNameFunction, RenderElement } from './JsonSchemaRenderer';
-import refToTypesFile from './refToTypesFile';
 
 export type TypeInfo = Omit<RenderElement, 'deps'> & {
     importFrom: string;
@@ -117,7 +109,8 @@ export class TypeRenderer {
         description: string,
         type: ContentType,
         reference: Reference,
-        schema: Record<string, any>
+        schema: Record<string, any>,
+        storePath: string
     ): TypeInfo {
         const typeName = typeNameFunction(reference);
 
@@ -131,7 +124,7 @@ export class TypeRenderer {
                     code: `export type ${typeName} = FormData;`,
                 },
                 deps: [],
-                importFrom: refToTypesFile(reference),
+                importFrom: `${storePath}/types.ts`,
                 name: typeName,
                 reference,
                 type: 'object',
@@ -147,7 +140,7 @@ export class TypeRenderer {
                     code: `export type ${typeName} = string;`,
                 },
                 deps: [],
-                importFrom: refToTypesFile(reference),
+                importFrom: `${storePath}/types.ts`,
                 name: typeName,
                 reference,
                 type: 'object',
@@ -159,7 +152,9 @@ export class TypeRenderer {
 
         const traverse = (rendered: RenderElement): TypeInfo => {
             const ref = rendered.reference;
-            const importFrom = refToTypesFile(ref);
+
+            const isEnum = rendered.type === 'enum';
+            const importFrom = `${storePath}/${isEnum ? 'enums.ts' : 'types.ts'}`;
 
             const newTree: TypeInfo = { ...rendered, reference: ref, importFrom, deps: [] };
 
@@ -209,21 +204,16 @@ export class TypeRenderer {
         return { data, meta };
     }
 
-    private renderRequest(
-        rootReference: Reference,
-        groupName: string,
-        operationInfo: OpenAPIV3.PathItemObject,
-        method: OpenAPIV3.OperationObject
-    ) {
-        if (!method.requestBody) return;
+    private tryRenderAsRequest(rootReference: Reference, operation: AugmentedOperation) {
+        if (!operation.original.requestBody) return;
 
-        const { content } = method.requestBody as OpenAPIV3.RequestBodyObject;
+        const { content } = operation.original.requestBody as OpenAPIV3.RequestBodyObject;
 
         const valid = ['application/json', 'multipart/form-data'] as const;
         for (const type of valid) {
             if (content[type]) {
                 if (!content[type].schema) {
-                    console.error(kleur.red('no schema for request body'), type, groupName, method.operationId);
+                    console.error(kleur.red('no schema for request body'), type, operation.original.operationId);
                     continue;
                 }
 
@@ -231,25 +221,21 @@ export class TypeRenderer {
                 const reference = (value as any).$reference || rootReference;
 
                 const description =
-                    method.summary || method.description || operationInfo.summary || operationInfo.description || '';
+                    operation.original.summary || operation.original.description || operation.parentDescription || '';
 
-                return this.renderJsonSchema(description, type, reference, content[type].schema!);
+                return this.renderJsonSchema(description, type, reference, content[type].schema!, operation.storePath);
             }
         }
     }
 
-    private renderResponse(
-        rootReference: Reference,
-        groupName: string,
-        operationInfo: OpenAPIV3.PathItemObject,
-        method: OpenAPIV3.OperationObject
-    ) {
+    private tryRenderAsResponse(rootReference: Reference, operation: AugmentedOperation) {
+        const method = operation.original;
+
         if (!method.responses) return;
 
         const codes = Object.keys(method.responses);
 
-        const description =
-            method.summary || method.description || operationInfo.summary || operationInfo.description || '';
+        const description = method.summary || method.description || operation.parentDescription || '';
 
         for (const code of codes) {
             let reference = rootReference;
@@ -284,7 +270,7 @@ export class TypeRenderer {
                     reference = (schema as any).$reference;
                 }
 
-                return this.renderJsonSchema(description, type, reference, schema);
+                return this.renderJsonSchema(description, type, reference, schema, operation.storePath);
             }
         }
     }
@@ -323,17 +309,22 @@ export class TypeRenderer {
                 file.imports.push(...this.typeInfoImportsResolver(typeInfo, typeInfo.importFrom));
             }
 
-            // extraImports всегда относительны helpers
             if (typeInfo.extraImports) {
+                const currentFolder = join(this.config.output_path, dirname(typeInfo.importFrom));
+
                 file.imports.push(
                     ...typeInfo.extraImports.map(e => {
-                        const relativeImportPath = relative(
-                            dirname(typeInfo.importFrom),
-                            dirname(e.fromOutput)
-                        ).replaceAll('\\', '/');
+                        const importFile = join(this.config.output_path, e.fromOutput);
+                        const relativeImportPath = relative(currentFolder, importFile).replaceAll('\\', '/');
+
+                        let from = relativeImportPath.replaceAll('.ts', '');
+
+                        if (!from.startsWith('.')) {
+                            from = `./${from}`;
+                        }
 
                         return {
-                            from: `${relativeImportPath}/${basename(e.fromOutput)}`,
+                            from,
                             name: e.name,
                         };
                     })
@@ -364,10 +355,16 @@ export class TypeRenderer {
 
         const schema = this.parsedSchema.document;
 
-        for (const path in schema.paths) {
-            const groupName = extractSegment(path)!;
+        for (const operation of this.parsedSchema.operations) {
+            const endpointTypes = this.upsertPathToEndpointTypeCache(operation.originalPath);
 
-            const reference: Reference = (schema.paths[path] as any).$reference || {
+            const httpMethod = operation.method;
+
+            if (!endpointTypes[httpMethod]) {
+                endpointTypes[httpMethod] = {};
+            }
+
+            const reference: Reference = (schema.paths[operation.originalPath] as any).$reference || {
                 absolutePath: '',
                 targetObject: null,
                 path: [],
@@ -375,45 +372,27 @@ export class TypeRenderer {
                 target: '',
             };
 
-            const operationInfo = schema.paths[path] as OpenAPIV3.PathItemObject;
-            const httpMethods = Object.keys(operationInfo) as (HttpMethod | '$reference')[];
+            const req = this.tryRenderAsRequest(reference, operation);
+            if (req) {
+                this.renderTypeToFile(req);
 
-            for (const httpMethod of httpMethods) {
-                if (httpMethod === '$reference') continue;
+                endpointTypes[httpMethod]!.request = {
+                    ...req,
+                    deps: [],
+                    extraImports: [],
+                    definition: { code: '', description: '' },
+                };
+            }
 
-                const method = operationInfo[httpMethod];
-                if (!method) continue;
-
-                // if (method.operationId !== 'createBaseSynonymsJob') continue;
-
-                const endpointTypes = this.upsertPathToEndpointTypeCache(path);
-
-                if (!endpointTypes[httpMethod]) {
-                    endpointTypes[httpMethod] = {};
-                }
-
-                const req = this.renderRequest(reference, groupName, operationInfo, method);
-                if (req) {
-                    this.renderTypeToFile(req);
-
-                    endpointTypes[httpMethod]!.request = {
-                        ...req,
-                        deps: [],
-                        extraImports: [],
-                        definition: { code: '', description: '' },
-                    };
-                }
-
-                const res = this.renderResponse(reference, groupName, operationInfo, method);
-                if (res) {
-                    this.renderTypeToFile(res);
-                    endpointTypes[httpMethod]!.response = {
-                        ...res,
-                        deps: [],
-                        extraImports: [],
-                        definition: { code: '', description: '' },
-                    };
-                }
+            const res = this.tryRenderAsResponse(reference, operation);
+            if (res) {
+                this.renderTypeToFile(res);
+                endpointTypes[httpMethod]!.response = {
+                    ...res,
+                    deps: [],
+                    extraImports: [],
+                    definition: { code: '', description: '' },
+                };
             }
         }
 

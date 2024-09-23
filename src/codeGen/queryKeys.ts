@@ -10,8 +10,8 @@ export type QueryKeysSchema = {
     items: Record<OperationId, AugmentedOperation & { hasPathParams: boolean; hasBody: boolean }>;
 };
 
-export function generateQueryKeysSchema(flatOperations: AugmentedOperation[]): QueryKeysSchema {
-    const searchOperations = flatOperations.filter(e => SEARCH_OPCODES.includes(parseOpcode(e)));
+export function generateQueryKeysSchema(operations: AugmentedOperation[]): QueryKeysSchema {
+    const searchOperations = operations.filter(e => SEARCH_OPCODES.includes(parseOpcode(e)));
 
     const items = searchOperations.reduce((acc, searchOperation) => {
         const pathParameters =
@@ -93,7 +93,7 @@ export function createCallQueryKey(operation: AugmentedOperation, type: 'query' 
     const keyParts = operation.pathVariables.map(e => `${keyPrefix}${e}`).join(',');
 
     // Always invalidate search of multiple entities.
-    if (type === 'mutation' && operation.path.endsWith(':search'))
+    if (type === 'mutation' && operation.originalPath.endsWith(':search'))
         return `QueryKeys.${operation.original.operationId}()`;
 
     if (operation.original.requestBody && isHavePathParams) {

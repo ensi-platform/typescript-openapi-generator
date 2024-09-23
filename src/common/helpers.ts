@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-for-loop */
 import { kebab } from 'case';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
@@ -76,36 +77,19 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
     return kebab(original.operationId!);
 };
 
-function removeTrailingSlash(str: string): string {
-    return str.endsWith('/') ? str.slice(0, -1) : str;
-}
-
-function extractInvalidatePrefix(oldPath: string): string {
-    const path = removeTrailingSlash(oldPath);
-
-    const lastIndexOfColon = path.lastIndexOf(':');
-    if (lastIndexOfColon !== -1) return path.slice(0, lastIndexOfColon);
-
-    if (path.split('/').length <= 3) return path;
-
-    const lastIndexOfSlash = path.lastIndexOf('/');
-
-    return path.slice(0, lastIndexOfSlash);
-}
-
 const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
     if (!op.isMutation) return [];
 
-    const prefix = extractInvalidatePrefix(op.path);
+    const file = op.storePath;
 
     const results = allOperations.filter(e => {
-        if (!e.path.startsWith(prefix)) return false;
+        if (e.storePath !== file) return false;
         if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
 
-        if (e.path.endsWith('id}')) return true;
-        if (e.path.endsWith('Id}')) return true;
-        if (e.path.endsWith(':search')) return true;
-        if (e.path.endsWith(':search-one')) return true;
+        if (e.originalPath.endsWith('id}')) return true;
+        if (e.originalPath.endsWith('Id}')) return true;
+        if (e.originalPath.endsWith(':search')) return true;
+        if (e.originalPath.endsWith(':search-one')) return true;
 
         return false;
     });
@@ -143,32 +127,88 @@ export const removeTrailingLineBreak = (str: string) => {
     return str;
 };
 
-export const augmentPathsOperations = (paths: OpenAPIV3.PathsObject, config: ConfigSchema) => {
-    const pathNames = Object.keys(paths);
+export const defaultGetDirectory = (routePath: string) => {
+    let directory = '';
+    let lastSlashIndex = 0;
 
-    const allOperations = pathNames.flatMap(pathName => {
-        const groupName = extractSegment(pathName)!;
-        const operationInfo = paths[pathName]!;
+    // eslint-disable-next-line unicorn/no-for-loop
+    for (let i = 0; i < routePath.length; i++) {
+        const char = routePath[i];
+
+        if (char === '{') return directory.slice(0, lastSlashIndex);
+        if (char === ':') return directory;
+
+        if (char === '/') lastSlashIndex = i;
+
+        directory += char;
+    }
+
+    return directory;
+};
+
+type DirectoryGetter = (routePath: string) => string;
+
+const isRewrite = (from: string, path: string) => {
+    const isWildcard = from.endsWith('*');
+
+    if (isWildcard) {
+        for (let i = 0; i < from.length; i++) {
+            const fromChar = from[i];
+            const toChar = path[i];
+
+            if (fromChar === '*' && i <= path.length) return true;
+
+            if (fromChar !== toChar) return false;
+        }
+    }
+
+    return from === path;
+};
+
+const applyFirstRewrite = (rewrites: Record<string, string>, path: string) => {
+    for (const from in rewrites) {
+        if (isRewrite(from, path)) return rewrites[from];
+    }
+
+    return path;
+};
+
+export const augmentPathsOperations = (
+    paths: OpenAPIV3.PathsObject,
+    config: ConfigSchema,
+    directoryGetter: DirectoryGetter = defaultGetDirectory,
+    rewrites: Record<string, string> = {}
+) => {
+    const originalPaths = Object.keys(paths);
+
+    const allOperations = originalPaths.flatMap(originalPath => {
+        const group = extractSegment(originalPath)!;
+        const operationInfo = paths[originalPath]!;
 
         const httpMethods = (Object.keys(operationInfo) as HttpMethod[]).filter(e => (e as any) !== '$reference');
 
-        return httpMethods.map<AugmentedOperation>(httpMethod => {
-            const reqInfo = operationInfo[httpMethod] as OpenAPIV3.OperationObject;
+        return httpMethods.map<AugmentedOperation>(method => {
+            const original = operationInfo[method] as OpenAPIV3.OperationObject;
+
+            const pathWithoutLeadingSlash = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
+            const storePath = applyFirstRewrite(rewrites, directoryGetter(originalPath));
 
             return {
-                original: reqInfo,
-                hookName: generateHookName(reqInfo),
-                queryKey: extractQueryKey(reqInfo),
-                queryParams: extractQueryParams(reqInfo),
-                group: groupName,
-                path: pathName,
-                method: httpMethod,
-                isMutation: isOperationMutation(httpMethod, reqInfo),
-                pathSubstituted: replacePathVariables(pathName),
-                pathVariables: extractPathVariables(pathName),
+                original,
+                storePath,
+                group,
+                originalPath,
+                method,
                 invalidationTargets: [],
-                isFileUpload: hasFileUpload(reqInfo),
-                hasPathParams: hasPathParams(reqInfo),
+                parentDescription: operationInfo.summary || operationInfo.description || null,
+                hookName: generateHookName(original),
+                queryKey: extractQueryKey(original),
+                queryParams: extractQueryParams(original),
+                isMutation: isOperationMutation(method, original),
+                pathSubstituted: replacePathVariables(pathWithoutLeadingSlash),
+                pathVariables: extractPathVariables(originalPath),
+                isFileUpload: hasFileUpload(original),
+                hasPathParams: hasPathParams(original),
             };
         });
     });
@@ -192,20 +232,6 @@ export const extractSegment = (path: string) => {
 
     return segments[1];
 };
-
-export const groupOperations = (flatOperation: AugmentedOperation[]) =>
-    flatOperation.reduce((acc, cur) => {
-        const groupName = extractSegment(cur.path);
-        if (!groupName) return acc;
-
-        if (!(groupName in acc)) {
-            acc[groupName] = [];
-        }
-
-        acc[groupName].push(cur);
-
-        return acc;
-    }, {} as Record<string, AugmentedOperation[]>);
 
 export const renderImports = (sourceFile: SourceFile, imports: ImportData[]) => {
     const map = new Map<string, ImportData[]>();
