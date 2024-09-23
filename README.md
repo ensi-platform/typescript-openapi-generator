@@ -60,3 +60,34 @@ yarn ts-openapi-gen generate
 > `override_policies` для `types` значение  `override`. Однако хуки
 > могут являться частью бизнес-логики, или требовать вспомогательных
 > действий. Поэтому считайте, что фича с генерацией хуков предназначена для упрощения создания нового раздела, но не для полной автоматизации.
+
+# Example v2.0.0-beta
+
+const generator = 
+    new OpenApiGenerator(
+        new URLRequest('https://example.com/index.yaml')
+    );
+
+export default generaotr;
+
+or
+
+const generator =
+    new OpenApiGenerator(
+        new FileRequest('/mnt/d/users/john/index.yaml')
+    );
+
+export default generator;
+
+
+
+
+
+# Middlewares
+
+[load.document.before] - takes a URL/path to document as argument, expects parsed object as output
+[load.document.after] - takes parsed object as argument, expects modified object as output
+
+# Events
+
+[load.progress] - takes a percentage of progress as argument, expects void. For printing or formatting.

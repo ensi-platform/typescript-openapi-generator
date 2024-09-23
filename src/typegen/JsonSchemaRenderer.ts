@@ -23,6 +23,8 @@ export type RenderElement = {
     needsParenthesis: boolean;
 };
 
+const customMeta = false;
+
 export default class JsonSchemaRenderer {
     private getInterfaceName: InterfaceNameFunction;
     private cache = new WeakMap<object, RenderElement>();
@@ -85,19 +87,19 @@ export type RequireKeys<T extends object, K extends keyof T> =
         };
 
         const dataType = processSchema(dataSchema, dataReference, demandedRefs);
-        const metaType = processSchema(metaSchema, metaReference, demandedRefs);
 
-        const deps: RenderElement[] = [dataType, metaType];
+        const metaType = customMeta ? processSchema(metaSchema, metaReference, demandedRefs) : null;
+        const deps: RenderElement[] = metaType ? [dataType, metaType] : [dataType];
 
         return {
             definition: {
                 description,
-                code: `export type ${typeName} = CommonResponse<${dataType.name}, ${metaType.name}>;`,
+                code: metaType ? `export type ${typeName} = CommonResponse<${dataType.name}, ${metaType.name}>;` : `export type ${typeName} = CommonResponse<${dataType.name}>;`,
             },
             deps,
             extraImports: [
                 {
-                    fromOutput: 'helpers',
+                    fromOutput: './helpers.ts',
                     name: 'CommonResponse',
                 },
             ],
@@ -215,7 +217,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
         const keysToRequireArr = [...keysToRequire.values()];
         const extraImports: ImportStatement[] = [
             {
-                fromOutput: 'helpers',
+                fromOutput: './helpers.ts',
                 name: 'Prettify',
             },
         ];
@@ -228,7 +230,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
                 .join('|')}>>;`;
 
             extraImports.push({
-                fromOutput: 'helpers',
+                fromOutput: './helpers.ts',
                 name: 'RequireKeys',
             });
         } else {
@@ -509,6 +511,18 @@ export type RequireKeys<T extends object, K extends keyof T> =
                 this.cache.set(schema, result);
 
                 return result;
+            }
+
+            if ((schema.type || '').startsWith('string')) {
+                return {
+                    needsParenthesis: false,
+                    type: 'literal',
+                    definition: { code: '', description: '' },
+                    name: schema.type,
+                    deps: [],
+                    reference,
+                    extraImports: [],
+                };
             }
 
             switch (schema.type) {

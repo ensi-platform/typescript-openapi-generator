@@ -35,15 +35,18 @@ export class ReactQueryHookGenerator {
         this.typeFetcher = typeFetcher;
     }
 
-    async checkFilePathForGroup(group: string) {
-        const folder = join(this.config.output_path, group);
+    async mkdirs(relativePath: string) {
+        const folder = join(this.config.output_path, relativePath);
         await mkdir(folder, { recursive: true });
         const filePath = `${folder}/index.ts`;
 
         const isExisting = existsSync(filePath);
 
         if (this.overridePolicy === 'skip' && isExisting) {
-            console.log(kleur.italic(kleur.bgWhite(kleur.black(group))), 'хуки react-query пропущены как существующие');
+            console.log(
+                kleur.italic(kleur.bgWhite(kleur.black(relativePath))),
+                'хуки react-query пропущены как существующие'
+            );
             return null;
         }
 
@@ -291,8 +294,20 @@ export class ReactQueryHookGenerator {
         });
     }
 
-    async generate(group: string, flatOperations: AugmentedOperation[]) {
-        const filePath = await this.checkFilePathForGroup(group);
+    async generate(operations: AugmentedOperation[]) {
+        const splitted: Record<string, AugmentedOperation[]> = {};
+
+        for (const operation of operations) {
+            if (!splitted[operation.storePath]) splitted[operation.storePath] = [];
+            splitted[operation.storePath].push(operation);
+        }
+
+        const keys = Object.keys(splitted);
+        await Promise.all(keys.map(path => this.generateSingle(path, splitted[path])));
+    }
+
+    private async generateSingle(relativePath: string, operations: AugmentedOperation[]) {
+        const filePath = await this.mkdirs(relativePath);
         if (!filePath) return;
 
         const project = new Project();
@@ -306,35 +321,53 @@ export class ReactQueryHookGenerator {
 
         imports.push(...this.config['react-query'].imports);
 
-        this.queryKeysSchema = generateQueryKeysSchema(flatOperations);
+        this.queryKeysSchema = generateQueryKeysSchema(operations);
         generateQueryKeysConstant(this.queryKeysSchema, sourceFile);
 
-        for (const operation of flatOperations) {
+        const enumsPath = join(this.config.output_path, relativePath, 'enums.ts');
+        const hasEnums = existsSync(enumsPath);
+
+        if (hasEnums) {
+            sourceFile.addExportDeclaration({
+                moduleSpecifier: './enums',
+            });
+        }
+
+        sourceFile.addExportDeclaration({
+            moduleSpecifier: './types',
+        });
+
+        for (const operation of operations) {
             const queryParams = operation.queryParams;
 
             if (queryParams.length > 0 && operation.isMutation) {
-                console.error('Mutations with queryParams are not supported yet: check operation', operation.path);
+                console.error(
+                    'Mutations with queryParams are not supported yet: check operation',
+                    operation.originalPath
+                );
                 continue;
             }
 
             const types = this.typeFetcher(operation);
 
             // eslint-disable-next-line unicorn/consistent-function-scoping
-            const resolveImport = (path: string) => {
-                const fullPath = join(this.config.output_path, path).replaceAll('\\', '/');
+            const resolveImport = (importPath: string) => {
+                const fullPath = join(this.config.output_path, importPath).replaceAll('\\', '/');
                 const filePathNorm = filePath.replaceAll('\\', '/');
 
-                let relativePath = relative(dirname(filePathNorm), fullPath).replaceAll('\\', '/');
+                let relativeImportPath = relative(dirname(filePathNorm), fullPath).replaceAll('\\', '/');
 
-                if (relativePath[0] !== '.') {
-                    relativePath = './' + relativePath;
+                if (relativeImportPath[0] !== '.') {
+                    relativeImportPath = './' + relativeImportPath;
                 }
 
-                return relativePath;
+                return relativeImportPath;
             };
 
             if (!types.response) {
-                console.error('No response found in operation ' + operation.path + ', of group ' + operation.group);
+                console.error(
+                    'No response found in operation ' + operation.originalPath + ', of group ' + operation.group
+                );
                 continue;
             }
 

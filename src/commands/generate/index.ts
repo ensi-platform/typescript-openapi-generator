@@ -2,10 +2,11 @@
 import input from '@inquirer/input';
 import { checkbox, select } from '@inquirer/prompts';
 import { Args, Command } from '@oclif/core';
+import { writeFile } from 'fs/promises';
 import { OpenAPIV3 } from 'openapi-types';
 
 import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
-import { ParsedSchema, SchemaParser } from '../../common/SchemaParser';
+import { SchemaParser } from '../../common/SchemaParser';
 import { runEslintAutoFix } from '../../common/helpers';
 import { OverridePolicy } from '../../common/types';
 import { Config, ConfigSchema, Target } from '../../config/Config';
@@ -29,7 +30,6 @@ export default class Generate extends Command {
 
     private conf!: ConfigSchema;
     private isSomePrompted = false;
-    private parsedSchema!: ParsedSchema;
 
     private async applyArgsToConfig() {
         const { args } = await this.parse(Generate);
@@ -140,7 +140,10 @@ export default class Generate extends Command {
         await traverseAndModify(
             indexDocument,
             async ref => {
+                // TODO: apply load.document.before middlewares
                 const result = await loader.loadJson(ref.absolutePath);
+
+                // TODO: apply load.document.after, return result
 
                 if (!ref.target) return result;
 
@@ -169,13 +172,11 @@ export default class Generate extends Command {
         );
 
         const schemaParser = new SchemaParser(this.conf, indexDocument);
-        this.parsedSchema = await schemaParser.parse();
-
-        const { groups, derefedPathGroupedOps } = this.parsedSchema;
+        const parsedSchema = await schemaParser.parse();
 
         const typeRenderer = new TypeRenderer({
             overridePolicy: this.conf.override_policies[Target.TYPES]!,
-            parsedSchema: this.parsedSchema,
+            parsedSchema: parsedSchema,
             config: this.conf,
         });
 
@@ -190,18 +191,14 @@ export default class Generate extends Command {
                 config: this.conf,
                 overridePolicy: override_policies[Target.REACT_QUERY]!,
                 typeFetcher: operation => {
-                    const types = typeRenderer.getTypesForRequest(operation.path, operation.method as any)!;
+                    const types = typeRenderer.getTypesForRequest(operation.originalPath, operation.method as any)!;
                     return types;
                 },
             });
 
             console.log('⏳ Генерируем хуки react-query...');
 
-            await Promise.all(
-                groups.map(group => {
-                    return hookGen.generate(group, derefedPathGroupedOps[group]);
-                })
-            );
+            await hookGen.generate(parsedSchema.operations);
 
             console.log('✔️ Хуки сгенерированы!');
         }

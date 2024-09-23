@@ -1,6 +1,8 @@
 import { JSONSchema } from '@stoplight/json-schema-ref-parser';
 import { OpenAPIV3 } from 'openapi-types';
 
+import { HttpMethod } from './helpers';
+
 export interface ImportData {
     from: string;
     name: string;
@@ -8,12 +10,20 @@ export interface ImportData {
 }
 
 export type AugmentedOperation = {
+    parentDescription: string | null;
+
     original: OpenAPIV3.OperationObject;
-    path: string;
+    originalPath: string;
+
+    /**
+     * Папка где будет лежать метод, и типы
+     */
+    storePath: string;
+
     pathSubstituted: string;
     pathVariables: string[];
     queryParams: OpenAPIV3.ParameterObject[];
-    method: string;
+    method: HttpMethod;
     group: string;
     isMutation: boolean;
 
@@ -37,3 +47,4 @@ export interface RefSchemaData {
     schema: JSONSchema;
 }
 
+export type OperationsToPathsFn = (operations: AugmentedOperation[]) => Record<string, AugmentedOperation[]>;
