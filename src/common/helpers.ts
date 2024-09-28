@@ -131,7 +131,6 @@ export const defaultGetDirectory = (routePath: string) => {
     let directory = '';
     let lastSlashIndex = 0;
 
-    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < routePath.length; i++) {
         const char = routePath[i];
 
@@ -276,7 +275,6 @@ export const resolveRefPath = (p: string[]) => {
 
     const result = [] as string[];
 
-    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < paths.length; ++i) {
         const path = paths[i];
 

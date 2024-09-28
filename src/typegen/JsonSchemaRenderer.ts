@@ -94,7 +94,9 @@ export type RequireKeys<T extends object, K extends keyof T> =
         return {
             definition: {
                 description,
-                code: metaType ? `export type ${typeName} = CommonResponse<${dataType.name}, ${metaType.name}>;` : `export type ${typeName} = CommonResponse<${dataType.name}>;`,
+                code: metaType
+                    ? `export type ${typeName} = CommonResponse<${dataType.name}, ${metaType.name}>;`
+                    : `export type ${typeName} = CommonResponse<${dataType.name}>;`,
             },
             deps,
             extraImports: [

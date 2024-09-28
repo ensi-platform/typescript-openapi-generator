@@ -25,6 +25,7 @@ module.exports = {
     rules: {
         semi: 0,
         indent: 0,
+        'linebreak-style': ['error', 'unix'],
         'valid-jsdoc': 0,
         'comma-dangle': 0,
         'object-curly-spacing': 0,

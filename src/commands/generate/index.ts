@@ -2,7 +2,6 @@
 import input from '@inquirer/input';
 import { checkbox, select } from '@inquirer/prompts';
 import { Args, Command } from '@oclif/core';
-import { writeFile } from 'fs/promises';
 import { OpenAPIV3 } from 'openapi-types';
 
 import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
