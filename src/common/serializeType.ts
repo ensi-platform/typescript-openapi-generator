@@ -1,3 +1,5 @@
+export const getRequired = (required: string[], name: string) => required.includes(name);
+
 export const getValue = (value: string, nullableParam?: boolean) => {
     const nullable = nullableParam ? ' | null' : '';
     return value + nullable;
@@ -33,17 +35,23 @@ export const serializeTypeString = ({
 }: {
     content: string;
     example: string | number;
-    description: string;
+    description?: string;
     type: string;
 }) => {
-    const result = '';
-    if (description) result + `/**\n* ${description}\n **/\n`;
-    if ((typeof example === 'string' && example) || typeof example === 'number') result + getExample(example, type);
+    let result = '';
+    if (description || (typeof example === 'string' && example) || typeof example === 'number') {
+        result += '/**\n';
+        if (description) result += `* ${description}${description.endsWith('\n') ? '' : '\n'}`;
+        if ((typeof example === 'string' && example) || typeof example === 'number')
+            result += `* @example ${getExample(example, type)}\n`;
+        result += '**/\n';
+    }
+
     return result + content;
 };
 
 export const getInterfaceValue = ({
-    name,
+    name: nameParam,
     value,
     example,
     type,
@@ -54,9 +62,12 @@ export const getInterfaceValue = ({
     value: string;
     example: string;
     type: string;
-    description: string;
+    description?: string;
     required: boolean;
 }) => {
-    const nameWithRequired = required ? name : `${name}?`;
-    return serializeTypeString({ content: `${nameWithRequired}: ${value}`, example, type, description });
+    let name = '';
+    if (nameParam) name = nameParam;
+    if (name && !/^[$A-Z_a-z][\w$]*$/.test(name)) name = `['${name}']`;
+    if (name) name = required ? `${name}: ` : `${name}?: `;
+    return serializeTypeString({ content: `${name}${value}`, example, type, description });
 };

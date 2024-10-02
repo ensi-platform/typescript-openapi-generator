@@ -1,71 +1,68 @@
 import { mkdir, writeFile } from 'node:fs/promises';
+import prettier from 'prettier';
 
+import { serializeTypeString } from '../../common/serializeType';
 import { IParsedSchema, IParsedSchemaItem } from '../OpenApiSchemaParser/types';
+import { SchemaObjectParser } from '../SchemaObjectParser';
+import { SchemaObjectType } from '../SchemaObjectParser/types';
 import { getFolderName, getTypeName } from './helpers';
-import { ITypeObject } from './types';
 
 export class TypesGenerator {
     private schema: IParsedSchema;
+    private jsonSchemaParser = new SchemaObjectParser();
 
     constructor(schema: IParsedSchema) {
         this.schema = schema;
     }
 
-    getTypeSchemaOperationRequestItem({ ref, method, path, operationData }: IParsedSchemaItem): ITypeObject | null {
-        if (!operationData.requestBody?.content) return null;
-        // генерируем название типа
+    getTypeSchemaOperationRequestItem({ ref, method, path, operationData }: IParsedSchemaItem): string {
+        if (!operationData.requestBody?.content) return '';
+
         const typeName = getTypeName({ ref, path, method, type: 'request' });
 
         const description = operationData.summary || operationData.description || operationData.description || '';
         const type = Object.keys(operationData.requestBody.content);
         if (type.includes('multipart/form-data')) {
-            return {
-                definition: {
-                    description: `/**\n* ${description}\n **/\n`,
-                    code: `export type ${typeName} = FormData;`,
-                },
-                name: typeName,
-                method,
-                type: 'object',
-            };
+            return serializeTypeString({
+                description,
+                content: `export type ${typeName} = FormData;`,
+                example: '',
+                type: '',
+            });
         }
 
         if (type.includes('application/octet-stream')) {
-            return {
-                definition: {
-                    description: `/**\n* ${description}\n **/\n`,
-                    code: `export type ${typeName} = string;`,
-                },
-                name: typeName,
-                method,
-                type: 'object',
-            };
+            return serializeTypeString({
+                description,
+                content: `export type ${typeName} = string;`,
+                example: '',
+                type: '',
+            });
         }
 
-        return {
-            definition: {
-                description: `/**\n* ${description}\n **/\n`,
-                code: `export interface ${typeName} {}`,
-            },
-            name: typeName,
-            method,
-            type: 'object',
-        };
+        if (type.includes('application/json')) {
+            const schema = (operationData.requestBody.content?.['application/json'] as { schema: SchemaObjectType })
+                ?.schema;
+            if (schema) return this.jsonSchemaParser.parse({ name: typeName, description, schema });
+            return '';
+        }
+
+        return '';
     }
 
     async parse() {
         const types = this.schema.reduce((acc, schema) => {
             const folder = getFolderName(schema[0].path);
 
-            const requestDataArr = schema.reduce<ITypeObject[]>((requestAcc, item) => {
+            const requestContentArr = schema.reduce<string[]>((requestAcc, item) => {
                 const requestItem = this.getTypeSchemaOperationRequestItem(item);
                 if (requestItem) requestAcc.push(requestItem);
 
                 return requestAcc;
             }, []);
 
-            const content = requestDataArr.reduce((contentAcc, item) => {
-                if (item.definition.code) return contentAcc + item.definition.description + item.definition.code + '\n';
+            const content = requestContentArr.reduce((contentAcc, item) => {
+                if (item) return contentAcc + item + '\n';
 
                 return contentAcc;
             }, '');
@@ -79,7 +76,11 @@ export class TypesGenerator {
 
         const promises = Object.entries(types).map(async ([folder, content]) => {
             await mkdir(folder, { recursive: true });
-            return writeFile(`${folder}/index.ts`, content, { flag: 'wx' });
+            const parsedContent = await prettier.format(content, {
+                parser: 'babel-ts',
+            });
+            // return writeFile(`${folder}/index.ts`, content, { flag: 'wx' });
+            return writeFile(`${folder}/index.ts`, parsedContent, { flag: 'wx' });
         });
 
         await Promise.all(promises);

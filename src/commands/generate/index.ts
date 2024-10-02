@@ -8,7 +8,7 @@ import { TypesGenerator } from '../../classes/TypesGenerator';
 // import { OpenAPIV3 } from 'openapi-types';
 // import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
 import { SchemaParser } from '../../common/SchemaParser';
-// import { runEslintAutoFix } from '../../common/helpers';
+import { runEslintAutoFix } from '../../common/helpers';
 import { OverridePolicy } from '../../common/types';
 import { Config, ConfigSchema, Target } from '../../config/Config';
 import { traverseAndModify } from '../../deref';
@@ -208,10 +208,12 @@ export default class Generate extends Command {
             // //     console.log('✔️ Хуки сгенерированы!');
             // // }
 
-            // console.log('⏳ Запускаем eslint --fix...');
-            // try {
-            //     await runEslintAutoFix(this.conf.output_path);
-            // } catch {}
+            console.log('⏳ Запускаем eslint --fix...');
+            try {
+                await runEslintAutoFix('./output');
+            } catch (error) {
+                console.error(error);
+            }
 
             // console.log('✔️ Файлы приведены в соответствие с вашим prettier/eslint!');
 
