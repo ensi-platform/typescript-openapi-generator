@@ -1,7 +1,10 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { ImportData, OverridePolicy } from '../common/types';
+import {
+    // ImportData,
+    OverridePolicy,
+} from '../common/types';
 
 export enum Target {
     TYPES = 'types',
@@ -15,12 +18,12 @@ export interface ConfigSchema {
     targets: Target[];
     override_policies: Record<Target, OverridePolicy | undefined>;
     is_unix: boolean;
-    ['react-query']: {
-        generate_invalidations: boolean;
-        imports: ImportData[];
-        hooks: string[];
-        api_client_name: string;
-    };
+    // ['react-query']: {
+    //     generate_invalidations: boolean;
+    //     imports: ImportData[];
+    //     hooks: string[];
+    //     api_client_name: string;
+    // };
 }
 
 // eslint-disable-next-line unicorn/no-static-only-class
@@ -35,12 +38,12 @@ export class Config {
             'react-query': undefined,
             enums: undefined,
         },
-        'react-query': {
-            generate_invalidations: true,
-            api_client_name: 'apiClient',
-            hooks: [],
-            imports: [],
-        },
+        // 'react-query': {
+        //     generate_invalidations: true,
+        //     api_client_name: 'apiClient',
+        //     hooks: [],
+        //     imports: [],
+        // },
     };
 
     static async create() {
@@ -87,25 +90,25 @@ export class Config {
                 data.output_path = Config.DEFAULT.output_path;
             }
 
-            if (typeof data['react-query'] !== 'object') {
-                data['react-query'] = Config.DEFAULT['react-query'];
-            }
+            // if (typeof data['react-query'] !== 'object') {
+            //     data['react-query'] = Config.DEFAULT['react-query'];
+            // }
 
-            if (typeof data['react-query'].generate_invalidations !== 'boolean') {
-                data['react-query'].generate_invalidations = Config.DEFAULT['react-query'].generate_invalidations;
-            }
+            // if (typeof data['react-query'].generate_invalidations !== 'boolean') {
+            //     data['react-query'].generate_invalidations = Config.DEFAULT['react-query'].generate_invalidations;
+            // }
 
-            if (typeof data['react-query'].api_client_name !== 'string') {
-                data['react-query'].api_client_name = Config.DEFAULT['react-query'].api_client_name;
-            }
+            // if (typeof data['react-query'].api_client_name !== 'string') {
+            //     data['react-query'].api_client_name = Config.DEFAULT['react-query'].api_client_name;
+            // }
 
-            if (!Array.isArray(data['react-query'].hooks)) {
-                data['react-query'].hooks = Config.DEFAULT['react-query'].hooks;
-            }
+            // if (!Array.isArray(data['react-query'].hooks)) {
+            //     data['react-query'].hooks = Config.DEFAULT['react-query'].hooks;
+            // }
 
-            if (!Array.isArray(data['react-query'].imports)) {
-                data['react-query'].imports = Config.DEFAULT['react-query'].imports;
-            }
+            // if (!Array.isArray(data['react-query'].imports)) {
+            //     data['react-query'].imports = Config.DEFAULT['react-query'].imports;
+            // }
 
             return data;
         } catch (error) {

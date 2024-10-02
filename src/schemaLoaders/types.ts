@@ -1,11 +1,10 @@
-import { OpenAPI3 } from 'openapi-typescript';
+import { OpenAPIV3 } from 'openapi-types';
 
-import { Reference } from '../deref';
+export type ILoadedData = Record<string, any>;
 
 export interface ISchemaLoader {
-    loadIndex: () => Promise<OpenAPI3>;
-
-    getType: () => 'file' | 'http';
-
-    loadJson: (absolutePath: Reference['absolutePath']) => Promise<Record<string, any>>;
+    /** Загрузка index файла */
+    loadIndex: () => Promise<OpenAPIV3.Document | null>;
+    /** Метод дозагрузки файлов по ссылкам из index */
+    loadJson: (url: string) => Promise<ILoadedData>;
 }

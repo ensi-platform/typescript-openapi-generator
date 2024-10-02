@@ -1,4 +1,4 @@
-import { Reference } from '../deref';
+import { IReference } from '../deref/types';
 
 export function getSchemaType(schema: any): 'object' | 'literal' {
     if (schema.type === 'array') {
@@ -28,10 +28,10 @@ export function getSchemaType(schema: any): 'object' | 'literal' {
         : 'object';
 }
 
-export const isExtraKey = (schema: any, parentReference: Reference) => {
+export const isExtraKey = (schema: any, parentReference: IReference) => {
     if (!schema.$reference) return false;
 
-    const ref = schema.$reference as Reference;
+    const ref = schema.$reference as IReference;
 
     return ref.absolutePath !== parentReference.absolutePath;
 };

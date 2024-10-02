@@ -1,0 +1,36 @@
+{
+    "enum": {
+        "type": "string",
+        "description": "Расположение кнопки:\n * 'top_left' - Сверху слева\n * 'top' - Сверху\n* 'top_right' - Сверху справа\n* 'right' - Справа\n* 'bottom_right' - Снизу справа\n* 'bottom' - Снизу\n* 'bottom_left' - Снизу слева\n* 'left' - Слева\n",
+        "enum": ["top_left", "top", "top_right", "right", "bottom_right", "bottom", "bottom_left", "left"],
+        "x-enum-varnames": [
+            "LOCATION_TOP_LEFT",
+            "LOCATION_TOP",
+            "LOCATION_TOP_RIGHT",
+            "LOCATION_RIGHT",
+            "LOCATION_BOTTOM_RIGHT",
+            "LOCATION_BOTTOM",
+            "LOCATION_BOTTOM_LEFT",
+            "LOCATION_LEFT"
+        ],
+        "x-enum-descriptions": [
+            "Сверху слева",
+            "Сверху",
+            "Сверху справа",
+            "Справа",
+            "Снизу справа",
+            "Снизу",
+            "Снизу слева",
+            "Слева"
+        ],
+        "$reference": {
+            "refPath": "../enums/cms_banner_button_location_enum.yaml",
+            "absolutePath": "/cms/enums/cms_banner_button_location_enum.yaml",
+            "target": null
+        }
+    },
+
+    "api": {
+        "/customers/favorites:search": { "post": "[Object]", "$reference": "[Object]" }
+    }
+}

@@ -60,15 +60,15 @@ export class TypeRenderer {
 
     private parsedSchema: ParsedSchema;
 
-    private pathsToEndpointsTypeCache = new Map<string, Partial<Record<HttpMethod, OperationTypes>>>();
+    // private pathsToEndpointsTypeCache = new Map<string, Partial<Record<HttpMethod, OperationTypes>>>();
 
-    private getHelpersPath() {
-        return join(this.config.output_path, 'helpers.ts').replaceAll('\\', '/');
-    }
+    // private getHelpersPath() {
+    //     return join(this.config.output_path, 'helpers.ts').replaceAll('\\', '/');
+    // }
 
-    public getTypesForRequest(path: string, method: HttpMethod) {
-        return this.pathsToEndpointsTypeCache.get(path)?.[method.toLowerCase() as HttpMethod];
-    }
+    // public getTypesForRequest(path: string, method: HttpMethod) {
+    //     return this.pathsToEndpointsTypeCache.get(path)?.[method.toLowerCase() as HttpMethod];
+    // }
 
     private jsonSchemaRenderer = new JsonSchemaRenderer(typeNameFunction);
 
@@ -331,6 +331,7 @@ export class TypeRenderer {
                 );
             }
 
+            // преобразование в типа/интерфейса в строку
             if (typeInfo.definition.code && !file.codeLines.has(typeInfo.definition.code)) {
                 file.codeLines.add(`\n${removeTrailingLineBreak(typeInfo.definition.description)}`);
                 file.codeLines.add(typeInfo.definition.code);
@@ -342,62 +343,63 @@ export class TypeRenderer {
         traverse(req);
     }
 
-    upsertPathToEndpointTypeCache(path: string) {
-        if (!this.pathsToEndpointsTypeCache.has(path)) {
-            this.pathsToEndpointsTypeCache.set(path, {});
-        }
+    // upsertPathToEndpointTypeCache(path: string) {
+    //     if (!this.pathsToEndpointsTypeCache.has(path)) {
+    //         this.pathsToEndpointsTypeCache.set(path, {});
+    //     }
 
-        return this.pathsToEndpointsTypeCache.get(path)!;
-    }
+    //     return this.pathsToEndpointsTypeCache.get(path)!;
+    // }
 
     async render() {
-        this.clear();
+        // this.clear();
 
         const schema = this.parsedSchema.document;
 
-        for (const operation of this.parsedSchema.operations) {
-            const endpointTypes = this.upsertPathToEndpointTypeCache(operation.originalPath);
+        // for (const operation of this.parsedSchema.operations) {
+        // const endpointTypes = this.upsertPathToEndpointTypeCache(operation.originalPath);
 
-            const httpMethod = operation.method;
+        // const httpMethod = operation.method;
 
-            if (!endpointTypes[httpMethod]) {
-                endpointTypes[httpMethod] = {};
-            }
+        // if (!endpointTypes[httpMethod]) {
+        //     endpointTypes[httpMethod] = {};
+        // }
 
-            const reference: Reference = (schema.paths[operation.originalPath] as any).$reference || {
-                absolutePath: '',
-                targetObject: null,
-                path: [],
-                refPath: '',
-                target: '',
-            };
+        // const reference: Reference = (schema.paths[operation.originalPath] as any).$reference || {
+        //     absolutePath: '',
+        //     targetObject: null,
+        //     path: [],
+        //     refPath: '',
+        //     target: '',
+        // };
 
-            const req = this.tryRenderAsRequest(reference, operation);
-            if (req) {
-                this.renderTypeToFile(req);
+        // const req = this.tryRenderAsRequest(reference, operation);
+        // if (req) {
+        //     this.renderTypeToFile(req);
 
-                endpointTypes[httpMethod]!.request = {
-                    ...req,
-                    deps: [],
-                    extraImports: [],
-                    definition: { code: '', description: '' },
-                };
-            }
+        //     endpointTypes[httpMethod]!.request = {
+        //         ...req,
+        //         deps: [],
+        //         extraImports: [],
+        //         definition: { code: '', description: '' },
+        //     };
+        // }
 
-            const res = this.tryRenderAsResponse(reference, operation);
-            if (res) {
-                this.renderTypeToFile(res);
-                endpointTypes[httpMethod]!.response = {
-                    ...res,
-                    deps: [],
-                    extraImports: [],
-                    definition: { code: '', description: '' },
-                };
-            }
-        }
+        // const res = this.tryRenderAsResponse(reference, operation);
+        // if (res) {
+        //     this.renderTypeToFile(res);
+        //     endpointTypes[httpMethod]!.response = {
+        //         ...res,
+        //         deps: [],
+        //         extraImports: [],
+        //         definition: { code: '', description: '' },
+        //     };
+        // }
+        // }
 
         const filePaths = Object.keys(this.filesToContent);
 
+        // Создание папок
         const tasks = filePaths.map(async path => {
             const content = this.filesToContent[path];
             const project = new Project();
@@ -405,25 +407,26 @@ export class TypeRenderer {
                 overwrite: true,
             });
 
-            renderImports(sourceFile, content.imports);
+            // renderImports(sourceFile, content.imports);
 
+            // Код генерировался тут renderTypeToFile
             const fileContent = sourceFile.getFullText() + '\n' + [...content.codeLines.values()].join('\n') + '\n';
             const filePath = join(this.config.output_path, path);
 
             const folder = dirname(filePath);
             await mkdir(folder, { recursive: true });
 
-            const isExisting = existsSync(filePath);
-            if (this.overridePolicy === 'skip' && isExisting) {
-                console.log(kleur.italic(kleur.bgWhite(kleur.black(path))), 'типы пропущены как существующие');
-                return;
-            }
+            // const isExisting = existsSync(filePath);
+            // if (this.overridePolicy === 'skip' && isExisting) {
+            //     console.log(kleur.italic(kleur.bgWhite(kleur.black(path))), 'типы пропущены как существующие');
+            //     return;
+            // }
 
             return writeFile(filePath, fileContent);
         });
 
         await Promise.all(tasks);
 
-        await writeFile(this.getHelpersPath(), this.jsonSchemaRenderer.getHelpersCode());
+        // await writeFile(this.getHelpersPath(), this.jsonSchemaRenderer.getHelpersCode());
     }
 }

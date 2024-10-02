@@ -1,12 +1,14 @@
-/* eslint-disable unicorn/consistent-destructuring */
 import input from '@inquirer/input';
 import { checkbox, select } from '@inquirer/prompts';
 import { Args, Command } from '@oclif/core';
-import { OpenAPIV3 } from 'openapi-types';
+import fs from 'node:fs';
 
-import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
+import { OpenApiParser } from '../../classes/OpenApiSchemaParser';
+import { TypesGenerator } from '../../classes/TypesGenerator';
+// import { OpenAPIV3 } from 'openapi-types';
+// import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
 import { SchemaParser } from '../../common/SchemaParser';
-import { runEslintAutoFix } from '../../common/helpers';
+// import { runEslintAutoFix } from '../../common/helpers';
 import { OverridePolicy } from '../../common/types';
 import { Config, ConfigSchema, Target } from '../../config/Config';
 import { traverseAndModify } from '../../deref';
@@ -116,101 +118,108 @@ export default class Generate extends Command {
     }
 
     async run(): Promise<void> {
-        this.conf = await Config.load();
-
-        // Args always override default
-        await this.applyArgsToConfig();
-
-        // If still not loaded, ask
-        await this.demandOpenapiPath();
-        await this.demandOutputPath();
-        await this.demandTargets();
-        await this.demandOverridePolicies();
-
-        const { openapi_path, targets, override_policies } = this.conf;
-
-        const loader = getSchemaLoaderForOrigin(openapi_path, this.conf);
-        const indexDocument = (await loader.loadIndex()) as OpenAPIV3.Document;
-        console.log('Загружен документ', indexDocument.info);
-        console.log('Загружаем зависимые компоненты...');
-
-        let lastPercent = 0;
-
-        await traverseAndModify(
-            indexDocument,
-            async ref => {
-                // TODO: apply load.document.before middlewares
-                const result = await loader.loadJson(ref.absolutePath);
-
-                // TODO: apply load.document.after, return result
-
-                if (!ref.target) return result;
-
-                if (result.components && ref.target.startsWith('components')) {
-                    const target = ref.target.split('/').pop()!;
-                    // eslint-disable-next-line guard-for-in
-                    for (const key in result.components) {
-                        const component = result.components[key];
-
-                        if (target in component) return component[target];
-                    }
-                }
-
-                return result[ref.target];
-            },
-            progress => {
-                const percent = Number(progress.percent.toFixed(0));
-
-                if (percent - lastPercent < 10) return;
-                lastPercent = percent;
-
-                console.log(
-                    `   ${progress.completedRuns} / ${progress.totalRuns} (${percent}%) зависимостей загружено!`
-                );
-            }
-        );
-
-        const schemaParser = new SchemaParser(this.conf, indexDocument);
-        const parsedSchema = await schemaParser.parse();
-
-        const typeRenderer = new TypeRenderer({
-            overridePolicy: this.conf.override_policies[Target.TYPES]!,
-            parsedSchema: parsedSchema,
-            config: this.conf,
-        });
-
-        console.log('⏳ Генерируем типы...');
-
-        await typeRenderer.render();
-
-        console.log('✔️ Типы сгенерированы!');
-
-        if (targets.includes(Target.REACT_QUERY)) {
-            const hookGen = new ReactQueryHookGenerator({
-                config: this.conf,
-                overridePolicy: override_policies[Target.REACT_QUERY]!,
-                typeFetcher: operation => {
-                    const types = typeRenderer.getTypesForRequest(operation.originalPath, operation.method as any)!;
-                    return types;
-                },
-            });
-
-            console.log('⏳ Генерируем хуки react-query...');
-
-            await hookGen.generate(parsedSchema.operations);
-
-            console.log('✔️ Хуки сгенерированы!');
-        }
-
-        console.log('⏳ Запускаем eslint --fix...');
         try {
-            await runEslintAutoFix(this.conf.output_path);
-        } catch {}
+            this.conf = await Config.load();
 
-        console.log('✔️ Файлы приведены в соответствие с вашим prettier/eslint!');
+            // Args always override default
+            await this.applyArgsToConfig();
 
-        if (this.isSomePrompted) {
-            await Config.save(this.conf);
+            // If still not loaded, ask
+            await this.demandOpenapiPath();
+            await this.demandOutputPath();
+            await this.demandTargets();
+            await this.demandOverridePolicies();
+
+            const {
+                openapi_path,
+                //  targets, override_policies
+            } = this.conf;
+
+            const loader = getSchemaLoaderForOrigin(openapi_path);
+            const indexDocument = await loader.loadIndex();
+            if (!indexDocument) {
+                throw new Error('Docuemnt is empty');
+            }
+
+            console.log('Document loaded', indexDocument.info);
+            console.log('Загружаем зависимые компоненты...');
+
+            let lastPercent = 0;
+            await traverseAndModify(
+                indexDocument,
+                async ref => {
+                    // TODO: apply load.document.before middlewares
+                    const result = await loader.loadJson(ref.absolutePath);
+                    // TODO: apply load.document.after, return result
+
+                    if (!ref.target) return result;
+
+                    return result[ref.target];
+                },
+                progress => {
+                    const percent = Number(progress.percent.toFixed(0));
+
+                    if (percent - lastPercent < 10) return;
+                    lastPercent = percent;
+
+                    console.log(
+                        `   ${progress.completedRuns} / ${progress.totalRuns} (${percent}%) dependencies loaded!`
+                    );
+                }
+            );
+            // console.log(indexDocument);
+            // await fs.writeFileSync('./output.json', JSON.stringify(indexDocument));
+            // const schemaParser = new SchemaParser(this.conf, indexDocument);
+            // const parsedSchema = await schemaParser.parse();
+
+            // const typeRenderer = new TypeRenderer({
+            //     overridePolicy: this.conf.override_policies[Target.TYPES]!,
+            //     parsedSchema: parsedSchema,
+            //     config: this.conf,
+            // });
+
+            console.log('⏳ Генерируем типы...');
+            await fs.writeFileSync('./output.json', JSON.stringify(indexDocument));
+            const openApiSchemaParser = new OpenApiParser(indexDocument);
+            const parsedSchema = await openApiSchemaParser.parse();
+
+            // await fs.writeFileSync('./schema.json', JSON.stringify(pathObj));
+            const typeRenderer = new TypesGenerator(parsedSchema);
+            // console.log('typeRenderer=', typeRenderer);
+            await typeRenderer.parse();
+            // await typeRenderer.render();
+
+            // console.log('✔️ Типы сгенерированы!');
+
+            // // if (targets.includes(Target.REACT_QUERY)) {
+            // //     const hookGen = new ReactQueryHookGenerator({
+            // //         config: this.conf,
+            // //         overridePolicy: override_policies[Target.REACT_QUERY]!,
+            // //         typeFetcher: operation => {
+            // //             const types = typeRenderer.getTypesForRequest(operation.originalPath, operation.method as any)!;
+            // //             return types;
+            // //         },
+            // //     });
+
+            // //     console.log('⏳ Генерируем хуки react-query...');
+
+            // //     await hookGen.generate(parsedSchema.operations);
+
+            // //     console.log('✔️ Хуки сгенерированы!');
+            // // }
+
+            // console.log('⏳ Запускаем eslint --fix...');
+            // try {
+            //     await runEslintAutoFix(this.conf.output_path);
+            // } catch {}
+
+            // console.log('✔️ Файлы приведены в соответствие с вашим prettier/eslint!');
+
+            // if (this.isSomePrompted) {
+            //     await Config.save(this.conf);
+            // }
+        } catch (error) {
+            console.error(error);
         }
     }
 }

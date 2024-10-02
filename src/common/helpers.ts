@@ -6,7 +6,7 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { RequestBodyObject } from 'openapi-typescript';
 import { SourceFile } from 'ts-morph';
 
-import { ConfigSchema } from '../config/Config';
+// import { ConfigSchema } from '../config/Config';
 import { extractPathVariables, replacePathVariables } from './pathVariables';
 import { AugmentedOperation, ImportData } from './types';
 
@@ -77,25 +77,25 @@ const extractQueryKey = (original: OpenAPIV3.OperationObject) => {
     return kebab(original.operationId!);
 };
 
-const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
-    if (!op.isMutation) return [];
+// const generateInvalidationTargets = (op: AugmentedOperation, allOperations: AugmentedOperation[]) => {
+//     if (!op.isMutation) return [];
 
-    const file = op.storePath;
+//     const file = op.storePath;
 
-    const results = allOperations.filter(e => {
-        if (e.storePath !== file) return false;
-        if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
+//     const results = allOperations.filter(e => {
+//         if (e.storePath !== file) return false;
+//         if (!SEARCH_OPCODES.includes(parseOpcode(e))) return false;
 
-        if (e.originalPath.endsWith('id}')) return true;
-        if (e.originalPath.endsWith('Id}')) return true;
-        if (e.originalPath.endsWith(':search')) return true;
-        if (e.originalPath.endsWith(':search-one')) return true;
+//         if (e.originalPath.endsWith('id}')) return true;
+//         if (e.originalPath.endsWith('Id}')) return true;
+//         if (e.originalPath.endsWith(':search')) return true;
+//         if (e.originalPath.endsWith(':search-one')) return true;
 
-        return false;
-    });
+//         return false;
+//     });
 
-    return results;
-};
+//     return results;
+// };
 
 export const isEmptyObject = (val: any): val is null => {
     if (!val) return true;
@@ -174,7 +174,7 @@ const applyFirstRewrite = (rewrites: Record<string, string>, path: string) => {
 
 export const augmentPathsOperations = (
     paths: OpenAPIV3.PathsObject,
-    config: ConfigSchema,
+    // config: ConfigSchema,
     directoryGetter: DirectoryGetter = defaultGetDirectory,
     rewrites: Record<string, string> = {}
 ) => {
@@ -212,11 +212,11 @@ export const augmentPathsOperations = (
         });
     });
 
-    if (config['react-query'].generate_invalidations) {
-        for (const operation of allOperations) {
-            operation.invalidationTargets = generateInvalidationTargets(operation, allOperations);
-        }
-    }
+    // if (config['react-query'].generate_invalidations) {
+    //     for (const operation of allOperations) {
+    //         operation.invalidationTargets = generateInvalidationTargets(operation, allOperations);
+    //     }
+    // }
 
     return allOperations;
 };

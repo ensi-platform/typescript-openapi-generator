@@ -1,11 +1,11 @@
 /* eslint-disable complexity */
 import { removeTrailingLineBreak } from '../common/helpers';
-import { Reference } from '../deref';
+import { IReference } from '../deref/types';
 
 /* eslint-disable max-params */
-export type InterfaceNameFunction = (reference: Reference) => string;
+export type InterfaceNameFunction = (reference: IReference) => string;
 
-type SchemaProcessor = (schema: any, reference: Reference, demandedRefs: Set<string>) => RenderElement;
+type SchemaProcessor = (schema: any, reference: IReference, demandedRefs: Set<string>) => RenderElement;
 
 export type ImportStatement = {
     fromOutput: string;
@@ -14,7 +14,7 @@ export type ImportStatement = {
 
 export type RenderElement = {
     type: 'literal' | 'enum' | 'combination' | 'array' | 'object' | 'objectOfRequired';
-    reference: Reference;
+    reference: IReference;
     name: string;
     extraData?: unknown;
     definition: { description: string; code: string };
@@ -51,10 +51,11 @@ export type Prettify<T> = {
     [K in keyof T]: T[K];
 };
 
-export type RequireKeys<T extends object, K extends keyof T> = 
+export type RequireKeys<T extends object, K extends keyof T> =
     Required<Pick<T, K>> & Omit<T, K>;`;
     }
 
+    // Получаем наименование ключа енама
     processEnumKey(value: string | number) {
         if (typeof value === 'number') throw new Error('Unsupported enum value: ' + value);
 
@@ -63,10 +64,11 @@ export type RequireKeys<T extends object, K extends keyof T> =
         return result;
     }
 
+    // Ensi
     renderCommonResponse(
         processSchema: SchemaProcessor,
         typeName: string,
-        reference: Reference,
+        reference: IReference,
         currentSchema: any,
         description: string,
         demandedRefs: Set<string>
@@ -112,7 +114,8 @@ export type RequireKeys<T extends object, K extends keyof T> =
         };
     }
 
-    renderEnum(typeName: string, reference: Reference, currentSchema: any, description: string): RenderElement {
+    // Получить структуру енама
+    renderEnum(typeName: string, reference: IReference, currentSchema: any, description: string): RenderElement {
         const schemaEnum = currentSchema.enum as (string | number)[];
         const keyNames = currentSchema['x-enum-varnames'];
         const keyDescriptions = currentSchema['x-enum-descriptions'] || null;
@@ -131,22 +134,25 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
         return {
             type: 'enum',
+            // (PagionationOffest | PagiontionCursor)
             needsParenthesis: false,
             name: typeName,
             definition: { code, description },
+            // не нужно все ниже
             deps: [],
             reference,
             extraImports: [],
         };
     }
 
+    // Комибинации с anyOff  и oneOff
     renderCombination(
         combinationKey: '|' | '&',
         typeName: string,
         description: string,
         schema: any,
         currentSchema: any,
-        reference: Reference,
+        reference: IReference,
         processSchema: SchemaProcessor,
         demandedRefs: Set<string>
     ): RenderElement {
@@ -163,14 +169,14 @@ export type RequireKeys<T extends object, K extends keyof T> =
             .map((subSchema: any) => {
                 const isExtraKey = !subSchema.$reference || !subSchema.$reference.target;
 
-                const subReference: Reference | undefined =
+                const subReference: IReference | undefined =
                     typeof subSchema === 'object' ? subSchema?.$reference : undefined;
 
                 if (subReference) {
                     demandedRefs.add(`${subReference.absolutePath}#/${subReference.target}`);
                 }
 
-                const newReference: Reference = subReference || {
+                const newReference: IReference = subReference || {
                     ...reference,
                     extraKey: isExtraKey ? 'Combination' : undefined,
                 };
@@ -250,6 +256,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
         };
     }
 
+    // Комментарий в типе
     renderExample(schema: any) {
         if (!schema?.example) return '';
 
@@ -276,11 +283,12 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
     renderObjects = new WeakMap<object, RenderElement>();
 
+    // Обработка объекта
     renderObject(
         typeName: string,
         description: string,
         currentSchema: any,
-        reference: Reference,
+        reference: IReference,
         processSchema: SchemaProcessor,
         demandedRefs: Set<string>
     ): RenderElement {
@@ -338,7 +346,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
             const isOptional = propertySchema.nullable === true || !required.includes(key);
 
             const propertyReference = (typeof propertySchema === 'object' ? propertySchema?.$reference : undefined) as
-                | Reference
+                | IReference
                 | undefined;
 
             let ref: string | undefined;
@@ -356,7 +364,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
 
             const currentReference = propertyReference || reference;
 
-            const newReference: Reference = { ...currentReference, extraKey: key, inObjectNamed: typeName };
+            const newReference: IReference = { ...currentReference, extraKey: key, inObjectNamed: typeName };
 
             const element = processSchema(propertySchema, newReference, demandedRefs);
             demandedRefs.delete(ref || '');
@@ -456,7 +464,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
         }
     }
 
-    render(rootSchema: object, rootReference: Reference) {
+    render(rootSchema: object, rootReference: IReference) {
         const processSchema: SchemaProcessor = (schema, reference, demandedRefs) => {
             if (!schema) {
                 throw new Error('cant pass null schema. Root was' + JSON.stringify(schema));
@@ -468,6 +476,7 @@ export type RequireKeys<T extends object, K extends keyof T> =
                 return this.cache.get(schema)!;
             }
 
+            // Сделать по аналогии с бэком по пути (добавить возможность из конфига вмешиваться)
             const typeName = this.getInterfaceName(reference);
 
             const description = schema.description

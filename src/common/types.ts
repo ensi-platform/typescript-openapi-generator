@@ -1,5 +1,6 @@
 import { JSONSchema } from '@stoplight/json-schema-ref-parser';
 import { OpenAPIV3 } from 'openapi-types';
+import { PathItemObject } from 'openapi-typescript';
 
 import { HttpMethod } from './helpers';
 
@@ -48,3 +49,7 @@ export interface RefSchemaData {
 }
 
 export type OperationsToPathsFn = (operations: AugmentedOperation[]) => Record<string, AugmentedOperation[]>;
+
+export type ICommonRefObjectItem = PathItemObject;
+
+// PathItemObject | ReferenceObject | SchemaObject;

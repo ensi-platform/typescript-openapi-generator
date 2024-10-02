@@ -1,99 +1,12 @@
-import * as path from 'node:path';
+import { OpenAPIV3 } from 'openapi-types';
 
-import { resolvePath } from '../common/helpers';
+import { getReference } from './helpers';
+import { IReference } from './types';
 
-type Target = string; // #ModelName -> ModelName
-type AbsolutePath = string;
-
-export interface Reference {
-    // Название целевой структуры в yaml файле
-    target: Target;
-    // Оригинальное $ref значение
-    refPath: string;
-    // Абсолютный путь до .yaml файла
-    absolutePath: AbsolutePath;
-
-    // Загруженный объект target
-    targetObject: Record<string, any> | null;
-
-    /**
-     * Дополнительный ключ, для генераторов:
-     * {
-        "SearchSimilarProductGroupsRequest": {
-            "type": "object",
-            "properties": {
-                // В reference для этого свойства extraKey = "sort"
-                "sort": {
-                    "description": "Сортировка. Доступные для сортировки поля см. в :meta",
-                    "$ref": "../../../common_schemas.yaml#/RequestBodySort"
-                },
-                // В reference для этого свойства extraKey = "filter"
-                "filter": {
-                    "type": "object",
-                    "description": "Фильтр. Доступные для фильтрации поля см. в :meta"
-                },
-            }
-        }
-    }
-     */
-    extraKey?: string;
-    inObjectNamed?: string;
-}
-
-export type DerefedObject<T> = (T extends Record<string, any>
-    ? {
-          [key in keyof T]: DerefedObject<T> | Record<string, any> | number | string | boolean;
-      }
-    : {
-          [key: string]: DerefedObject<T> | Record<string, any> | number | string | boolean;
-      }) & {
-    $reference?: Reference;
-};
-
-function parseReference(value: any, relativeReference?: Reference): Reference {
-    const ref = value.$ref;
-    delete value.$ref;
-
-    let absolutePath: string;
-    let target: string;
-
-    if (ref.startsWith('#/') && relativeReference) {
-        const newTarget = ref.split('#/')[1];
-
-        absolutePath = relativeReference.absolutePath;
-        target = newTarget;
-    } else {
-        const safeRef = ref.endsWith('.yaml') ? ref : `${ref}.yaml`;
-
-        const [filePath, anchor] = safeRef.split('.yaml');
-        const file = `${filePath}.yaml`;
-
-        absolutePath = path.join('', file).replaceAll('\\', '/');
-        target = anchor?.split('#/')[1];
-
-        const relativeFile = relativeReference?.absolutePath || '.';
-        const baseName = path.basename(relativeFile);
-
-        absolutePath = resolvePath([relativeFile.replace(`/${baseName}`, '').replace(baseName, ''), absolutePath]);
-    }
-
-    return {
-        refPath: ref,
-        targetObject: null,
-        absolutePath,
-        target,
-    };
-}
-
-function assignToObject(obj: Record<string, any>, key: string | number, value: any, reference: Reference) {
-    obj[key] = value;
-    obj[key].$reference = { ...reference };
-}
-
-export const traverseAndModify = async <T extends Record<string, any> = Record<string, any>>(
-    rootObj: T,
-    onDeref: (ref: Reference) => Promise<Record<string, any>>,
-    progressHandler: (progress: { totalRuns: number; completedRuns: number; percent: number }) => void
+export const traverseAndModify = async <T extends Record<string, unknown>>(
+    rootObj: OpenAPIV3.Document<T>,
+    onLoad: (ref: IReference) => Promise<Record<string, unknown>>,
+    progress: (progress: { totalRuns: number; completedRuns: number; percent: number }) => void
 ) => {
     const visited = new WeakSet();
     let totalRuns = 0;
@@ -101,7 +14,7 @@ export const traverseAndModify = async <T extends Record<string, any> = Record<s
 
     const resolvedRefs = new Map<string, object>();
 
-    const recursive = async (obj: any, relativeReference?: Reference, iters = 0) => {
+    const recursive = async (obj: Record<string, any>, relativeReference?: IReference, iters = 0) => {
         totalRuns++;
 
         if (typeof obj !== 'object' || !obj) return;
@@ -115,32 +28,36 @@ export const traverseAndModify = async <T extends Record<string, any> = Record<s
 
         await Promise.all(
             keys.map(async key => {
-                const value = obj[key] as Record<string, any>;
+                const value = obj[key];
 
                 if (typeof value !== 'object' || !value) return;
 
                 if (value.$ref) {
-                    const reference = parseReference(value, relativeReference);
-                    const resolvedObj = await onDeref(reference);
+                    // Разбиваем $ref на отдельные строки получая путь до файла и конктретную сущность
+                    const reference = getReference(value.$ref, relativeReference);
 
+                    const resolvedObj = await onLoad(reference);
+
+                    // Если value - объект, значит проходимся дальше
                     if (typeof resolvedObj === 'object') {
                         await recursive(resolvedObj, reference, iters + 1);
                     }
 
                     resolvedRefs.set(reference.absolutePath + '#/' + reference.target || '', resolvedObj);
 
-                    assignToObject(obj, key, resolvedObj, reference);
-
-                    if (!resolvedObj) {
-                        console.log('resolvedObj is null at', reference.absolutePath, reference.target);
+                    if (resolvedObj) {
+                        obj[key] = JSON.parse(JSON.stringify({ ...resolvedObj, ref: value.$ref }));
+                    } else {
+                        console.error('resolvedObj is null at', reference.absolutePath, reference.target);
                     }
                 } else {
+                    // Если это объект без ссылки на другой документ, то проходимся дальше по ключам
                     await recursive(value, relativeReference, iters + 1);
                 }
 
                 completedRuns++;
                 const percent = (completedRuns / totalRuns) * 100;
-                progressHandler({
+                progress({
                     completedRuns,
                     totalRuns,
                     percent,
