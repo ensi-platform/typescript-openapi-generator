@@ -1,7 +1,7 @@
 import { parse } from '@stoplight/yaml';
 
-import { ApiClient } from '../common/ApiClient';
-import { ICommonRefObjectItem } from '../common/types';
+import { ApiClient } from '../../common/ApiClient';
+import { ICommonRefObjectItem } from '../../common/types';
 import { getOpenApiDocument } from './helpers';
 import { ILoadedData, ISchemaLoader } from './types';
 
