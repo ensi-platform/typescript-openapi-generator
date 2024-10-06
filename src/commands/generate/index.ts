@@ -7,13 +7,11 @@ import { OpenApiParser } from '../../classes/OpenApiSchemaParser';
 import { TypesGenerator } from '../../classes/TypesGenerator';
 // import { OpenAPIV3 } from 'openapi-types';
 // import { ReactQueryHookGenerator } from '../../codeGen/ReactQueryHookGenerator';
-import { SchemaParser } from '../../common/SchemaParser';
 import { runEslintAutoFix } from '../../common/helpers';
 import { OverridePolicy } from '../../common/types';
 import { Config, ConfigSchema, Target } from '../../config/Config';
 import { traverseAndModify } from '../../deref';
 import { getSchemaLoaderForOrigin } from '../../schemaLoaders';
-import { TypeRenderer } from '../../typegen/TypeRenderer';
 
 export default class Generate extends Command {
     static description = 'Main entrypoint';
@@ -154,7 +152,9 @@ export default class Generate extends Command {
 
                     if (!ref.target) return result;
 
-                    return result[ref.target];
+                    return ref.target.reduce((acc, targetStr) => {
+                        return acc[targetStr];
+                    }, result);
                 },
                 progress => {
                     const percent = Number(progress.percent.toFixed(0));

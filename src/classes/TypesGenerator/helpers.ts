@@ -10,12 +10,12 @@ export const getFolderName = (path: string) =>
 export const getTypeName = ({
     ref,
     path,
-    method,
+    postFix,
     type,
 }: {
     ref: string;
     path: string;
-    method: string;
+    postFix: string;
     type: 'response' | 'request';
 }) => {
     let name = ref.split('#/')[1];
@@ -25,7 +25,7 @@ export const getTypeName = ({
         name = pascal(name);
     }
 
-    name += pascal(method) + pascal(type);
+    name += pascal(postFix) + pascal(type);
 
     // if (name.startsWith('components/')) {
     //     name = name.split('/').pop()!;

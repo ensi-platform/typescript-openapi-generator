@@ -25,6 +25,19 @@ export class UrlLoader implements ISchemaLoader {
         return getOpenApiDocument(result);
     }
 
+    private delayedLoadJson(path: string) {
+        return new Promise<ILoadedData>((resolve, reject) => {
+            setTimeout(async () => {
+                try {
+                    const result = await this.loadJson(path);
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                }
+            }, 100);
+        });
+    }
+
     private requestCache = new Map<string, Promise<string>>();
     private objectCache = new Map<string, ILoadedData>();
 
@@ -33,13 +46,13 @@ export class UrlLoader implements ISchemaLoader {
             const safePath = removeLeadingSlash(path) || 'index.yaml';
             const url = `${this.url}/${safePath}`;
 
-            if (this.objectCache.has(url)) return this.objectCache.get(url)!;
+            if (this.objectCache.has(url)) {
+                const obj = this.objectCache.get(url)!;
+                return obj;
+            }
 
             if (this.requestCache.has(url)) {
-                const res = await this.requestCache.get(url)!;
-                const obj = parse<ILoadedData>(res);
-
-                this.objectCache.set(url, obj);
+                const obj = await this.delayedLoadJson(path);
 
                 return obj;
             }
@@ -51,6 +64,9 @@ export class UrlLoader implements ISchemaLoader {
             const obj = parse<ILoadedData>(res);
 
             this.objectCache.set(url, obj);
+
+            this.requestCache.delete(url);
+
             return obj;
         } catch (error) {
             console.error(error);

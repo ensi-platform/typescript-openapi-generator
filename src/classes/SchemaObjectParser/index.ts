@@ -1,7 +1,16 @@
 import { SchemaObject } from 'openapi-typescript';
 
 import { getInterfaceValue, getRequired, getValue, serializeTypeString } from '../../common/serializeType';
-import { ArraySchemaObjectType, ObjectSchemaObjectType, SchemaObjectType, SimpleSchemaObjectType } from './types';
+import { ANY_CONST } from './constants';
+import {
+    ArraySchemaObjectType,
+    CombinationOpertaionEnum,
+    ObjectSchemaObjectType,
+    SchemaObjectType,
+    SimpleSchemaObjectType,
+} from './types';
+import { SchemaTypeEnum, getSchemaType } from './utils/getSchemaType';
+import { hasAnyValue } from './utils/hasAnyValue';
 
 export class SchemaObjectParser {
     // If the types are invalid, then we bring them to the base state
@@ -67,54 +76,71 @@ export class SchemaObjectParser {
         operation,
         schema,
     }: {
-        operation: 'conjunction' | 'disjunction';
+        operation: CombinationOpertaionEnum;
         schema: SchemaObjectType[];
     }): string => {
-        const symbol = operation === 'conjunction' ? ' & ' : ' | ';
-        const operationSchema = schema.reduce((acc, s) => {
-            const logical = (s.oneOf || s.allOf || s.anyOf) as SchemaObjectType[];
-            if (logical) {
-                const childOperation = s.allOf ? 'conjunction' : 'disjunction';
-                const childOperationSchemaType = this.getCombinationType({
-                    schema: logical,
-                    operation: childOperation,
-                });
-                return acc ? acc + symbol + childOperationSchemaType : childOperationSchemaType;
-            }
-
-            const isValidSchema = this.hasValidSchema(s);
-            if (!isValidSchema) return acc;
-
-            if (s.type === 'object') {
-                const objectValueType = this.getObjectSchemaType({ name: '', schema: s, required: true });
-
-                return acc ? acc + symbol + objectValueType : objectValueType;
-            }
-
-            if (s.type === 'array') {
-                const arrayValueType = this.getArraySchemaType({
-                    name: '',
-                    schema: s as ArraySchemaObjectType,
-                    required: true,
+        const symbol = operation === CombinationOpertaionEnum.CONJUNCATION ? ' & ' : ' | ';
+        const operationSchema = schema
+            .reduce<string[]>((acc, s) => {
+                const typedShema = getSchemaType({
+                    schema: s,
+                    defaultValue: '',
                 });
 
-                return acc ? acc + symbol + arrayValueType : arrayValueType;
-            }
+                if (typedShema.type === SchemaTypeEnum.ANY) return acc;
 
-            if (s.type === 'string' || s.type === 'number' || s.type === 'integer' || s.type === 'boolean') {
-                const arrayValueType = this.getSimpleSchemaType({
-                    name: '',
-                    schema: s as SimpleSchemaObjectType,
-                    required: true,
-                });
+                if (typedShema.type === SchemaTypeEnum.COMBINATION) {
+                    const childOperationSchemaType = this.getCombinationType({
+                        schema: typedShema.schema,
+                        operation: typedShema.operation,
+                    });
 
-                return acc ? acc + symbol + arrayValueType : arrayValueType;
-            }
+                    const isAny = hasAnyValue(childOperationSchemaType);
 
-            return acc;
-        }, '');
+                    return isAny || !childOperationSchemaType ? acc : [...acc, childOperationSchemaType];
+                }
+
+                if (typedShema.type === SchemaTypeEnum.OBJECT) {
+                    const objectValueType = this.getObjectSchemaType({
+                        name: '',
+                        schema: typedShema.schema,
+                        required: true,
+                    });
+                    const isAny = hasAnyValue(objectValueType);
+
+                    return !objectValueType || isAny ? acc : [...acc, objectValueType];
+                }
+
+                if (typedShema.type === SchemaTypeEnum.ARRAY) {
+                    const arrayValueType = this.getArraySchemaType({
+                        name: '',
+                        schema: typedShema.schema,
+                        required: true,
+                    });
+
+                    const isAny = hasAnyValue(arrayValueType);
+
+                    return isAny || !arrayValueType ? acc : [...acc, arrayValueType];
+                }
+
+                if (typedShema.type === SchemaTypeEnum.SIMPLE) {
+                    const simpleValueType = this.getSimpleSchemaType({
+                        name: '',
+                        schema: typedShema.schema,
+                        required: true,
+                    });
+
+                    const isAny = hasAnyValue(simpleValueType);
+
+                    return isAny || !simpleValueType ? acc : [...acc, simpleValueType];
+                }
+
+                return acc;
+            }, [])
+            .join(` ${symbol} `);
+
         if (operationSchema) return `(${operationSchema})`;
-        return 'any';
+        return ANY_CONST;
     };
 
     getArraySchemaType = ({
@@ -135,39 +161,41 @@ export class SchemaObjectParser {
             required,
         });
 
-        const isValidSchema = this.hasValidSchema(schema);
-        if (!isValidSchema) return defaultResult;
-
         const value = schema.items as ObjectSchemaObjectType | SimpleSchemaObjectType | ArraySchemaObjectType;
 
-        const logical = (value.oneOf || value.allOf || value.anyOf) as SchemaObjectType[];
-        if (logical) {
-            const childOperation = value.allOf ? 'conjunction' : 'disjunction';
+        const typedShema = getSchemaType({
+            schema: value,
+            defaultValue: defaultResult,
+        });
+
+        if (typedShema.type === SchemaTypeEnum.ANY) return typedShema.schema;
+
+        if (typedShema.type === SchemaTypeEnum.COMBINATION) {
             const v = `Array<${this.getCombinationType({
-                schema: logical,
-                operation: childOperation,
+                schema: typedShema.schema,
+                operation: typedShema.operation,
             })}>`;
 
             return getInterfaceValue({
                 name,
-                value: `${getValue(v, value.nullable)}`,
+                value: `${getValue(v, schema.nullable)}`,
                 example: schema.example,
                 description: schema.description,
-                type: 'array',
+                type: '',
                 required,
             });
         }
 
-        if (value.type === 'array') {
+        if (typedShema.type === SchemaTypeEnum.ARRAY) {
             const v = `Array<${this.getArraySchemaType({
                 name: '',
-                schema: value as ArraySchemaObjectType,
+                schema: typedShema.schema,
                 required: true,
             })}>`;
 
             return getInterfaceValue({
                 name,
-                value: `${getValue(v, value.nullable)}`,
+                value: `${getValue(v, schema.nullable)}`,
                 example: schema.example,
                 description: schema.description,
                 type: 'array',
@@ -175,40 +203,34 @@ export class SchemaObjectParser {
             });
         }
 
-        if (value.type === 'object') {
+        if (typedShema.type === SchemaTypeEnum.OBJECT) {
             const v = `Array<${this.getObjectSchemaType({
                 name: '',
-                schema: value,
+                schema: typedShema.schema,
                 required: true,
             })}>`;
             return getInterfaceValue({
                 name,
-                value: `${getValue(v, value.nullable)}`,
+                value: `${getValue(v, schema.nullable)}`,
                 example: schema.example,
                 description: schema.description,
-                type: 'array',
+                type: 'object',
                 required,
             });
         }
 
-        if (
-            value.type === 'string' ||
-            value.type === 'number' ||
-            value.type === 'integer' ||
-            value.type === 'boolean' ||
-            value.type === 'null'
-        ) {
+        if (typedShema.type === SchemaTypeEnum.SIMPLE) {
             const simpleValue = this.getSimpleSchemaType({
                 name: '',
-                schema: value as SimpleSchemaObjectType,
+                schema: typedShema.schema,
                 required: true,
             });
             return getInterfaceValue({
                 name,
-                value: `Array<${simpleValue}>`,
+                value: `${getValue(`Array<${simpleValue}>`, schema.nullable)}`,
                 example: schema.example,
                 description: schema.description,
-                type: value.type,
+                type: typedShema.schema.type,
                 required,
             });
         }
@@ -227,17 +249,14 @@ export class SchemaObjectParser {
     }): string => {
         const defaultResult = getInterfaceValue({
             name,
-            value: 'any',
+            value: ANY_CONST,
             description: '',
             example: '',
             type: '',
             required,
         });
 
-        const isValidSchema = this.hasValidSchema(schema);
-        if (!isValidSchema) return defaultResult;
-
-        if (!schema.properties) return defaultResult;
+        if (typeof schema !== 'object' || !schema?.properties) return defaultResult;
 
         const objectKeys = Object.keys(schema.properties);
 
@@ -246,12 +265,19 @@ export class SchemaObjectParser {
 
             const value = schema.properties![key] as SchemaObject;
 
-            const logical = (value.oneOf || value.allOf || value.anyOf) as SchemaObjectType[];
-            if (logical) {
-                const childOperation = value.allOf ? 'conjunction' : 'disjunction';
+            this.normalizeSchema(value);
+
+            const typedShema = getSchemaType({
+                schema: value,
+                defaultValue: '',
+            });
+
+            if (typedShema.type === SchemaTypeEnum.ANY) return acc;
+
+            if (typedShema.type === SchemaTypeEnum.COMBINATION) {
                 const v = this.getCombinationType({
-                    schema: logical,
-                    operation: childOperation,
+                    schema: typedShema.schema,
+                    operation: typedShema.operation,
                 });
 
                 return (
@@ -267,40 +293,31 @@ export class SchemaObjectParser {
                 );
             }
 
-            if (!('type' in value)) return acc;
-
-            this.normalizeSchema(value);
-            if (value.type === 'object') {
+            if (typedShema.type === SchemaTypeEnum.OBJECT) {
                 const objectValue = this.getObjectSchemaType({
                     name: key,
-                    schema: value,
+                    schema: typedShema.schema,
                     required: fieldRequired,
                 });
 
-                if (objectValue) return acc + `${getValue(objectValue, value.nullable)};\n`;
+                if (objectValue) return acc + `${getValue(objectValue, typedShema.schema.nullable)};\n`;
             }
 
-            if (value.type === 'array') {
+            if (typedShema.type === SchemaTypeEnum.ARRAY) {
                 return (
                     acc +
                     `${this.getArraySchemaType({
                         name: key,
-                        schema: value,
+                        schema: typedShema.schema,
                         required: fieldRequired,
                     })};\n`
                 );
             }
 
-            if (
-                value.type === 'string' ||
-                value.type === 'number' ||
-                value.type === 'integer' ||
-                value.type === 'boolean' ||
-                value.type === 'null'
-            ) {
+            if (typedShema.type === SchemaTypeEnum.SIMPLE) {
                 const simpleValue = this.getSimpleSchemaType({
                     name: key,
-                    schema: value as SimpleSchemaObjectType,
+                    schema: typedShema.schema,
                     required: fieldRequired,
                 });
 
@@ -404,17 +421,21 @@ export class SchemaObjectParser {
             type: '',
         });
 
-        if (!schema || typeof schema !== 'object') {
-            console.error('cant pass null schema. Root was' + JSON.stringify(schema));
-            return defaultResult;
+        this.normalizeSchema(schema);
+
+        const typedShema = getSchemaType({
+            schema,
+            defaultValue: defaultResult,
+        });
+
+        if (typedShema.type === SchemaTypeEnum.ANY) {
+            return typedShema.schema;
         }
 
-        const logical = (schema.oneOf || schema.allOf || schema.anyOf) as SchemaObjectType[];
-        if (logical) {
-            const childOperation = schema.allOf ? 'conjunction' : 'disjunction';
+        if (typedShema.type === SchemaTypeEnum.COMBINATION) {
             const value = this.getCombinationType({
-                schema: logical,
-                operation: childOperation,
+                schema: typedShema.schema,
+                operation: typedShema.operation,
             });
 
             return serializeTypeString({
@@ -425,33 +446,28 @@ export class SchemaObjectParser {
             });
         }
 
-        if (!('type' in schema)) {
-            console.error('cant pass a schema with an empty type. The root was' + JSON.stringify(schema));
-            return defaultResult;
-        }
-
-        this.normalizeSchema(schema);
-
-        if (schema.type === 'object') {
+        if (typedShema.type === SchemaTypeEnum.OBJECT) {
             const value = this.getObjectSchemaType({
                 name: '',
-                schema: schema as ObjectSchemaObjectType,
+                schema: typedShema.schema,
                 required: true,
             });
 
             return serializeTypeString({
                 description,
                 content:
-                    value === 'any' ? `export type ${typeName} = ${value};\n` : `export interface ${typeName} ${value}`,
+                    value === ANY_CONST
+                        ? `export type ${typeName} = ${value};\n`
+                        : `export interface ${typeName} ${value}`,
                 example: '',
                 type: 'object',
             });
         }
 
-        if (schema.type === 'array') {
+        if (typedShema.type === SchemaTypeEnum.ARRAY) {
             const value = this.getArraySchemaType({
                 name: '',
-                schema: schema as ArraySchemaObjectType,
+                schema: typedShema.schema,
                 required: true,
             });
 
@@ -463,17 +479,10 @@ export class SchemaObjectParser {
             });
         }
 
-        if (
-            (schema.type === 'string' ||
-                schema.type === 'integer' ||
-                schema.type === 'number' ||
-                schema.type === 'null' ||
-                schema.type === 'boolean') &&
-            !Array.isArray(schema.type)
-        ) {
+        if (typedShema.type === SchemaTypeEnum.SIMPLE && !Array.isArray(schema.type)) {
             const value = this.getSimpleSchemaType({
                 name: '',
-                schema: schema as SimpleSchemaObjectType,
+                schema: typedShema.schema,
                 required: true,
             });
 

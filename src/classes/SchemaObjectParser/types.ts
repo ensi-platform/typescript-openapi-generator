@@ -9,6 +9,11 @@ import {
     StringSubtype,
 } from 'openapi-typescript';
 
+export enum CombinationOpertaionEnum {
+    CONJUNCATION = 'Conjunction',
+    DISJUNCATION = 'Disjunction',
+}
+
 export type SimpleSchemaObjectType = SchemaObject &
     (StringSubtype | NumberSubtype | IntegerSubtype | BooleanSubtype | NullSubtype);
 

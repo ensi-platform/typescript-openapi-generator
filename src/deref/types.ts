@@ -1,4 +1,4 @@
-type ITarget = string; // #ModelName -> ModelName
+type ITarget = string[]; // #ModelName -> ModelName
 type IAbsolutePath = string;
 
 export interface IReference {

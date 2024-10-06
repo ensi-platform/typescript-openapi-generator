@@ -5,10 +5,10 @@ import { type IReference } from './types';
 
 export const getReference = (ref: string, relativeReference?: IReference): IReference => {
     let absolutePath: string;
-    let target: string;
+    let target: string[];
 
     if (ref.startsWith('#/') && relativeReference) {
-        const newTarget = ref.split('#/')[1];
+        const newTarget = ref.split('#/')[1]?.split('/');
 
         absolutePath = relativeReference.absolutePath;
         target = newTarget;
@@ -18,10 +18,10 @@ export const getReference = (ref: string, relativeReference?: IReference): IRefe
         // ./common_parameters.yaml
         const file = `${filePath}.yaml`;
 
-        // '/home/username/project/./common_parameters.yaml.yaml'
+        // '/home/username/project/./common_parameters.yaml'
         absolutePath = path.join('', file).replaceAll('\\', '/');
         // 'QueryInclude'
-        target = anchor?.split('#/')[1];
+        target = anchor?.split('#/')[1]?.split('/');
 
         const relativeFile = relativeReference?.absolutePath || '.';
         const baseName = path.basename(relativeFile);
