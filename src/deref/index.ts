@@ -3,29 +3,53 @@ import { OpenAPIV3 } from 'openapi-types';
 import { getReference } from './helpers';
 import { IReference } from './types';
 
-const hasCicle = (arr: string[]) => {
-    const reversedArr = arr.reverse();
+// const hasCicle = (arr: string[]) => {
+//     const reversedArr = arr.reverse();
 
-    const comparisonGroup = [];
+//     const comparisonGroup: string[] = [];
 
-    while (comparisonGroup.length <= arr.length / 2) {
-        comparisonGroup.push(reversedArr[comparisonGroup.length]);
-        const isCicle = comparisonGroup.every((item, i) => item === reversedArr[i + comparisonGroup.length]);
-        if (isCicle) return true;
+//     while (comparisonGroup.length <= arr.length / 2) {
+//         const nextItem = reversedArr[comparisonGroup.length];
+//         comparisonGroup.push(nextItem);
+//         const repeatedNextItem = comparisonGroup.reduce((acc, item) => (item === nextItem ? acc + 1 : acc), 0);
+//         if (repeatedNextItem > 1) {
+//             return true;
+//         }
+
+//         const isCicle = comparisonGroup.every((item, i) => item === reversedArr[i + comparisonGroup.length]);
+//         if (isCicle) return true;
+//     }
+
+//     return false;
+// };
+
+const hasCycle = (paths: string[]): boolean => {
+    const seenPaths = new Set<string>();
+    for (const path of paths) {
+        if (seenPaths.has(path)) {
+            return true;
+        }
+
+        seenPaths.add(path);
     }
 
     return false;
 };
+
+// async function loadPLimit() {
+//     const pLimit = await import('p-limit');
+//     return pLimit.default(10); // Note: ESM exports are accessed via `.default`
+// }
 
 export const traverseAndModify = async <T extends Record<string, unknown>>(
     rootObj: OpenAPIV3.Document<T>,
     onLoad: (ref: IReference & { key: string | number }) => Promise<Record<string, unknown>>,
     progress: (progress: { totalRuns: number; completedRuns: number; percent: number }) => void
 ) => {
+    // const limit = await loadPLimit();
+
     let totalRuns = 0;
     let completedRuns = 0;
-
-    const resolvedRefs = new Map<string, object>();
 
     const recursive = async ({
         obj,
@@ -39,6 +63,11 @@ export const traverseAndModify = async <T extends Record<string, unknown>>(
         branchPaths?: string[];
     }) => {
         totalRuns++;
+
+        // if (iters > 50) {
+        //     console.warn(`Max recursion depth reached at path: ${branchPaths.join(' -> ')}`);
+        //     return;
+        // }
 
         if (typeof obj !== 'object' || !obj) {
             return;
@@ -59,7 +88,7 @@ export const traverseAndModify = async <T extends Record<string, unknown>>(
                 if (value.$ref) {
                     const paths = [...branchPaths, value.$ref];
 
-                    if (hasCicle(paths)) return undefined;
+                    if (hasCycle(paths)) return undefined;
 
                     // Разбиваем $ref на отдельные строки получая путь до файла и конктретную сущность
                     const reference = getReference(value.$ref, relativeReference);
@@ -80,10 +109,8 @@ export const traverseAndModify = async <T extends Record<string, unknown>>(
                         });
                     }
 
-                    resolvedRefs.set(value.$ref, resolvedObj);
-
                     if (resolvedObj) {
-                        obj[key] = JSON.parse(JSON.stringify({ ...resolvedObj, ref: value.$ref }));
+                        obj[key] = { ...resolvedObj, ref: value.$ref };
                     } else {
                         console.error('resolvedObj is null at', reference.absolutePath, reference.target);
                     }

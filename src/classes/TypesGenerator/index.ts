@@ -59,6 +59,24 @@ export class TypesGenerator {
         return '';
     }
 
+    getTypeSchemaOperationParamsItem({ ref, method, path, operationData }: IParsedSchemaItem): string {
+        if (!operationData.parameters) return '';
+        // if (Array.isArray(operationData.parameters)) {
+        //     operationData.parameters.red
+        // }
+        return Object.keys(operationData.parameters).reduce((acc, code) => {
+            const typeName = getTypeName({ ref, path, postFix: pascal(method) + pascal(code), type: 'response' });
+            const value = operationData.responses![code] as ResponseObject;
+
+            if (!value.content) return acc;
+
+            const description = value.description || '';
+            const responseString = this.getTypeSchemaOperationItem({ typeName, description, content: value.content });
+
+            return acc + '\n' + responseString;
+        }, '');
+    }
+
     getTypeSchemaOperationResponseItem({ ref, method, path, operationData }: IParsedSchemaItem): string {
         if (!operationData.responses) return '';
 
