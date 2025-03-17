@@ -1,0 +1,61 @@
+ProductEvent:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 220
+    event_id:
+      type: integer
+      description: Event ID from ProductEventEnum
+      example: 220
+    product_id:
+      type: integer
+      description: Product ID
+      example: 2
+    created_at:
+      description: Created at
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Updated at
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    product:
+      $ref: ../../catalog/schemas/products.yaml#/ProductDraft
+  required:
+    - id
+    - event_id
+    - product_id
+    - created_at
+    - updated_at
+SearchProductEventsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchProductEventsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ProductEvent"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

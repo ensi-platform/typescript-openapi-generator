@@ -1,0 +1,23 @@
+type: integer
+description: |
+  Статус массовой операции:
+  * 1 - Новая
+  * 2 - В процессе
+  * 3 - Завершена
+  * 4 - Ошибка
+enum:
+  - 1
+  - 2
+  - 3
+  - 4
+x-enum-varnames:
+  - NEW
+  - IN_PROGRESS
+  - COMPLETED
+  - ERROR
+x-enum-descriptions:
+  - Новая
+  - В процессе
+  - Завершена
+  - Ошибка
+example: 1

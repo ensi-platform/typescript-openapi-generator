@@ -1,0 +1,47 @@
+ImagesSearch:
+  post:
+    tags:
+      - catalog_cache_products
+    operationId: searchCatalogCacheImages
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\ImagesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Images
+    description: Search for objects of Images
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/images.yaml#/SearchImagesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/images.yaml#/SearchImagesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ImagesMeta:
+  get:
+    tags:
+      - catalog_cache_products
+    operationId: getCatalogCacheImagesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\ImagesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

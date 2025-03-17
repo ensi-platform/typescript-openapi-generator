@@ -1,0 +1,114 @@
+ProductSubscribeReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+  required:
+    - id
+ProductSubscribeFillableProperties:
+  type: object
+  properties:
+    product_id:
+      type: integer
+      description: Идентификатор товара
+      example: 104
+    customer_id:
+      type: integer
+      description: Идентификатор клиента
+      example: 11
+ProductSubscribeFillableRequiredProperties:
+  type: object
+  required:
+    - product_id
+    - customer_id
+  additionalProperties:
+    type: string
+ProductSubscribe:
+  allOf:
+    - $ref: "#/ProductSubscribeReadonlyProperties"
+    - $ref: "#/ProductSubscribeFillableProperties"
+    - $ref: "#/ProductSubscribeFillableRequiredProperties"
+CreateProductSubscribeRequest:
+  allOf:
+    - $ref: "#/ProductSubscribeFillableProperties"
+    - $ref: "#/ProductSubscribeFillableRequiredProperties"
+SearchProductSubscribesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор записи
+      example: 11
+      nullable: true
+    customer_id:
+      type: integer
+      description: Идентификатор клиента
+      example: 2
+      nullable: true
+    product_id:
+      type: integer
+      description: Идентификатор товара
+      example: 2
+      nullable: true
+SearchProductSubscribesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchProductSubscribesFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DeleteProductSubscribesRequest:
+  type: object
+  properties:
+    product_id:
+      type: integer
+      description: Идентификатор товара
+      example: 104
+    customer_id:
+      type: integer
+      description: Идентификатор клиента
+      example: 11
+  required:
+    - product_id
+    - customer_id
+ClearProductSubscribesRequest:
+  type: object
+  properties:
+    customer_id:
+      type: integer
+      description: Идентификатор клиента
+      example: 11
+  required:
+    - customer_id
+ProductSubscribeResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/ProductSubscribe"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchProductSubscribesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ProductSubscribe"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

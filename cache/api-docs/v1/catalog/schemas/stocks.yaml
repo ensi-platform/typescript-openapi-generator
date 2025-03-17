@@ -1,0 +1,94 @@
+StockReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор стока
+      example: 202
+    store_id:
+      type: integer
+      description: ID склада
+      example: 17
+    offer_id:
+      type: integer
+      description: ID товарного предложения
+      example: 15856
+    created_at:
+      type: string
+      format: date-time
+      description: Дата создания остатка
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    updated_at:
+      type: string
+      format: date-time
+      description: Дата обновления остатка
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+  required:
+    - id
+    - store_id
+    - offer_id
+    - created_at
+    - updated_at
+StockFillableProperties:
+  type: object
+  properties:
+    qty:
+      type: number
+      description: Количество товара для резервирования
+      nullable: true
+      example: 1
+StockFillableRequiredProperties:
+  type: object
+  required:
+    - qty
+  additionalProperties:
+    type: string
+Stock:
+  allOf:
+    - $ref: "#/StockReadonlyProperties"
+    - $ref: "#/StockFillableProperties"
+    - $ref: "#/StockFillableRequiredProperties"
+PatchStockRequest:
+  allOf:
+    - $ref: "#/StockFillableProperties"
+StockResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Stock"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchStocksRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+SearchStocksResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Stock"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

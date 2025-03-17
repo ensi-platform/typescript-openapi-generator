@@ -1,0 +1,102 @@
+type: string
+description: >
+  Доступные виды переменных в уведомлениях:
+    * `{order_products}` - список продуктов в заказе
+    * `{delivery_products}` - список продуктов в отправлении
+    * `{product_name}` - название товара (связано с order_products или delivery_products)
+    * `{product_qty}` - количество товара в позиции (связано с order_products или delivery_products)
+    * `{product_price}` - цена позиции с товаром со скидкой (связано с order_products или delivery_products)
+    * `{product_cost}` - цена позиции с товаром без скидки (связано с order_products или delivery_products)
+    * `{product_image}` - ссылка главного изображения товара (связано с order_products или delivery_products)
+    * `{order_receiver_name}` - имя получателя
+    * `{order_receiver_phone}` - телефон получателя
+    * `{order_number}` - номер заказа
+    * `{order_payment_link}` - ссылка на оплату
+    * `{order_price}` - итоговая стоимость заказа
+    * `{order_products_price}` - стоимость товаров в заказе
+    * `{order_delivery_price}` - стоимость доставки
+    * `{order_delivery_method}` - метод доставки
+    * `{order_delivery_address}` - адрес доставки
+    * `{order_delivery_point}` - точка самовывоза
+    * `{order_delivery_comment}` - комментарий к доставке
+    * `{order_deliveries}` - отправления в заказе
+    * `{order_delivery_number}` - номер отправления (связано с order_deliveries, если событие связано с заказом)
+    * `{order_delivery_date}` - дата доставки отправления (связано с order_deliveries, если событие связано с заказом)
+    * `{order_delivery_timeslot}` - временной диапазон доставки отправления (связано с order_deliveries, если событие связано с заказом)
+    * `{customer_name}` - имя клиента
+    * `{confirmation_code}` - код подтверждения
+enum:
+  - "{order_products}"
+  - "{delivery_products}"
+  - "{product_name}"
+  - "{product_qty}"
+  - "{product_price}"
+  - "{product_cost}"
+  - "{product_image}"
+  - "{order_receiver_name}"
+  - "{order_receiver_phone}"
+  - "{order_number}"
+  - "{order_payment_link}"
+  - "{order_price}"
+  - "{order_products_price}"
+  - "{order_delivery_price}"
+  - "{order_delivery_method}"
+  - "{order_delivery_address}"
+  - "{order_delivery_point}"
+  - "{order_delivery_comment}"
+  - "{order_deliveries}"
+  - "{order_delivery_number}"
+  - "{order_delivery_date}"
+  - "{order_delivery_timeslot}"
+  - "{customer_name}"
+  - "{confirmation_code}"
+x-enum-varnames:
+  - ORDER_PRODUCTS
+  - DELIVERY_PRODUCTS
+  - PRODUCT_NAME
+  - PRODUCT_QTY
+  - PRODUCT_PRICE
+  - PRODUCT_COST
+  - PRODUCT_IMAGE
+  - ORDER_RECEIVER_NAME
+  - ORDER_RECEIVER_PHONE
+  - ORDER_NUMBER
+  - ORDER_PAYMENT_LINK
+  - ORDER_PRICE
+  - ORDER_PRODUCTS_PRICE
+  - ORDER_DELIVERY_PRICE
+  - ORDER_DELIVERY_METHOD
+  - ORDER_DELIVERY_ADDRESS
+  - ORDER_DELIVERY_POINT
+  - ORDER_DELIVERY_COMMENT
+  - ORDER_DELIVERIES
+  - ORDER_DELIVERY_NUMBER
+  - ORDER_DELIVERY_DATE
+  - ORDER_DELIVERY_TIMESLOT
+  - CUSTOMER_NAME
+  - CONFIRMATION_CODE
+x-enum-descriptions:
+  - Cписок продуктов в заказе
+  - Cписок продуктов в отправлении
+  - Название товара
+  - Количество товара в позиции
+  - Цена позиции с товаром со скидкой
+  - Цена позиции с товаром без скидки
+  - Ссылка главного изображения товара
+  - Имя получателя
+  - Телефон получателя
+  - Номер заказа
+  - Ссылка на оплату
+  - Итоговая стоимость заказа
+  - Стоимость товаров в заказе
+  - Стоимость доставки
+  - Метод доставки
+  - Адрес доставки
+  - Точка самовывоза
+  - Комментарий к доставке
+  - Отправления в заказе
+  - Номер отправления
+  - Дата доставки отправления
+  - Временной диапазон доставки отправления
+  - Имя клиента
+  - Код подтверждения

@@ -1,0 +1,15 @@
+type: integer
+description: |
+  Доступные булевые операторы:
+  * 1 - «И»
+  * 2 - «ИЛИ»
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - AND
+  - OR
+x-enum-descriptions:
+  - «И»
+  - «ИЛИ»
+example: 1

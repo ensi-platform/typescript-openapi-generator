@@ -1,0 +1,104 @@
+ProductAttributeValueReadonlyProperties:
+  type: object
+  properties:
+    type:
+      type: string
+      description: Тип значения из PropertyTypeEnum
+      example: color
+    url:
+      type: string
+      description: Ссылка на файл
+      example: https://files.ensi.ru/catalog/12/6d/image_001.png
+  required:
+    - type
+ProductAttributeValueFillableProperties:
+  type: object
+  properties:
+    property_id:
+      type: integer
+      description: Идентификатор атрибута
+      example: 512
+    value:
+      oneOf:
+        - type: string
+        - type: boolean
+        - type: number
+      description: Значение элемента справочника (string|number|integer|boolean)
+      example: "#FFFFFF"
+    name:
+      type: string
+      nullable: true
+      description: Название значения (например, имя цвета)
+      example: Красный
+    directory_value_id:
+      type: integer
+      description: Идентификатор значения справочника. Если установлен, то value и
+        name задавать не нужно.
+      example: 500
+ProductAttributeValueEditProperties:
+  type: object
+  properties:
+    preload_file_id:
+      type: integer
+      description: >
+        Идентификатор предварительно загруженного файла. Допустим только для
+        атрибутов типа IMAGE. Если установлен, то поля value и
+        directory_value_id должны отсутствовать. Поле name может быть задано,
+        например, для описания картинки.
+      example: 1010
+    mark_to_delete:
+      type: boolean
+      description: Отметить атрибут на удаление.
+ProductAttributeValueRequired:
+  required:
+    - property_id
+  type: object
+  additionalProperties:
+    type: string
+EditProductAttributeValue:
+  allOf:
+    - $ref: "#/ProductAttributeValueFillableProperties"
+    - $ref: "#/ProductAttributeValueEditProperties"
+    - $ref: "#/ProductAttributeValueRequired"
+ProductAttributeValue:
+  allOf:
+    - $ref: "#/ProductAttributeValueReadonlyProperties"
+    - $ref: "#/ProductAttributeValueFillableProperties"
+ReplaceProductAttributesRequest:
+  type: object
+  properties:
+    attributes:
+      type: array
+      items:
+        $ref: "#/EditProductAttributeValue"
+PatchProductAttributesRequest:
+  type: object
+  properties:
+    attributes:
+      type: array
+      items:
+        $ref: "#/EditProductAttributeValue"
+DeleteProductAttributesRequest:
+  type: object
+  properties:
+    property_ids:
+      type: array
+      items:
+        type: integer
+        description: Идентификатор атрибута
+        example: 512
+  required:
+    - property_ids
+ProductAttributesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ProductAttributeValue"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

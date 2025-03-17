@@ -1,0 +1,89 @@
+DeliveryKpiCtReadonlyProperties:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: Id продавца
+      example: 1
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - seller_id
+    - created_at
+    - updated_at
+DeliveryKpiCtFillableProperties:
+  type: object
+  properties:
+    ct:
+      type: integer
+      description: Confirmation Time - время перехода Отправления из статуса “Ожидает
+        подтверждения” в статус “На комплектации” (мин)
+      example: 20
+DeliveryKpiCtRequiredFillableProperties:
+  type: object
+  required:
+    - ct
+  additionalProperties:
+    type: string
+DeliveryKpiCt:
+  allOf:
+    - $ref: "#/DeliveryKpiCtReadonlyProperties"
+    - $ref: "#/DeliveryKpiCtFillableProperties"
+    - $ref: "#/DeliveryKpiCtRequiredFillableProperties"
+CreateDeliveryKpiCtRequest:
+  allOf:
+    - $ref: "#/DeliveryKpiCtFillableProperties"
+    - $ref: "#/DeliveryKpiCtRequiredFillableProperties"
+PatchDeliveryKpiCtRequest:
+  allOf:
+    - $ref: "#/DeliveryKpiCtFillableProperties"
+SearchDeliveryKpiCtFilter:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: Id продавца
+      example: 1
+SearchDeliveryKpiCtRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDeliveryKpiCtFilter"
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DeliveryKpiCtResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/DeliveryKpiCt"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDeliveryKpiCtResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DeliveryKpiCt"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

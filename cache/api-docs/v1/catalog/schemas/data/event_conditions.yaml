@@ -1,0 +1,21 @@
+EventConditions:
+  type: object
+  nullable: true
+  description: Условия для перехода в статус
+  properties:
+    operation:
+      type: integer
+      description: Операция из EventOperationEnum
+      nullable: true
+      example: 1
+    events:
+      type: array
+      description: Список событий
+      items:
+        type: integer
+        description: Cобытие из ProductEventEnum
+      example:
+        - 1
+        - 3
+  required:
+    - operation

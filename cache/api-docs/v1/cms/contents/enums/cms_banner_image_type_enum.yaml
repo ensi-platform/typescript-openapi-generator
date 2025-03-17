@@ -1,0 +1,14 @@
+type: string
+description: |
+  Тип изображения баннера:
+    * `desktop` - Десктоп
+    * `mobile` - Мобильный
+enum:
+  - desktop
+  - mobile
+x-enum-varnames:
+  - DESKTOP_IMAGE_TYPE
+  - MOBILE_IMAGE_TYPE
+x-enum-descriptions:
+  - Десктоп
+  - Мобильный

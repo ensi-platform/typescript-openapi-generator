@@ -1,0 +1,214 @@
+ProductGroupReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор склейки
+      example: 220
+    products_count:
+      type: integer
+      description: Кол-во товаров в склейке
+      example: 220
+    main_product_image:
+      type: string
+      description: URL картинки главного товара
+      example: https://ya.ru/images?p=001
+      nullable: true
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+  required:
+    - id
+    - products_count
+    - main_product_image
+    - created_at
+    - updated_at
+ProductGroupFillableProperties:
+  type: object
+  properties:
+    category_id:
+      type: integer
+      description: Идентификатор категории
+      example: 100
+    main_product_id:
+      type: integer
+      description: Идентификатор товара для обложки
+      nullable: true
+      example: 5
+    name:
+      type: string
+      description: Название
+      example: Лабутены
+    is_active:
+      type: boolean
+      description: Активность
+ProductGroupFillableRequiredProperties:
+  type: object
+  required:
+    - category_id
+    - main_product_id
+    - name
+    - is_active
+  additionalProperties:
+    type: string
+ProductGroupIncludes:
+  type: object
+  properties:
+    category:
+      $ref: ./categories.yaml#/Category
+    main_product:
+      nullable: true
+      allOf:
+        - $ref: ./products.yaml#/ProductDraftWithoutInclude
+    products:
+      type: array
+      items:
+        $ref: ./products.yaml#/ProductDraftWithoutInclude
+ProductGroup:
+  allOf:
+    - $ref: "#/ProductGroupReadonlyProperties"
+    - $ref: "#/ProductGroupFillableProperties"
+    - $ref: "#/ProductGroupFillableRequiredProperties"
+    - $ref: "#/ProductGroupIncludes"
+ProductGroupsBindResult:
+  type: object
+  properties:
+    product_group:
+      $ref: "#/ProductGroup"
+    product_errors:
+      type: array
+      items:
+        type: integer
+        description: ID товара, для которого не заполнены ВСЕ свойства, участвующие в
+          склейке
+        example: 1
+  required:
+    - product_group
+    - product_errors
+CreateProductGroupRequest:
+  allOf:
+    - $ref: "#/ProductGroupFillableProperties"
+    - $ref: "#/ProductGroupFillableRequiredProperties"
+PatchProductGroupRequest:
+  allOf:
+    - $ref: "#/ProductGroupFillableProperties"
+SearchProductGroupsFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор склейки
+      example: 220
+    category_id:
+      type: integer
+      description: Идентификатор категории
+      example: 100
+    name_like:
+      type: string
+      description: Название склейки (поиск по подстроке)
+      example: Лабут
+    product_name_like:
+      type: string
+      description: Название товара, входящего в склейку (поиск по подстроке)
+      example: Охранная система
+    product_barcode_like:
+      type: string
+      description: Штрихкод товара, входящего в склейку (поиск по подстроке)
+      example: "4607"
+    product_vendor_code_like:
+      type: string
+      description: Артикул товара, входящего в склейку (поиск по подстроке)
+      example: A1234
+SearchProductGroupsInclude:
+  type: array
+  items:
+    type: string
+    description: Подгружаемые связанные сущности
+    enum:
+      - category
+      - main_product
+      - products
+  example:
+    - category
+    - main_product
+    - products
+SearchProductGroupsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: "#/SearchProductGroupsInclude"
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      $ref: "#/SearchProductGroupsFilter"
+ProductGroupResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/ProductGroup"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+ProductGroupsBindResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/ProductGroupsBindResult"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchProductGroupsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ProductGroup"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+BindProductGroupProductsRequest:
+  type: object
+  properties:
+    replace:
+      type: boolean
+      default: false
+      description: Если true, все отсутствующие в запросе привязки будут удалены
+      example: true
+    products:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: Идентификатор атрибута
+            example: 111
+          vendor_code:
+            type: string
+            description: Артикул
+            example: "123466"
+          barcode:
+            type: string
+            description: Штрихкод (EAN)
+            example: "1003912039"

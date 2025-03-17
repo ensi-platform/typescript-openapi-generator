@@ -1,0 +1,160 @@
+OffersMeta:
+  get:
+    tags:
+      - catalog_offers
+    operationId: getOffersMeta
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\Offers\OffersController@meta
+    x-lg-skip-request-generation: true
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+OffersSearch:
+  post:
+    tags:
+      - catalog_offers
+    operationId: searchOffers
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Offers\OffersController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Offer
+    description: Search for objects of Offer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/offers.yaml#/SearchOffersRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/offers.yaml#/SearchOffersResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+OffersOne:
+  get:
+    tags:
+      - catalog_offers
+    operationId: getOffer
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Offers\OffersController@get
+    summary: Get the object of Offer by ID
+    description: Get the object of Offer by ID
+    parameters:
+      - $ref: "#/PathId"
+      - $ref: ../common_parameters.yaml#/QueryInclude
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/offers.yaml#/OfferResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - catalog_offers
+    operationId: patchOffer
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Offers\OffersController@patch
+    summary: Patching an object of Offer
+    description: Patching an object of Offer
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/offers.yaml#/PatchOfferRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/offers.yaml#/OfferResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+OfferEntitiesSync:
+  post:
+    tags:
+      - catalog_offers_common
+    operationId: syncEntities
+    summary: Start synchronization of offers data
+    description: Start synchronization of offers data
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\Offers\EntitiesController@sync
+    x-lg-skip-request-generation: true
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+OffersMigrate:
+  post:
+    tags:
+      - catalog_offers_common
+    operationId: offersMigration
+    summary: Start synchronization of data objects from master services
+    description: Start synchronization of data objects from master services
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\Offers\OffersController@migrate
+    x-lg-skip-request-generation: true
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

@@ -1,0 +1,182 @@
+SellerUserReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор пользователя продавца
+      example: 1
+    full_name:
+      type: string
+      description: Полное ФИО
+      example: Иванов Иван Иванович
+    short_name:
+      type: string
+      description: Сокращенное ФИО
+      example: Иванов И.И.
+    created_at:
+      description: Дата регистрации
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - full_name
+    - short_name
+    - created_at
+    - updated_at
+SellerUserFillableProperties:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: id продавца
+      example: 1
+    active:
+      type: boolean
+      description: Активен
+      example: true
+    login:
+      type: string
+      description: Логин
+      example: TestLogin
+    last_name:
+      type: string
+      description: Фамилия
+      example: Иванов
+    first_name:
+      type: string
+      description: Имя
+      example: Иван
+    middle_name:
+      type: string
+      description: Отчество
+      example: Иванович
+    email:
+      type: string
+      description: Email
+      example: test@mail.ru
+    phone:
+      type: string
+      description: Телефон
+      example: "+79191000000"
+SellerUserFillableRequiredProperties:
+  type: object
+  required:
+    - seller_id
+    - active
+    - login
+    - last_name
+    - first_name
+    - middle_name
+    - email
+    - phone
+  additionalProperties:
+    type: string
+SellerUserWriteOnlyProperties:
+  type: object
+  properties:
+    password:
+      type: string
+      description: Пароль
+      example: testPassword775105k#i*
+SellerUserWriteOnlyRequiredProperties:
+  required:
+    - password
+  type: object
+  additionalProperties:
+    type: string
+SellerUserIncludes:
+  type: object
+  properties:
+    roles:
+      description: Роли пользователя продавца. Объект, в котором ключ - ID роли (см.
+        UnitsSellerUserRoleEnum)
+      type: array
+      items:
+        $ref: ./seller_user_roles_included.yaml#/SellerUserRoleIncluded
+SellerUser:
+  allOf:
+    - $ref: "#/SellerUserReadonlyProperties"
+    - $ref: "#/SellerUserFillableProperties"
+    - $ref: "#/SellerUserFillableRequiredProperties"
+    - $ref: "#/SellerUserIncludes"
+CreateSellerUserRequest:
+  allOf:
+    - $ref: "#/SellerUserFillableProperties"
+    - $ref: "#/SellerUserFillableRequiredProperties"
+    - $ref: "#/SellerUserWriteOnlyProperties"
+    - $ref: "#/SellerUserWriteOnlyRequiredProperties"
+PatchSellerUserRequest:
+  allOf:
+    - $ref: "#/SellerUserFillableProperties"
+    - $ref: "#/SellerUserWriteOnlyProperties"
+SearchSellerUsersRequest:
+  type: object
+  properties:
+    sort:
+      description: Сортировка. Доступные для сортировки поля см. в :meta
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Фильтр. Доступные для фильтрации поля см. в :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+AddRolesToSellerUserRequest:
+  type: object
+  properties:
+    roles:
+      type: array
+      description: Идентификаторы добавляемых ролей
+      items:
+        type: integer
+    expires:
+      description: Время жизни роли
+      format: date-time
+      nullable: true
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - roles
+DeleteRoleFromSellerUserRequest:
+  type: object
+  properties:
+    role_id:
+      type: integer
+      description: Идентификатор удаляемой роли
+  required:
+    - role_id
+SellerUserResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/SellerUser"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchSellerUsersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/SellerUser"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

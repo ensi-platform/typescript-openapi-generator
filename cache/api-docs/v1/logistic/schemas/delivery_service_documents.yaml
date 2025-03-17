@@ -1,0 +1,120 @@
+DeliveryServiceDocumentReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор документа
+      example: 1
+    file:
+      $ref: ../../common_schemas.yaml#/FileOrNullProtected
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - file
+    - created_at
+    - updated_at
+DeliveryServiceDocumentFillableProperties:
+  type: object
+  properties:
+    delivery_service_id:
+      type: integer
+      description: Id службы доставки
+      example: 1
+    name:
+      type: string
+      description: Название
+      example: Договор
+DeliveryServiceDocumentFillableRequiredProperties:
+  type: object
+  required:
+    - delivery_service_id
+    - name
+  additionalProperties:
+    type: string
+DeliveryServiceDocumentIncludes:
+  type: object
+  properties:
+    delivery_service:
+      $ref: ./delivery_services.yaml#/DeliveryService
+DeliveryServiceDocument:
+  allOf:
+    - $ref: "#/DeliveryServiceDocumentReadonlyProperties"
+    - $ref: "#/DeliveryServiceDocumentFillableProperties"
+    - $ref: "#/DeliveryServiceDocumentFillableRequiredProperties"
+    - $ref: "#/DeliveryServiceDocumentIncludes"
+CreateDeliveryServiceDocumentRequest:
+  allOf:
+    - $ref: "#/DeliveryServiceDocumentFillableProperties"
+    - $ref: "#/DeliveryServiceDocumentFillableRequiredProperties"
+PatchDeliveryServiceDocumentRequest:
+  allOf:
+    - $ref: "#/DeliveryServiceDocumentFillableProperties"
+SearchDeliveryServiceDocumentsFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор документа
+      example: 1
+    delivery_service_id:
+      type: integer
+      description: Id службы доставки
+      example: 1
+    name:
+      type: string
+      description: Название
+      example: Договор
+SearchDeliveryServiceDocumentsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDeliveryServiceDocumentsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - delivery_service
+      example:
+        - delivery_service
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DeliveryServiceDocumentResponse:
+  type: object
+  x-lg-resource-class-name: DeliveryServiceDocumentsResource
+  properties:
+    data:
+      $ref: "#/DeliveryServiceDocument"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDeliveryServiceDocumentsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DeliveryServiceDocument"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

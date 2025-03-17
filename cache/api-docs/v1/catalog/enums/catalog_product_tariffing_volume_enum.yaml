@@ -1,0 +1,15 @@
+type: integer
+description: |
+  Доступные тарификации:
+  * 1 - цена за 1 кг
+  * 2 - цена за 100 грамм
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - PRICE_PER_KILOGRAM
+  - PRICE_PER_ONE_HUNDRED_GRAMS
+x-enum-descriptions:
+  - Цена за 1 кг
+  - Цена за 100 грамм
+example: 1

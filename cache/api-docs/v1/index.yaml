@@ -1,0 +1,1223 @@
+openapi: 3.0.3
+info:
+  title: Admin GUI Backend
+  contact:
+    name: API Support
+    url: https://ensi.tech/contacts
+    email: mail@greensight.ru
+  version: 1.0.0
+  description: Admin GUI Backend
+servers:
+  - url: /api/v1
+tags:
+  - name: common
+    description: Administration panel
+  - name: cms_menus
+    description: Content. Menu
+  - name: cms_products
+    description: Content. Products
+  - name: cms_nameplates
+    description: Content. Nameplates
+  - name: cms_nameplate_products
+    description: Content. Links between nameplates and products
+  - name: cms_banners
+    description: Content. Banners
+  - name: cms_pages
+    description: Content. Pages
+  - name: cms_seo_templates
+    description: Content. SEO templates
+  - name: cms_seo_template_products
+    description: Content. Links between SEO templates and products
+  - name: auth
+    description: Authorization
+  - name: logistic_points
+    description: Logistics. Delivery points
+  - name: logistic_delivery_services
+    description: Logistics. Delivery services
+  - name: logistic_delivery_service_documents
+    description: Logistics. Logistics operators. Documents
+  - name: logistic_delivery_service_managers
+    description: Logistics. Logistics operators. Managers
+  - name: logistic_federal_districts
+    description: Logistics. Federal districts
+  - name: logistic_regions
+    description: Logistics. Regions
+  - name: logistic_delivery_prices
+    description: Logistics. Regional delivery prices
+  - name: logistic_delivery_kpi
+    description: Logistics. Status time planner. Common settings
+  - name: logistic_delivery_kpi_ct
+    description: Logistics. Status time planner. CT for sellers
+  - name: logistic_delivery_kpi_ppt
+    description: Logistics. Status time planner. PPT for sellers
+  - name: logistic_enums
+    description: Logistics. Enums
+  - name: logistic_cargo_orders
+    description: Logistics. Management of pickup orders
+  - name: orders_orders
+    description: Orders. Orders
+  - name: orders_deliveries
+    description: Orders. Deliveries
+  - name: orders_common
+    description: Orders. Settings
+  - name: orders
+    description: Orders. Common
+  - name: orders_refunds
+    description: Orders. Refunds
+  - name: orders_shipments
+    description: Orders. Shipments
+  - name: order_items
+    description: Orders. Order items
+  - name: orders_baskets
+    description: Orders. Baskets
+  - name: marketing_promo_codes
+    description: Marketing. Promo codes
+  - name: marketing_discounts
+    description: Marketing. Discounts
+  - name: marketing_discount_products
+    description: Marketing. Product discounts
+  - name: catalog_brands
+    description: Catalog. Brands
+  - name: catalog_categories
+    description: Catalog. Categories
+  - name: catalog_properties
+    description: Catalog. Product attributes
+  - name: catalog_products
+    description: Catalog. Products
+  - name: catalog_offers_common
+    description: Catalog. Offers common routes
+  - name: catalog_offers
+    description: Catalog. Offers
+  - name: catalog_offers_failed_jobs
+    description: Catalog. Offers failed jobs
+  - name: catalog_stocks
+    description: Catalog. Stocks
+  - name: catalog_product_groups
+    description: Catalog. Product groups
+  - name: catalog_bulk_operations
+    description: Catalog. Mass operations
+  - name: catalog_product_events
+    description: Catalog. Product Events
+  - name: catalog_product_statuses
+    description: Catalog. Product statuses
+  - name: catalog_pim_failed_jobs
+    description: Catalog. Pim. Failed Jobs
+  - name: catalog_pim_temp_files
+    description: Catalog. Pim. Temp Files
+  - name: catalog_reviews
+    description: Catalog. Reviews
+  - name: catalog_feed_settings
+    description: Catalog. Feed settings
+  - name: catalog_feeds
+    description: Catalog. Feeds
+  - name: catalog_feed_common
+    description: Catalog. Feeds common routes
+  - name: catalog_imports
+    description: Catalog. Imports
+  - name: catalog_cloud_integrations
+    description: Catalog. Cloud integrations
+  - name: catalog_cache_common
+    description: Catalog. Catalog cache common routes
+  - name: catalog_cache_categories
+    description: Catalog Cache. Categories
+  - name: catalog_cache_property_directory_values
+    description: Catalog Cache. Property Directory Values
+  - name: catalog_cache_properties
+    description: Catalog Cache. Properties
+  - name: catalog_cache_nameplates
+    description: Catalog Cache. Nameplates
+  - name: catalog_cache_brands
+    description: Catalog Cache. Brands
+  - name: catalog_cache_product_groups
+    description: Catalog Cache. Product Groups
+  - name: catalog_cache_products
+    description: Catalog Cache. Products
+  - name: catalog_cache_offers
+    description: Catalog Cache. Offers
+  - name: catalog_cache_discounts
+    description: Catalog Cache. Discounts
+  - name: catalog_cache_failed_jobs
+    description: Catalog Cache. Failed Jobs
+  - name: catalog_cache_indexer_timestamps
+    description: Catalog Cache. Indexer Timestamps
+  - name: customers_customers
+    description: Clients
+  - name: customers_users
+    description: Clients. Users
+  - name: customers_customer_address
+    description: Clients. Customer addresses
+  - name: customers_customer_status
+    description: Clients. Customer statuses
+  - name: customers_customer_favourites
+    description: Customers. Management of an object CustomerFavorite
+  - name: customers_customers_info
+    description: Clients. Customers info from CRM
+  - name: customers_product_subscribes
+    description: Clients. Product subscriptions
+  - name: customers_preferences
+    description: Clients. Preferences
+  - name: customers_bonus_operations
+    description: Clients. Bonus operations
+  - name: customers_confirmation_codes
+    description: Customers. Confirmation Codes
+  - name: menu
+    description: Menu
+  - name: communication
+    description: Communication. Common
+  - name: communication_messages
+    description: Communication. Messages
+  - name: communication_chats
+    description: Communication. Chats
+  - name: communication_statuses
+    description: Communication. Statuses
+  - name: communication_themes
+    description: Communication. Themes
+  - name: communication_types
+    description: Communication. Types
+  - name: communication_notifications
+    description: Communication. Notifications
+  - name: communication_channels
+    description: Communication. Channels
+  - name: communication_attachments
+    description: Communication. Attachments
+  - name: units_sellers
+    description: Business units. Sellers
+  - name: units_stores
+    description: Business units. Seller stores
+  - name: units_seller_users
+    description: Business units. Seller users (Seller's account)
+  - name: units_admin_users
+    description: Business units. Users (Administration panel)
+paths:
+  /common/files/download-protected:
+    $ref: ./common/paths.yaml#/FilesDownloadProtected
+  /cms/menus:search:
+    $ref: ./cms/contents/menus-paths.yaml#/MenusSearch
+  /cms/menus:search-one:
+    $ref: ./cms/contents/menus-paths.yaml#/MenusSearchOne
+  /cms/menus/{id}/trees:
+    $ref: ./cms/contents/menus-paths.yaml#/MenuCurrentTrees
+  /cms/banners:search:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersSearch
+  /cms/banners:search-one:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersSearchOne
+  /cms/banners:
+    $ref: ./cms/contents/banners-paths.yaml#/Banners
+  /cms/banners/{id}:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersCurrent
+  /cms/banners:meta:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersMeta
+  /cms/banners/{id}:upload-file:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersCurrentFileUpload
+  /cms/banners/{id}:delete-file:
+    $ref: ./cms/contents/banners-paths.yaml#/BannersCurrentFileDelete
+  /cms/banner-types:search:
+    $ref: ./cms/contents/banners-paths.yaml#/BannerTypesSearch
+  /cms/banner-types:meta:
+    $ref: ./cms/contents/banners-paths.yaml#/BannerTypesMeta
+  /cms/banner-button-types:
+    $ref: ./cms/contents/banners-paths.yaml#/BannerButtonTypes
+  /cms/banner-button-locations:
+    $ref: ./cms/contents/banners-paths.yaml#/BannerButtonLocations
+  /cms/pages:search:
+    $ref: ./cms/contents/pages-paths.yaml#/PagesSearch
+  /cms/pages:search-one:
+    $ref: ./cms/contents/pages-paths.yaml#/PagesSearchOne
+  /cms/pages:
+    $ref: ./cms/contents/pages-paths.yaml#/Pages
+  /cms/pages/{id}:
+    $ref: ./cms/contents/pages-paths.yaml#/PagesCurrent
+  /cms/pages:meta:
+    $ref: ./cms/contents/pages-paths.yaml#/PagesMeta
+  /cms/products/{id}:add-nameplates:
+    $ref: ./cms/nameplates/products-paths.yaml#/ProductAddNameplates
+  /cms/products/{id}:delete-nameplates:
+    $ref: ./cms/nameplates/products-paths.yaml#/ProductDeleteNameplates
+  /cms/nameplates:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/Nameplates
+  /cms/nameplates/{id}:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/NameplatesOne
+  /cms/nameplates/{id}:add-products:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/NameplateAddProducts
+  /cms/nameplates/{id}:delete-products:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/NameplateDeleteProducts
+  /cms/nameplates:search:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/NameplatesSearch
+  /cms/nameplates:meta:
+    $ref: ./cms/nameplates/nameplates-paths.yaml#/NameplatesMeta
+  /cms/nameplates/nameplate-products/{id}:
+    $ref: ./cms/nameplates/nameplate-products-paths.yaml#/NameplateProductsOne
+  /cms/nameplates/nameplate-products:search:
+    $ref: ./cms/nameplates/nameplate-products-paths.yaml#/NameplateProductsSearch
+  /cms/nameplates/nameplate-products:meta:
+    $ref: ./cms/nameplates/nameplate-products-paths.yaml#/NameplateProductsMeta
+  /cms/seo/templates:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplates
+  /cms/seo/templates/{id}:add-products:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplateAddProducts
+  /cms/seo/templates/{id}:delete-products:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplateDeleteProducts
+  /cms/seo/templates/{id}:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplatesOne
+  /cms/seo/templates:search:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplatesSearch
+  /cms/seo/templates:meta:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/SeoTemplatesMeta
+  /cms/seo/template-types:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/TemplateTypes
+  /cms/seo/template-variables:
+    $ref: ./cms/seo/seo-templates-paths.yaml#/TemplateVariables
+  /cms/seo/template-products/{id}:
+    $ref: ./cms/seo/seo-template-products-paths.yaml#/SeoTemplateProductsOne
+  /cms/seo/template-products:search:
+    $ref: ./cms/seo/seo-template-products-paths.yaml#/SeoTemplateProductsSearch
+  /cms/seo/template-products:meta:
+    $ref: ./cms/seo/seo-template-products-paths.yaml#/SeoTemplateProductsMeta
+  /auth/login:
+    $ref: ./auth/paths.yaml#/Login
+  /auth/logout:
+    $ref: ./auth/paths.yaml#/Logout
+  /auth/refresh:
+    $ref: ./auth/paths.yaml#/Refresh
+  /auth/current-user:
+    $ref: ./auth/paths.yaml#/CurrentUser
+  /logistic/points/{id}:
+    $ref: ./logistic/paths.yaml#/PointsSearchOne
+  /logistic/points:search:
+    $ref: ./logistic/paths.yaml#/PointsSearch
+  /logistic/points:meta:
+    $ref: ./logistic/paths.yaml#/PointsMeta
+  /logistic/point-enum-values:search:
+    $ref: ./logistic/paths.yaml#/PointEnumValuesSearch
+  /logistic/delivery-services/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryServicesCurrent
+  /logistic/delivery-services:search:
+    $ref: ./logistic/paths.yaml#/DeliveryServicesSearch
+  /logistic/delivery-service-enum-values:search:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceEnumValuesSearch
+  /logistic/delivery-services:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryServicesSearchOne
+  /logistic/delivery-services/{id}:add-payment-methods:
+    $ref: ./logistic/paths.yaml#/DeliveryServicesCurrentAddPaymentMethods
+  /logistic/delivery-services/{id}:delete-payment-method:
+    $ref: ./logistic/paths.yaml#/DeliveryServicesCurrentDeletePaymentMethod
+  /logistic/delivery-service-documents:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocuments
+  /logistic/delivery-service-documents/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocumentsCurrent
+  /logistic/delivery-service-documents/{id}:upload-file:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocumentsCurrentUploadFile
+  /logistic/delivery-service-documents/{id}:delete-file:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocumentsCurrentDeleteFile
+  /logistic/delivery-service-documents:search:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocumentsSearch
+  /logistic/delivery-service-documents:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceDocumentsSearchOne
+  /logistic/delivery-service-managers:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceManagers
+  /logistic/delivery-service-managers/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceManagersCurrent
+  /logistic/delivery-service-managers:search:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceManagersSearch
+  /logistic/delivery-service-managers:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceManagersSearchOne
+  /logistic/federal-districts:
+    $ref: ./logistic/paths.yaml#/FederalDistricts
+  /logistic/federal-districts/{id}:
+    $ref: ./logistic/paths.yaml#/FederalDistrictsCurrent
+  /logistic/federal-districts:search:
+    $ref: ./logistic/paths.yaml#/FederalDistrictsSearch
+  /logistic/federal-districts:search-one:
+    $ref: ./logistic/paths.yaml#/FederalDistrictsSearchOne
+  /logistic/federal-district-enum-values:search:
+    $ref: ./logistic/paths.yaml#/FederalDistrictEnumValuesSearch
+  /logistic/regions:
+    $ref: ./logistic/paths.yaml#/Regions
+  /logistic/regions/{id}:
+    $ref: ./logistic/paths.yaml#/RegionsCurrent
+  /logistic/regions:search:
+    $ref: ./logistic/paths.yaml#/RegionsSearch
+  /logistic/regions:search-one:
+    $ref: ./logistic/paths.yaml#/RegionsSearchOne
+  /logistic/region-enum-values:search:
+    $ref: ./logistic/paths.yaml#/RegionEnumValuesSearch
+  /logistic/delivery-prices:
+    $ref: ./logistic/paths.yaml#/DeliveryPrices
+  /logistic/delivery-prices/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryPricesCurrent
+  /logistic/delivery-prices:search:
+    $ref: ./logistic/paths.yaml#/DeliveryPricesSearch
+  /logistic/delivery-prices:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryPricesSearchOne
+  /logistic/delivery-prices:meta:
+    $ref: ./logistic/paths.yaml#/DeliveryPricesMeta
+  /logistic/delivery-kpi:
+    $ref: ./logistic/paths.yaml#/DeliveryKpi
+  /logistic/delivery-kpi:meta:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiMeta
+  /logistic/delivery-kpi-ct:search:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiCtSearch
+  /logistic/delivery-kpi-ct:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiCtSearchOne
+  /logistic/delivery-kpi-ct/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiCtForSeller
+  /logistic/delivery-kpi-ppt:search:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiPptSearch
+  /logistic/delivery-kpi-ppt:search-one:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiPptSearchOne
+  /logistic/delivery-kpi-ppt/{id}:
+    $ref: ./logistic/paths.yaml#/DeliveryKpiPptForSeller
+  /logistic/delivery-methods:
+    $ref: ./logistic/paths.yaml#/DeliveryMethods
+  /logistic/delivery-service-statuses:
+    $ref: ./logistic/paths.yaml#/DeliveryServiceStatuses
+  /logistic/shipment-methods:
+    $ref: ./logistic/paths.yaml#/ShipmentMethods
+  /logistic/cargo/{id}:
+    $ref: ./logistic/paths.yaml#/PatchCargo
+  /logistic/cargo/{id}:cancel:
+    $ref: ./logistic/paths.yaml#/CancelCargo
+  /logistic/cargo:search:
+    $ref: ./logistic/paths.yaml#/SearchCargo
+  /logistic/cargo-orders/{id}:cancel:
+    $ref: ./logistic/paths.yaml#/CancelCargoOrders
+  /logistic/cargo-orders:search:
+    $ref: ./logistic/paths.yaml#/SearchCargoOrders
+  /orders/orders:search:
+    $ref: ./orders/paths.yaml#/OrdersSearch
+  /orders/orders:meta:
+    $ref: ./orders/paths.yaml#/OrderMeta
+  /orders/orders/{id}:
+    $ref: ./orders/paths.yaml#/OrdersOne
+  /orders/orders/{id}:change-delivery:
+    $ref: ./orders/paths.yaml#/OrderOneChangeDelivery
+  /orders/orders/{id}:add-order-items:
+    $ref: ./orders/paths.yaml#/OrderItemsAdd
+  /orders/orders/{id}:delete-order-items:
+    $ref: ./orders/paths.yaml#/OrderItemsDelete
+  /orders/orders/{id}:change-order-items-qty:
+    $ref: ./orders/paths.yaml#/OrderItemOneChangeQty
+  /orders/orders/{id}:change-payment-method:
+    $ref: ./orders/paths.yaml#/OrdersOneChangePaymentMethod
+  /orders/orders/{id}:attach-file:
+    $ref: ./orders/paths.yaml#/OrdersOneAttachFile
+  /orders/orders/{id}:delete-files:
+    $ref: ./orders/paths.yaml#/OrdersOneDeleteFiles
+  /orders/order-statuses:
+    $ref: ./orders/paths.yaml#/OrdersStatuses
+  /orders/order-sources:
+    $ref: ./orders/paths.yaml#/OrdersSources
+  /orders/payment-methods:
+    $ref: ./orders/paths.yaml#/PaymentMethods
+  /orders/payment-statuses:
+    $ref: ./orders/paths.yaml#/PaymentStatuses
+  /orders/delivery-statuses:
+    $ref: ./orders/paths.yaml#/DeliveryStatuses
+  /orders/shipment-statuses:
+    $ref: ./orders/paths.yaml#/ShipmentStatuses
+  /orders/refund-statuses:
+    $ref: ./orders/paths.yaml#/RefundStatuses
+  /orders/refund-reasons:
+    $ref: ./orders/paths.yaml#/RefundReasons
+  /orders/refund-reasons/{id}:
+    $ref: ./orders/paths.yaml#/RefundReasonsOne
+  /orders/shipments/{id}:
+    $ref: ./orders/paths.yaml#/ShipmentsOne
+  /orders/deliveries/{id}:
+    $ref: ./orders/paths.yaml#/DeliveriesOne
+  /orders/oms-settings:
+    $ref: ./orders/paths.yaml#/OmsSettingsSeveral
+  /orders/oms-settings:meta:
+    $ref: ./orders/paths.yaml#/OmsSettingsMeta
+  /orders/baskets-settings:
+    $ref: ./orders/paths.yaml#/BasketsSettingsSeveral
+  /orders/baskets-settings:meta:
+    $ref: ./orders/paths.yaml#/BasketsSettingsMeta
+  /orders/refunds:
+    $ref: ./orders/paths.yaml#/Refunds
+  /orders/refunds:search:
+    $ref: ./orders/paths.yaml#/RefundsSearch
+  /orders/refunds:meta:
+    $ref: ./orders/paths.yaml#/RefundsMeta
+  /orders/refunds/{id}:
+    $ref: ./orders/paths.yaml#/RefundsOne
+  /orders/refunds/{id}:attach-file:
+    $ref: ./orders/paths.yaml#/RefundOneAttachFile
+  /orders/refunds/{id}:delete-files:
+    $ref: ./orders/paths.yaml#/RefundDeleteFiles
+  /orders/basket-items:search:
+    $ref: ./orders/basket_items_paths.yaml#/BasketItemsSearch
+  /orders/basket-items:meta:
+    $ref: ./orders/basket_items_paths.yaml#/BasketItemsMeta
+  /orders/baskets:search:
+    $ref: ./orders/baskets_paths.yaml#/BasketsSearch
+  /orders/baskets:meta:
+    $ref: ./orders/baskets_paths.yaml#/BasketsMeta
+  /catalog/pim/failed-jobs:search:
+    $ref: ./pim/failed_jobs_paths.yaml#/FailedJobsSearch
+  /catalog/pim/failed-jobs:meta:
+    $ref: ./pim/failed_jobs_paths.yaml#/FailedJobsMeta
+  /catalog/pim/temp-files:search:
+    $ref: ./pim/temp_files_paths.yaml#/TempFilesSearch
+  /catalog/pim/temp-files:meta:
+    $ref: ./pim/temp_files_paths.yaml#/TempFilesMeta
+  /catalog/brands:meta:
+    $ref: ./catalog/brands-paths.yaml#/BrandsMeta
+  /catalog/brands:search:
+    $ref: ./catalog/brands-paths.yaml#/BrandsSearch
+  /catalog/brand-enum-values:search:
+    $ref: ./catalog/brands-paths.yaml#/BrandEnumValuesSearch
+  /catalog/brands:
+    $ref: ./catalog/brands-paths.yaml#/Brands
+  /catalog/brands:preload-image:
+    $ref: ./catalog/brands-paths.yaml#/PreloadBrandImage
+  /catalog/brands/{id}:
+    $ref: ./catalog/brands-paths.yaml#/BrandsCurrent
+  /catalog/brands/{id}:upload-image:
+    $ref: ./catalog/brands-paths.yaml#/BrandsUploadImage
+  /catalog/brands/{id}:delete-image:
+    $ref: ./catalog/brands-paths.yaml#/BrandsDeleteImage
+  /catalog/categories:meta:
+    $ref: ./catalog/categories-paths.yaml#/CategoriesMeta
+  /catalog/category-properties:meta:
+    $ref: ./catalog/categories-paths.yaml#/CategoryPropertiesMeta
+  /catalog/categories:search:
+    $ref: ./catalog/categories-paths.yaml#/CategoriesSearch
+  /catalog/category-enum-values:search:
+    $ref: ./catalog/categories-paths.yaml#/CategoryEnumValuesSearch
+  /catalog/categories:
+    $ref: ./catalog/categories-paths.yaml#/Categories
+  /catalog/categories/{id}:bind-properties:
+    $ref: ./catalog/categories-paths.yaml#/CategoryPropertiesBind
+  /catalog/categories/{id}:
+    $ref: ./catalog/categories-paths.yaml#/CategoriesCurrent
+  /catalog/categories:tree:
+    $ref: ./catalog/categories-paths.yaml#/CategoriesTree
+  /catalog/actual-category-properties:search:
+    $ref: ./catalog/categories-paths.yaml#/ActualCategoryPropertiesSearch
+  /catalog/actual-category-properties:meta:
+    $ref: ./catalog/categories-paths.yaml#/ActualCategoryPropertiesMeta
+  /catalog/categories:actualize:
+    $ref: ./catalog/categories-paths.yaml#/CategoriesActualize
+  /catalog/properties:meta:
+    $ref: ./catalog/properties-paths.yaml#/PropertiesMeta
+  /catalog/properties:search:
+    $ref: ./catalog/properties-paths.yaml#/PropertiesSearch
+  /catalog/properties:
+    $ref: ./catalog/properties-paths.yaml#/Properties
+  /catalog/properties/{id}:
+    $ref: ./catalog/properties-paths.yaml#/PropertiesCurrent
+  /catalog/properties/properties-types:
+    $ref: ./catalog/properties-paths.yaml#/PropertiesTypes
+  /catalog/properties/{id}:add-directory:
+    $ref: ./catalog/properties-paths.yaml#/Directory
+  /catalog/properties/{id}:mass-add-directory:
+    $ref: ./catalog/properties-paths.yaml#/DirectoryMassCreate
+  /catalog/properties/directory:search:
+    $ref: ./catalog/properties-paths.yaml#/DirectorySearch
+  /catalog/properties/directory:preload-image:
+    $ref: ./catalog/properties-paths.yaml#/DirectoryPreloadImage
+  /catalog/properties/directory:preload-file:
+    $ref: ./catalog/properties-paths.yaml#/DirectoryPreloadFile
+  /catalog/properties/directory/{id}:
+    $ref: ./catalog/properties-paths.yaml#/DirectoryCurrent
+  /catalog/products:preload-image:
+    $ref: ./catalog/products-paths.yaml#/ProductsPreloadImage
+  /catalog/products:search:
+    $ref: ./catalog/products-paths.yaml#/ProductsSearch
+  /catalog/products:
+    $ref: ./catalog/products-paths.yaml#/Products
+  /catalog/products:mass-patch:
+    $ref: ./catalog/products-paths.yaml#/ProductsMassPatch
+  /catalog/products:mass-patch-by-query:
+    $ref: ./catalog/products-paths.yaml#/ProductsMassPatchByQuery
+  /catalog/products:common-attributes:
+    $ref: ./catalog/products-paths.yaml#/ProductsCommonAttributes
+  /catalog/products/{id}:
+    $ref: ./catalog/products-paths.yaml#/ProductsCurrent
+  /catalog/products/drafts:search:
+    $ref: ./catalog/products-paths.yaml#/ProductDraftsSearch
+  /catalog/products/drafts:meta:
+    $ref: ./catalog/products-paths.yaml#/ProductsDraftsMeta
+  /catalog/products/draft-enum-values:search:
+    $ref: ./catalog/products-paths.yaml#/ProductDraftEnumValuesSearch
+  /catalog/products/drafts/{id}:
+    $ref: ./catalog/products-paths.yaml#/ProductDraftsCurrent
+  /catalog/products/{property}/enum-values:search:
+    $ref: ./catalog/products-paths.yaml#/ProductsPropertyEnumValuesSearch
+  /catalog/products/{id}/attributes:
+    $ref: ./catalog/products-paths.yaml#/ProductAttributesUpdate
+  /catalog/products/{id}/images:
+    $ref: ./catalog/products-paths.yaml#/ProductImagesEdit
+  /catalog/products/{id}:upload-image:
+    $ref: ./catalog/products-paths.yaml#/ProductImageUpload
+  /catalog/products/{id}:delete-image:
+    $ref: ./catalog/products-paths.yaml#/ProductImageDelete
+  /catalog/products/fields:search:
+    $ref: ./catalog/products-paths.yaml#/ProductFieldsSearch
+  /catalog/products/fields/{id}:
+    $ref: ./catalog/products-paths.yaml#/ProductFieldsCurrent
+  /catalog/products/product-types:
+    $ref: ./catalog/products-paths.yaml#/ProductTypes
+  /catalog/products/product-tariffing-volumes:
+    $ref: ./catalog/products-paths.yaml#/ProductTariffingVolumes
+  /catalog/products/product-uom:
+    $ref: ./catalog/products-paths.yaml#/ProductUom
+  /catalog/product-groups:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroups
+  /catalog/product-groups/{id}:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsCurrent
+  /catalog/product-groups/{id}:bind-products:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsCurrentBindProducts
+  /catalog/product-groups:mass-delete:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsMassDelete
+  /catalog/product-groups:meta:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsMeta
+  /catalog/product-groups:search:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsSearch
+  /catalog/product-groups:search-one:
+    $ref: ./catalog/product-groups-paths.yaml#/ProductGroupsSearchOne
+  /catalog/bulk-operations:search:
+    $ref: ./catalog/bulk-operations-paths.yaml#/BulkOperationsSearch
+  /catalog/bulk-operations:meta:
+    $ref: ./catalog/bulk-operations-paths.yaml#/BulkOperationsMeta
+  /catalog/product-imports:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportsCreate
+  /catalog/product-imports:preload-file:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportsPreloadFile
+  /catalog/product-imports:search:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportsSearch
+  /catalog/product-imports:meta:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportsMeta
+  /catalog/product-import-warnings:search:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportWarningsSearch
+  /catalog/product-import-warnings:meta:
+    $ref: ./catalog/product-imports-paths.yaml#/ProductImportWarningsMeta
+  /catalog/product-statuses:next:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusesNext
+  /catalog/product-statuses/{id}:set-previous:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusesSetPrevious
+  /catalog/product-status-enum-values:search:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusEnumValuesSearch
+  /catalog/product-statuses:search:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusSettingsSearch
+  /catalog/product-statuses:meta:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusSettingsMeta
+  /catalog/product-statuses:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusSettings
+  /catalog/product-statuses/{id}:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusSettingsOne
+  /catalog/product-status-types:
+    $ref: ./catalog/product-statuses-paths.yaml#/ProductStatusTypes
+  /catalog/product-events:
+    $ref: ./catalog/product-events-paths.yaml#/ProductEvents
+  /catalog/product-event-operations:
+    $ref: ./catalog/product-events-paths.yaml#/ProductEventOperations
+  /catalog/product-events:search:
+    $ref: ./catalog/product-events-paths.yaml#/ProductEventsSearch
+  /catalog/product-events:meta:
+    $ref: ./catalog/product-events-paths.yaml#/ProductEventsMeta
+  /catalog/offers/entities:sync:
+    $ref: ./catalog/offers-paths.yaml#/OfferEntitiesSync
+  /catalog/offers:migrate:
+    $ref: ./catalog/offers-paths.yaml#/OffersMigrate
+  /catalog/offers/failed-jobs:search:
+    $ref: ./catalog/failed_jobs_paths.yaml#/FailedJobsSearch
+  /catalog/offers/failed-jobs:meta:
+    $ref: ./catalog/failed_jobs_paths.yaml#/FailedJobsMeta
+  /catalog/offers/{id}:
+    $ref: ./catalog/offers-paths.yaml#/OffersOne
+  /catalog/offers:search:
+    $ref: ./catalog/offers-paths.yaml#/OffersSearch
+  /catalog/offers:meta:
+    $ref: ./catalog/offers-paths.yaml#/OffersMeta
+  /catalog/stocks/{id}:
+    $ref: ./catalog/stocks-paths.yaml#/StocksOne
+  /catalog/stocks:search:
+    $ref: ./catalog/stocks-paths.yaml#/StocksSearch
+  /catalog/stocks:meta:
+    $ref: ./catalog/stocks-paths.yaml#/StocksMeta
+  /catalog/reviews/review-statuses:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewStatuses
+  /catalog/reviews/{id}:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewsOne
+  /catalog/reviews:search:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewsSearch
+  /catalog/reviews:mass-delete:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewsMassDelete
+  /catalog/reviews:meta:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewsMeta
+  /catalog/reviews/review-customer:meta:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewCustomerMeta
+  /catalog/reviews/review-product:meta:
+    $ref: ./catalog/reviews-paths.yaml#/ReviewProductMeta
+  /catalog/feeds/entities:migrate:
+    $ref: ./catalog/feeds-paths.yaml#/EntitiesMigrate
+  /catalog/feeds/{id}:
+    $ref: ./catalog/feeds-paths.yaml#/FeedOne
+  /catalog/feeds:search:
+    $ref: ./catalog/feeds-paths.yaml#/FeedsSearch
+  /catalog/feeds:meta:
+    $ref: ./catalog/feeds-paths.yaml#/FeedsMeta
+  /catalog/feed-types:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedTypes
+  /catalog/feed-platforms:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedPlatforms
+  /catalog/feed-settings:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedSettings
+  /catalog/feed-settings/{id}:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedSettingsOne
+  /catalog/feed-settings:search:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedSettingsSearch
+  /catalog/feed-settings:meta:
+    $ref: ./catalog/feed-settings-paths.yaml#/FeedSettingsMeta
+  /catalog/cloud-integrations:
+    $ref: ./catalog/cloud-integrations-paths.yaml#/CloudIntegrations
+  /catalog/catalog-cache/entities:migrate:
+    $ref: ./catalog_cache/common-paths.yaml#/EntitiesMigrate
+  /catalog-cache/category-properties:search:
+    $ref: ./catalog_cache/actual_category_properties_paths.yaml#/CategoryPropertiesSearch
+  /catalog-cache/category-properties:meta:
+    $ref: ./catalog_cache/actual_category_properties_paths.yaml#/CategoryPropertiesMeta
+  /catalog-cache/categories:search:
+    $ref: ./catalog_cache/categories_paths.yaml#/CategoriesSearch
+  /catalog-cache/categories:meta:
+    $ref: ./catalog_cache/categories_paths.yaml#/CategoriesMeta
+  /catalog-cache/failed-jobs:search:
+    $ref: ./catalog_cache/failed_jobs_paths.yaml#/FailedJobsSearch
+  /catalog-cache/failed-jobs:meta:
+    $ref: ./catalog_cache/failed_jobs_paths.yaml#/FailedJobsMeta
+  /catalog-cache/indexer-timestamps:search:
+    $ref: ./catalog_cache/indexer_timestamps_paths.yaml#/IndexerTimestampsSearch
+  /catalog-cache/indexer-timestamps:meta:
+    $ref: ./catalog_cache/indexer_timestamps_paths.yaml#/IndexerTimestampsMeta
+  /catalog-cache/indexer-timestamps/{id}:
+    $ref: ./catalog_cache/indexer_timestamps_paths.yaml#/IndexerTimestampsOne
+  /catalog-cache/properties:search:
+    $ref: ./catalog_cache/properties_paths.yaml#/PropertiesSearch
+  /catalog-cache/properties:meta:
+    $ref: ./catalog_cache/properties_paths.yaml#/PropertiesMeta
+  /catalog-cache/nameplates:search:
+    $ref: ./catalog_cache/nameplates_paths.yaml#/NameplatesSearch
+  /catalog-cache/nameplates:meta:
+    $ref: ./catalog_cache/nameplates_paths.yaml#/NameplatesMeta
+  /catalog-cache/nameplate-products:search:
+    $ref: ./catalog_cache/nameplate_products_paths.yaml#/NameplateProductsSearch
+  /catalog-cache/nameplate-products:meta:
+    $ref: ./catalog_cache/nameplate_products_paths.yaml#/NameplateProductsMeta
+  /catalog-cache/brands:search:
+    $ref: ./catalog_cache/brands_paths.yaml#/BrandsSearch
+  /catalog-cache/brands:meta:
+    $ref: ./catalog_cache/brands_paths.yaml#/BrandsMeta
+  /catalog-cache/property-directory-values:search:
+    $ref: ./catalog_cache/property_directory_values_paths.yaml#/PropertyDirectoryValuesSearch
+  /catalog-cache/property-directory-values:meta:
+    $ref: ./catalog_cache/property_directory_values_paths.yaml#/PropertyDirectoryValuesMeta
+  /catalog-cache/product-groups:search:
+    $ref: ./catalog_cache/product_groups_paths.yaml#/ProductGroupsSearch
+  /catalog-cache/product-groups:meta:
+    $ref: ./catalog_cache/product_groups_paths.yaml#/ProductGroupsMeta
+  /catalog-cache/product-group-products:search:
+    $ref: ./catalog_cache/product_group_products_paths.yaml#/ProductGroupProductsSearch
+  /catalog-cache/product-group-products:meta:
+    $ref: ./catalog_cache/product_group_products_paths.yaml#/ProductGroupProductsMeta
+  /catalog-cache/offers:search:
+    $ref: ./catalog_cache/offers_paths.yaml#/OffersSearch
+  /catalog-cache/offers:meta:
+    $ref: ./catalog_cache/offers_paths.yaml#/OffersMeta
+  /catalog-cache/discounts:search:
+    $ref: ./catalog_cache/discounts_paths.yaml#/DiscountsSearch
+  /catalog-cache/discounts:meta:
+    $ref: ./catalog_cache/discounts_paths.yaml#/DiscountsMeta
+  /catalog-cache/products:search:
+    $ref: ./catalog_cache/products_paths.yaml#/ProductsSearch
+  /catalog-cache/products:meta:
+    $ref: ./catalog_cache/products_paths.yaml#/ProductsMeta
+  /catalog-cache/images:search:
+    $ref: ./catalog_cache/images_paths.yaml#/ImagesSearch
+  /catalog-cache/images:meta:
+    $ref: ./catalog_cache/images_paths.yaml#/ImagesMeta
+  /catalog-cache/product-property-values:search:
+    $ref: ./catalog_cache/product_property_values_paths.yaml#/ProductPropertyValuesSearch
+  /catalog-cache/product-property-values:meta:
+    $ref: ./catalog_cache/product_property_values_paths.yaml#/ProductPropertyValuesMeta
+  /customers/customers:meta:
+    $ref: ./customers/paths.yaml#/CustomerMeta
+  /customers/customers:search:
+    $ref: ./customers/paths.yaml#/CustomerSearch
+  /customers/customer-enum-values:search:
+    $ref: ./customers/paths.yaml#/CustomerEnumValuesSearch
+  /customers/customers:
+    $ref: ./customers/paths.yaml#/Customers
+  /customers/customers/{id}:
+    $ref: ./customers/paths.yaml#/CustomerCurrent
+  /customers/customers/{id}:delete-personal-data:
+    $ref: ./customers/paths.yaml#/CustomerDeletePersonalData
+  /customers/customers/{id}:upload-avatar:
+    $ref: ./customers/paths.yaml#/CustomerUploadAvatar
+  /customers/customers/{id}:delete-avatar:
+    $ref: ./customers/paths.yaml#/CustomerDeleteAvatar
+  /customers/orders:meta:
+    $ref: ./customers/paths.yaml#/CustomerOrderMeta
+  /customers/users:search:
+    $ref: ./customers/paths.yaml#/UsersSearch
+  /customers/users-enum-values:search:
+    $ref: ./customers/paths.yaml#/CustomerUsersEnumValuesSearch
+  /customers/users:search-one:
+    $ref: ./customers/paths.yaml#/UsersSearchOne
+  /customers/users:
+    $ref: ./customers/paths.yaml#/Users
+  /customers/users/{id}:
+    $ref: ./customers/paths.yaml#/UsersCurrent
+  /customers/users/{id}:refresh-password-token:
+    $ref: ./customers/paths.yaml#/CustomerUserRefreshPasswordToken
+  /customers/addresses:search:
+    $ref: ./customers/paths.yaml#/CustomerAddressSearch
+  /customers/addresses:
+    $ref: ./customers/paths.yaml#/CustomerAddress
+  /customers/addresses/{id}:
+    $ref: ./customers/paths.yaml#/CustomerAddressCurrent
+  /customers/addresses/{id}:set-as-default:
+    $ref: ./customers/paths.yaml#/CustomerAddressStandard
+  /customers/statuses:search:
+    $ref: ./customers/paths.yaml#/CustomerStatusesSearch
+  /customers/statuses-enum-values:search:
+    $ref: ./customers/paths.yaml#/CustomerStatusesEnumValuesSearch
+  /customers/statuses:
+    $ref: ./customers/paths.yaml#/CustomerStatuses
+  /customers/statuses/{id}:
+    $ref: ./customers/paths.yaml#/CustomerStatusesOne
+  /customers/favorites:search:
+    $ref: ./customers/paths.yaml#/CustomerFavoritesSearch
+  /customers/favorites:
+    $ref: ./customers/paths.yaml#/CustomerFavoritesMassAdd
+  /customers/favorites:delete-product:
+    $ref: ./customers/paths.yaml#/CustomerFavoritesMassDelete
+  /customers/favorites:clear:
+    $ref: ./customers/paths.yaml#/CustomerFavoritesClear
+  /customers/customers-info:search:
+    $ref: ./customers/paths.yaml#/CustomersInfoSearch
+  /customers/customers-info:
+    $ref: ./customers/paths.yaml#/CustomersInfo
+  /customers/customers-info/{id}:
+    $ref: ./customers/paths.yaml#/CustomersInfoCurrent
+  /customers/bonus-operations:search:
+    $ref: ./customers/paths.yaml#/CustomersBonusOperationsSearch
+  /customers/bonus-operations:
+    $ref: ./customers/paths.yaml#/CustomersBonusOperations
+  /customers/bonus-operations/{id}:
+    $ref: ./customers/paths.yaml#/CustomersBonusOperationsCurrent
+  /customers/product-subscribes:search:
+    $ref: ./customers/paths.yaml#/CustomerProductSubscribesSearch
+  /customers/product-subscribes:
+    $ref: ./customers/paths.yaml#/CustomerProductSubscribes
+  /customers/product-subscribes:delete-product:
+    $ref: ./customers/paths.yaml#/CustomerProductSubscribesDelete
+  /customers/product-subscribes:clear:
+    $ref: ./customers/paths.yaml#/CustomerProductSubscribesClear
+  /customers/preferences:search:
+    $ref: ./customers/paths.yaml#/CustomerPreferencesSearch
+  /customers/confirmation-codes:search:
+    $ref: ./customers/customer_confirmation_codes_paths.yaml#/CustomerConfirmationCodesSearch
+  /customers/confirmation-codes:meta:
+    $ref: ./customers/customer_confirmation_codes_paths.yaml#/CustomerConfirmationCodesMeta
+  /marketing/promo-codes:
+    $ref: ./marketing/paths.yaml#/PromoCodes
+  /marketing/promo-codes/{id}:
+    $ref: ./marketing/paths.yaml#/PromoCodesCurrent
+  /marketing/promo-codes:search:
+    $ref: ./marketing/paths.yaml#/PromoCodesSearch
+  /marketing/promo-codes:meta:
+    $ref: ./marketing/paths.yaml#/PromoCodesMeta
+  /marketing/promo-code-statuses:
+    $ref: ./marketing/paths.yaml#/PromoCodeStatuses
+  /marketing/discounts:
+    $ref: ./marketing/paths.yaml#/Discounts
+  /marketing/discounts/{id}:
+    $ref: ./marketing/paths.yaml#/DiscountsCurrent
+  /marketing/discounts:search:
+    $ref: ./marketing/paths.yaml#/DiscountsSearch
+  /marketing/discounts:meta:
+    $ref: ./marketing/paths.yaml#/DiscountsMeta
+  /marketing/discounts:mass-status-update:
+    $ref: ./marketing/paths.yaml#/DiscountsMassStatusUpdate
+  /marketing/discounts/{id}/products:
+    $ref: ./marketing/paths.yaml#/DiscountProductsEdit
+  /marketing/discount-statuses:
+    $ref: ./marketing/paths.yaml#/DiscountStatuses
+  /marketing/discount-types:
+    $ref: ./marketing/paths.yaml#/DiscountTypes
+  /marketing/discount-value-types:
+    $ref: ./marketing/paths.yaml#/DiscountValueTypes
+  /marketing/discounts/discount-products/{id}:
+    $ref: ./marketing/paths.yaml#/DiscountProductsCurrent
+  /marketing/discounts/discount-products:search:
+    $ref: ./marketing/paths.yaml#/DiscountProductsSearch
+  /marketing/discounts/discount-products:meta:
+    $ref: ./marketing/paths.yaml#/DiscountProductsMeta
+  /menu:
+    $ref: ./menu/paths.yaml#/GetMenu
+  /communication/statuses:search:
+    $ref: ./communication/paths.yaml#/StatusesSearch
+  /communication/statuses:
+    $ref: ./communication/paths.yaml#/Statuses
+  /communication/statuses/{id}:
+    $ref: ./communication/paths.yaml#/StatusesCurrent
+  /communication/themes:search:
+    $ref: ./communication/paths.yaml#/ThemesSearch
+  /communication/themes:
+    $ref: ./communication/paths.yaml#/Themes
+  /communication/themes/{id}:
+    $ref: ./communication/paths.yaml#/ThemesCurrent
+  /communication/types:search:
+    $ref: ./communication/paths.yaml#/TypesSearch
+  /communication/types:
+    $ref: ./communication/paths.yaml#/Types
+  /communication/types/{id}:
+    $ref: ./communication/paths.yaml#/TypesCurrent
+  /communication/messages:search:
+    $ref: ./communication/paths.yaml#/MessagesSearch
+  /communication/broadcasts:
+    $ref: ./communication/paths.yaml#/Broadcasts
+  /communication/attachments:
+    $ref: ./communication/paths.yaml#/Attachments
+  /communication/attachments:mass-delete:
+    $ref: ./communication/paths.yaml#/AttachmentsMassDelete
+  /communication/channels:search:
+    $ref: ./communication/paths.yaml#/ChannelsSearch
+  /communication/channels:
+    $ref: ./communication/paths.yaml#/Channels
+  /communication/channels/{id}:
+    $ref: ./communication/paths.yaml#/ChannelsCurrent
+  /communication/chats:search:
+    $ref: ./communication/paths.yaml#/ChatsSearch
+  /communication/chats:
+    $ref: ./communication/paths.yaml#/Chats
+  /communication/chats/{id}:
+    $ref: ./communication/paths.yaml#/ChatsCurrent
+  /communication/notifications:search:
+    $ref: ./communication/paths.yaml#/NotificationsSearch
+  /communication/notifications:meta:
+    $ref: ./communication/paths.yaml#/NotificationsMeta
+  /communication/notification-settings:
+    $ref: ./communication/paths.yaml#/NotificationSettings
+  /communication/notification-settings/{id}:
+    $ref: ./communication/paths.yaml#/NotificationSettingsOne
+  /communication/notification-settings:search:
+    $ref: ./communication/paths.yaml#/NotificationSettingsSearch
+  /communication/notification-settings:meta:
+    $ref: ./communication/paths.yaml#/NotificationSettingsMeta
+  /communication/notification-setting-channels:
+    $ref: ./communication/paths.yaml#/NotificationSettingsChannels
+  /communication/notification-setting-events:
+    $ref: ./communication/paths.yaml#/NotificationSettingsEvents
+  /communication/notification-setting-variables:
+    $ref: ./communication/paths.yaml#/NotificationSettingsVariables
+  /units/sellers:search:
+    $ref: ./units/paths.yaml#/SellersSearch
+  /units/sellers:meta:
+    $ref: ./units/paths.yaml#/SellersMeta
+  /units/sellers:
+    $ref: ./units/paths.yaml#/Sellers
+  /units/sellers/{id}:
+    $ref: ./units/paths.yaml#/SellersOne
+  /units/sellers/seller-statuses:
+    $ref: ./units/paths.yaml#/SellerStatuses
+  /units/seller-enum-values:search:
+    $ref: ./units/paths.yaml#/SellerEnumValuesSearch
+  /units/stores:meta:
+    $ref: ./units/paths.yaml#/StoresMeta
+  /units/stores:search:
+    $ref: ./units/paths.yaml#/StoresSearch
+  /units/store-enum-values:search:
+    $ref: ./units/paths.yaml#/StoresEnumValuesSearch
+  /units/stores:
+    $ref: ./units/paths.yaml#/Stores
+  /units/stores/{id}:
+    $ref: ./units/paths.yaml#/StoresOne
+  /units/stores-workings:
+    $ref: ./units/paths.yaml#/StoreWorkings
+  /units/stores-workings/{id}:
+    $ref: ./units/paths.yaml#/StoreWorkingsOne
+  /units/stores-pickup-times:
+    $ref: ./units/paths.yaml#/StorePickupTimes
+  /units/stores-pickup-times/{id}:
+    $ref: ./units/paths.yaml#/StorePickupTimesOne
+  /units/stores-contacts:
+    $ref: ./units/paths.yaml#/StoreContacts
+  /units/stores-contacts/{id}:
+    $ref: ./units/paths.yaml#/StoreContactsOne
+  /units/seller-users:search:
+    $ref: ./units/paths.yaml#/SellerUsersSearch
+  /units/seller-users:meta:
+    $ref: ./units/paths.yaml#/SellerUsersMeta
+  /units/seller-users:
+    $ref: ./units/paths.yaml#/SellerUsers
+  /units/seller-users/{id}:
+    $ref: ./units/paths.yaml#/SellerUsersOne
+  /units/seller-users/{id}:add-roles:
+    $ref: ./units/paths.yaml#/SellerUsersOneAddRoles
+  /units/seller-users/{id}:delete-role:
+    $ref: ./units/paths.yaml#/SellerUsersOneDeleteRole
+  /units/seller-user-roles:search:
+    $ref: ./units/paths.yaml#/SellerUserRolesSearch
+  /units/admin-users:meta:
+    $ref: ./units/paths.yaml#/AdminUsersMeta
+  /units/admin-users:search:
+    $ref: ./units/paths.yaml#/AdminUsersSearch
+  /units/admin-user-enum-values:search:
+    $ref: ./units/paths.yaml#/AdminUserEnumValuesSearch
+  /units/admin-users:
+    $ref: ./units/paths.yaml#/AdminUsers
+  /units/admin-users/{id}:
+    $ref: ./units/paths.yaml#/AdminUsersOne
+  /units/admin-users/{id}:add-roles:
+    $ref: ./units/paths.yaml#/AdminUsersOneAddRoles
+  /units/admin-users/{id}:delete-role:
+    $ref: ./units/paths.yaml#/AdminUsersOneDeleteRole
+  /units/admin-users/{id}:refresh-password-token:
+    $ref: ./units/paths.yaml#/AdminUsersRefreshPasswordToken
+  /units/admin-users/mass/change-active:
+    $ref: ./units/paths.yaml#/AdminUsersMassChangeActive
+  /units/admin-users/set-password:
+    $ref: ./units/paths.yaml#/AdminUsersSetPassword
+  /units/admin-users/right-access:
+    $ref: ./units/paths.yaml#/AdminUserRightAccess
+  /units/admin-user-roles:
+    $ref: ./units/paths.yaml#/AdminUserRoles
+  /units/admin-user-roles/{id}:
+    $ref: ./units/paths.yaml#/AdminUserRolesOne
+  /units/admin-user-roles:search:
+    $ref: ./units/paths.yaml#/AdminUserRolesSearch
+  /units/admin-user-roles:meta:
+    $ref: ./units/paths.yaml#/AdminUserRolesMeta
+components:
+  parameters:
+    QueryInclude:
+      $ref: ./common_parameters.yaml#/QueryInclude
+  schemas:
+    PaginationTypeEnum:
+      $ref: ./common_schemas.yaml#/PaginationTypeEnum
+    PaginationTypeCursorEnum:
+      $ref: ./common_schemas.yaml#/PaginationTypeCursorEnum
+    PaginationTypeOffsetEnum:
+      $ref: ./common_schemas.yaml#/PaginationTypeOffsetEnum
+    CommunicationChatDirectionEnum:
+      $ref: ./communication/enums/communication_chat_direction_enum.yaml
+    CommunicationUserTypeEnum:
+      $ref: ./communication/enums/communication_user_type_enum.yaml
+    CmsBannerButtonLocationEnum:
+      $ref: ./cms/contents/enums/cms_banner_button_location_enum.yaml
+    CmsBannerButtonTypeEnum:
+      $ref: ./cms/contents/enums/cms_banner_button_type_enum.yaml
+    CmsBannerImageTypeEnum:
+      $ref: ./cms/contents/enums/cms_banner_image_type_enum.yaml
+    CmsBannerTypeEnum:
+      $ref: ./cms/contents/enums/cms_banner_type_enum.yaml
+    CmsMenuEnum:
+      $ref: ./cms/contents/enums/cms_menu_enum.yaml
+    CmsSeoVariableEnum:
+      $ref: ./cms/seo/enums/cms_seo_variable_enum.yaml
+    CmsSeoTemplateTypeEnum:
+      $ref: ./cms/seo/enums/cms_seo_template_type_enum.yaml
+    OrdersOrderStatusEnum:
+      $ref: ./orders/enums/orders_order_status_enum.yaml
+    OrdersOrderSourceEnum:
+      $ref: ./orders/enums/orders_order_source_enum.yaml
+    OrdersPaymentMethodEnum:
+      $ref: ./orders/enums/orders_payment_method_enum.yaml
+    OrdersPaymentStatusEnum:
+      $ref: ./orders/enums/orders_payment_status_enum.yaml
+    OrdersDeliveryStatusEnum:
+      $ref: ./orders/enums/orders_delivery_status_enum.yaml
+    OrdersShipmentStatusEnum:
+      $ref: ./orders/enums/orders_shipment_status_enum.yaml
+    OrdersSettingCodeEnum:
+      $ref: ./orders/enums/orders_setting_code_enum.yaml
+    OrdersRefundStatusEnum:
+      $ref: ./orders/enums/orders_refund_status_enum.yaml
+    MarketingDiscountStatusEnum:
+      $ref: ./marketing/enums/marketing_discount_status_enum.yaml
+    MarketingDiscountTypeEnum:
+      $ref: ./marketing/enums/marketing_discount_type_enum.yaml
+    MarketingDiscountValueTypeEnum:
+      $ref: ./marketing/enums/marketing_discount_value_type_enum.yaml
+    MarketingPromoCodeStatusEnum:
+      $ref: ./marketing/enums/marketing_promo_code_status_enum.yaml
+    CatalogProductArchiveTypeEnum:
+      $ref: ./catalog/enums/catalog_product_archive_type_enum.yaml
+    CatalogProductImageTypeEnum:
+      $ref: ./catalog/enums/catalog_product_image_type_enum.yaml
+    CatalogPropertyTypeEnum:
+      $ref: ./catalog/enums/catalog_property_type_enum.yaml
+    CatalogFieldSettingsMaskEnum:
+      $ref: ./catalog/enums/catalog_field_settings_mask_enum.yaml
+    CatalogProductTypeEnum:
+      $ref: ./catalog/enums/catalog_product_type_enum.yaml
+    CatalogProductUomEnum:
+      $ref: ./catalog/enums/catalog_product_uom_enum.yaml
+    CatalogProductTariffingVolumeEnum:
+      $ref: ./catalog/enums/catalog_product_tariffing_volume_enum.yaml
+    CatalogProductImportStatusEnum:
+      $ref: ./catalog/enums/catalog_product_import_status_enum.yaml
+    CatalogProductImportTypeEnum:
+      $ref: ./catalog/enums/catalog_product_import_type_enum.yaml
+    CatalogBulkOperationActionEnum:
+      $ref: ./catalog/enums/catalog_bulk_operation_action_enum.yaml
+    CatalogBulkOperationEntityEnum:
+      $ref: ./catalog/enums/catalog_bulk_operation_entity_enum.yaml
+    CatalogBulkOperationStatusEnum:
+      $ref: ./catalog/enums/catalog_bulk_operation_status_enum.yaml
+    CatalogEventOperationEnum:
+      $ref: ./catalog/enums/catalog_event_operation_enum.yaml
+    CatalogProductEventEnum:
+      $ref: ./catalog/enums/catalog_product_event_enum.yaml
+    CatalogProductStatusTypeEnum:
+      $ref: ./catalog/enums/catalog_product_status_type_enum.yaml
+    CatalogFeedPlatformEnum:
+      $ref: ./catalog/enums/catalog_feed_platform_enum.yaml
+    CatalogFeedTypeEnum:
+      $ref: ./catalog/enums/catalog_feed_type_enum.yaml
+    CommunicationNotificationChannelEnum:
+      $ref: ./communication/enums/communication_notification_channel_enum.yaml
+    CommunicationNotificationEventEnum:
+      $ref: ./communication/enums/communication_notification_event_enum.yaml
+    CommunicationVariableEnum:
+      $ref: ./communication/enums/communication_notification_variable_enum.yaml
+    ReviewStatusEnum:
+      $ref: ./catalog/enums/review_status_enum.yaml
+    CustomersCustomerStatusEnum:
+      $ref: ./customers/enums/customers_customer_status_enum.yaml
+    CustomersCustomerGenderEnum:
+      $ref: ./customers/enums/customers_customer_gender_enum.yaml
+    MenuItemCodeEnum:
+      $ref: ./menu/enums/menu_item_code_enum.yaml
+    UnitsSellerStatusEnum:
+      $ref: ./units/enums/units_seller_status_enum.yaml
+    UnitsSellerUserRoleEnum:
+      $ref: ./units/enums/units_seller_user_role_enum.yaml
+    UnitsAdminUserRoleEnum:
+      $ref: ./units/enums/units_admin_user_role_enum.yaml
+    UnitsAdminUserRoleRightsAccessEnum:
+      $ref: ./units/enums/units_admin_user_role_rights_access_enum.yaml
+    LogisticDeliveryMethodEnum:
+      $ref: ./logistic/enums/logistic_delivery_method_enum.yaml
+    LogisticDeliveryServiceEnum:
+      $ref: ./logistic/enums/logistic_delivery_service_enum.yaml
+    LogisticDeliveryServiceStatusEnum:
+      $ref: ./logistic/enums/logistic_delivery_service_status_enum.yaml
+    LogisticShipmentMethodEnum:
+      $ref: ./logistic/enums/logistic_shipment_method_enum.yaml
+    LogisticCargoStatusEnum:
+      $ref: ./logistic/enums/logistic_cargo_status_enum.yaml
+    LogisticCargoOrderStatusEnum:
+      $ref: ./logistic/enums/logistic_cargo_order_status_enum.yaml
+    LogisticPointTypeEnum:
+      $ref: ./logistic/enums/logistic_point_type_enum.yaml
+    FieldTypeEnum:
+      $ref: ./common/enums/field_type_enum.yaml
+    FieldFilterTypeEnum:
+      $ref: ./common/enums/field_filter_type_enum.yaml
+    SearchEnumValuesBody:
+      $ref: ./common/schemas/resource_meta.yaml#/SearchEnumValuesBody
+    EnumValue:
+      $ref: ./common/schemas/resource_meta.yaml#/EnumValue
+  securitySchemes:
+    accessToken:
+      type: apiKey
+      in: header
+      name: X-Access-Token
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: ./errors.yaml#/ErrorResponse
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: ./errors.yaml#/ErrorResponse
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: ./errors.yaml#/ErrorResponse
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: ./errors.yaml#/ErrorResponse
+    ServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: ./errors.yaml#/ErrorResponse
+    DeleteResponse:
+      description: Delete success
+      content:
+        application/json:
+          schema:
+            $ref: ./common_schemas.yaml#/EmptyDataResponse
+    SuccessEmptyResponse:
+      description: The action was completed successfully
+      content:
+        application/json:
+          schema:
+            $ref: ./common_schemas.yaml#/EmptyDataResponse
+    GetResourceMetaResponse:
+      description: Getting fields for a tabular list
+      content:
+        application/json:
+          schema:
+            $ref: ./common/schemas/resource_meta.yaml#/GetResourceMetaResponse
+    SearchEnumValuesResponse:
+      description: Getting enumeration values
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ./common/schemas/resource_meta.yaml#/EnumValueInteger
+            required:
+              - data
+    MassOperationResultResponse:
+      description: Mass operation success
+      content:
+        application/json:
+          schema:
+            $ref: ./common_schemas.yaml#/MassOperationResult
+    PreloadFileResponse:
+      description: File successfully loaded and saved
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: ./common_schemas.yaml#/PreloadFile
+            required:
+              - data
+  requestBodies:
+    SearchEnumValuesRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./common/schemas/resource_meta.yaml#/SearchEnumValuesBody
+    MassDeleteBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./common_schemas.yaml#/RequestBodyMassOperation
+security:
+  - accessToken: []

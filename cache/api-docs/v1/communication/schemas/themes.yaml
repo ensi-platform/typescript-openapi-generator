@@ -1,0 +1,87 @@
+ThemeReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор статуса
+      example: 1
+  required:
+    - id
+ThemeFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Имя статуса
+      example: Новый
+    active:
+      type: boolean
+      description: Активность
+      nullable: true
+    channel:
+      type: array
+      description: Каналы
+      nullable: true
+      items:
+        type: integer
+ThemeRequiredFillableProperties:
+  type: object
+  required:
+    - name
+    - active
+    - channel
+  additionalProperties:
+    type: string
+Theme:
+  allOf:
+    - $ref: "#/ThemeReadonlyProperties"
+    - $ref: "#/ThemeFillableProperties"
+    - $ref: "#/ThemeRequiredFillableProperties"
+CreateThemeRequest:
+  allOf:
+    - $ref: "#/ThemeFillableProperties"
+    - $ref: "#/ThemeRequiredFillableProperties"
+PatchThemeRequest:
+  allOf:
+    - $ref: "#/ThemeFillableProperties"
+SearchThemesFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchThemesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchThemesFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+ThemeResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Theme"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchThemesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Theme"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,83 @@
+Offer:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Offer ID
+    offer_id:
+      type: integer
+      description: Offer ID from Offers
+    product_id:
+      type: integer
+      description: Product ID from Pim
+    is_active:
+      type: boolean
+      description: The final activity of the offer
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+    base_price:
+      type: integer
+      description: Base price
+      nullable: true
+    price:
+      type: integer
+      description: The final discounted price. If null, it is calculated during indexing
+      nullable: true
+    product:
+      $ref: ./products.yaml#/Product
+      nullable: true
+    discount:
+      $ref: ./discounts.yaml#/Discount
+      nullable: true
+    product_group:
+      $ref: ./product_groups.yaml#/ProductGroup
+      nullable: true
+    product_group_product:
+      $ref: ./product_group_products.yaml#/ProductGroupProduct
+      nullable: true
+    created_at:
+      type: string
+      format: date-time
+      description: Offer created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Offer updated at
+  required:
+    - id
+    - offer_id
+    - product_id
+    - is_active
+    - is_migrated
+    - created_at
+    - updated_at
+SearchOffersRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchOffersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Offer"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

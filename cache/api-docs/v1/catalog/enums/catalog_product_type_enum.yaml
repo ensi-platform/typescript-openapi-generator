@@ -1,0 +1,19 @@
+type: integer
+description: |
+  Доступные типы товаров:
+  * 1 - штучный
+  * 2 - весовой
+  * 3 - фасованный
+enum:
+  - 1
+  - 2
+  - 3
+x-enum-varnames:
+  - PIECE
+  - WEIGHT
+  - PACKED
+x-enum-descriptions:
+  - Штучный
+  - Весовой
+  - Фасованный
+example: 1

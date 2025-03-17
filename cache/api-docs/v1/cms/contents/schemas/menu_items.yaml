@@ -1,0 +1,44 @@
+MenuItem:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 3
+    url:
+      type: string
+      description: Ссылка
+      example: /about/
+    name:
+      type: string
+      description: Название
+      example: О компании
+    menu_id:
+      type: integer
+      description: Идентификатор меню
+      example: 1
+    _lft:
+      type: integer
+      description: Идентификатор элемента слева
+      example: 1
+    _rgt:
+      type: integer
+      description: Идентификатор элемента справа
+      example: 4
+    parent_id:
+      type: integer
+      description: Идентификатор родительского элемента
+      example: 1
+    active:
+      type: boolean
+      description: Видимость пункта меню
+      example: true
+  required:
+    - id
+    - url
+    - name
+    - menu_id
+    - _lft
+    - _rgt
+    - parent_id
+    - active

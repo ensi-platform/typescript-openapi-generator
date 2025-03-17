@@ -1,0 +1,345 @@
+CategoriesMeta:
+  get:
+    tags:
+      - catalog_categories
+    operationId: getCategoriesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoryPropertiesMeta:
+  get:
+    tags:
+      - catalog_categories
+    operationId: getCategoryPropertiesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@propertiesMeta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoriesSearch:
+  post:
+    tags:
+      - catalog_categories
+    operationId: searchCategories
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Category
+    description: >
+      ### Search for objects of Category
+
+
+      Available include values:
+
+      * _properties_ - Current attributes available for products in the category
+
+      * _hidden_properties_ - Attributes associated with a category but not
+      used, e.g. due to inactivity
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/categories.yaml#/SearchCategoriesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories.yaml#/SearchCategoriesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoryEnumValuesSearch:
+  post:
+    tags:
+      - catalog_categories
+    operationId: searchCategoryEnumValues
+    summary: Search for objects of Category for enum
+    description: Search for objects of Category for enum
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@searchEnumValues
+    x-lg-route-name: catalog.searchCategoryEnumValues
+    x-lg-skip-request-generation: true
+    requestBody:
+      $ref: ../index.yaml#/components/requestBodies/SearchEnumValuesRequest
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/SearchEnumValuesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Categories:
+  post:
+    tags:
+      - catalog_categories
+    operationId: createCategory
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@create
+    summary: Creating an object of Category
+    description: Creating an object of Category
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/categories.yaml#/CreateCategoryRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories.yaml#/CategoryResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoriesCurrent:
+  get:
+    tags:
+      - catalog_categories
+    operationId: getCategory
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@get
+    summary: Get the object of Category by ID
+    description: >
+      ### Get the object of Category by ID
+
+
+      Available include values:
+
+      * _properties_ - Current attributes available for products in the category
+
+      * _hidden_properties_ - Attributes associated with a category but not
+      used, e.g. due to inactivity
+    parameters:
+      - $ref: "#/PathId"
+      - $ref: ../common_parameters.yaml#/QueryInclude
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories.yaml#/CategoryResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  put:
+    tags:
+      - catalog_categories
+    operationId: replaceCategory
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@replace
+    summary: Replacing an object of Category
+    description: Replacing an object of Category
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/categories.yaml#/ReplaceCategoryRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories.yaml#/CategoryResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - catalog_categories
+    operationId: deleteCategory
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of Category
+    description: Deleting an object of Category
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoryPropertiesBind:
+  post:
+    tags:
+      - catalog_categories
+    operationId: bindCategoryProperties
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@bindProperties
+    parameters:
+      - $ref: "#/PathId"
+    summary: Changing attributes linked to a category
+    description: Changing attributes linked to a category
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/categories.yaml#/BindCategoryPropertiesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories.yaml#/CategoryResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoriesTree:
+  post:
+    tags:
+      - catalog_categories
+    operationId: getCategoriesTree
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@tree
+    x-lg-skip-request-generation: true
+    summary: Forming a complete category tree
+    description: Forming a complete category tree
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/categories_tree.yaml#/CategoriesTreeResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ActualCategoryPropertiesSearch:
+  post:
+    tags:
+      - catalog_categories
+    operationId: searchActualCategoryProperties
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\ActualCategoryPropertiesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of ActualCategoryProperty
+    description: Search for objects of ActualCategoryProperty
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ActualCategoryPropertiesMeta:
+  get:
+    tags:
+      - catalog_categories
+    operationId: getActualCategoryPropertiesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\ActualCategoryPropertiesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CategoriesActualize:
+  post:
+    tags:
+      - catalog_categories
+    operationId: actualizeCategories
+    summary: Actualize all categories
+    description: Actualize all categories
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Categories\CategoriesController@actualize
+    x-lg-skip-request-generation: true
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/SuccessEmptyResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

@@ -1,0 +1,103 @@
+StoreContactReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор контактного лица для склада
+      example: 1
+    created_at:
+      type: string
+      format: date-time
+      description: Время создания контактного лица для склада
+      example: 2021-01-15T14:55:35.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: Время обновления контактного лица для склада
+      example: 2021-01-15T14:55:35.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+StoreContactFillableProperties:
+  type: object
+  properties:
+    store_id:
+      type: integer
+      description: ID склада
+      example: 17
+    name:
+      nullable: true
+      type: string
+      description: Имя контактного лица
+      example: Иванов Иван Иванович
+    phone:
+      nullable: true
+      type: string
+      description: Телефон контактного лица
+      example: "+79876543210"
+    email:
+      nullable: true
+      type: string
+      description: Email контактного лица
+      example: ivanov@example.com
+StoreContactFillableRequiredProperties:
+  required:
+    - store_id
+    - name
+    - phone
+    - email
+  type: object
+  additionalProperties:
+    type: string
+StoreContact:
+  allOf:
+    - $ref: "#/StoreContactReadonlyProperties"
+    - $ref: "#/StoreContactFillableProperties"
+    - $ref: "#/StoreContactFillableRequiredProperties"
+CreateStoreContactRequest:
+  allOf:
+    - $ref: "#/StoreContactFillableProperties"
+    - $ref: "#/StoreContactFillableRequiredProperties"
+PatchStoreContactRequest:
+  allOf:
+    - $ref: "#/StoreContactFillableProperties"
+SearchStoreContactsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+StoreContactResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/StoreContact"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchStoreContactsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/StoreContact"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

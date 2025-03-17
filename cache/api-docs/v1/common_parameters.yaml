@@ -1,0 +1,7 @@
+QueryInclude:
+  in: query
+  name: include
+  required: false
+  description: Related entities for uploading, separated by commas
+  schema:
+    type: string

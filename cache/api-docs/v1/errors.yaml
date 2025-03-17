@@ -1,0 +1,36 @@
+Error:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    meta:
+      x-skip-response-validation: true
+      type: object
+      description: Object with meta-information
+      additionalProperties:
+        type: string
+  required:
+    - code
+    - message
+ErrorResponse:
+  type: object
+  properties:
+    data:
+      type: object
+      nullable: true
+      additionalProperties:
+        type: string
+    errors:
+      type: array
+      items:
+        $ref: "#/Error"
+    meta:
+      type: object
+      description: Object with meta-information
+      additionalProperties:
+        type: string
+  required:
+    - data
+    - errors

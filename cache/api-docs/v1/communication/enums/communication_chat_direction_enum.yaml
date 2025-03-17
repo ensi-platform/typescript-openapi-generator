@@ -1,0 +1,14 @@
+type: integer
+description: |
+  Направление чата. Расшифровка значений:
+    * `1` - От админа к пользователю
+    * `2` - От пользователя к админу
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - FROM_ADMIN_TO_USER
+  - FROM_USER_TO_ADMIN
+x-enum-descriptions:
+  - От админа к пользователю
+  - От пользователя к админу

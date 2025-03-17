@@ -1,0 +1,65 @@
+CategoriesTreeItem:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор категории
+      example: 202
+    name:
+      type: string
+      description: Название категории
+      example: Мясо
+    code:
+      type: string
+      description: Код категории
+      example: myaso
+    children:
+      type: array
+      description: Дочерние категории, если есть
+      items:
+        x-skip-response-validation: true
+        type: object
+        example:
+          id: 500
+          name: Говядина
+          code: govyadina
+          children: []
+        additionalProperties:
+          type: string
+  required:
+    - id
+    - name
+    - code
+CategoriesTreeFilter:
+  type: object
+  properties:
+    root_id:
+      type: integer
+      description: Идентификатор категории с которой начинать загрузку
+      example: 235
+      nullable: true
+    is_active:
+      type: boolean
+      description: Отбирать только активные категории
+      example: true
+CategoriesTreeRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/CategoriesTreeFilter"
+CategoriesTreeResponse:
+  type: object
+  x-lg-resource-class-name: CategoriesTreeResource
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/CategoriesTreeItem"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

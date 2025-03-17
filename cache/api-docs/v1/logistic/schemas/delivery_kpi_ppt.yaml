@@ -1,0 +1,90 @@
+DeliveryKpiPptReadonlyProperties:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: Id продавца
+      example: 1
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - seller_id
+    - created_at
+    - updated_at
+DeliveryKpiPptFillableProperties:
+  type: object
+  properties:
+    ppt:
+      type: integer
+      description: Planned Processing Time - плановое время для прохождения
+        Отправлением статусов от “На комплектации” до “Готов к передаче ЛО”
+        (мин)
+      example: 60
+DeliveryKpiPptFillableRequiredProperties:
+  type: object
+  required:
+    - ppt
+  additionalProperties:
+    type: string
+DeliveryKpiPpt:
+  allOf:
+    - $ref: "#/DeliveryKpiPptReadonlyProperties"
+    - $ref: "#/DeliveryKpiPptFillableProperties"
+    - $ref: "#/DeliveryKpiPptFillableRequiredProperties"
+CreateDeliveryKpiPptRequest:
+  allOf:
+    - $ref: "#/DeliveryKpiPptFillableProperties"
+    - $ref: "#/DeliveryKpiPptFillableRequiredProperties"
+PatchDeliveryKpiPptRequest:
+  allOf:
+    - $ref: "#/DeliveryKpiPptFillableProperties"
+SearchDeliveryKpiPptFilter:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: Id продавца
+      example: 1
+SearchDeliveryKpiPptRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDeliveryKpiPptFilter"
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DeliveryKpiPptResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/DeliveryKpiPpt"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDeliveryKpiPptResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DeliveryKpiPpt"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

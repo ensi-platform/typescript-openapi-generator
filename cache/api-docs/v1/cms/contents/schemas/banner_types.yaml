@@ -1,0 +1,78 @@
+BannerTypeReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Identifier
+      example: 1
+    created_at:
+      description: Date of creation
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Date of update
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-07-03T11:57:28.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+BannerTypeFillableProperties:
+  type: object
+  properties:
+    code:
+      type: string
+      $ref: ../enums/cms_banner_type_enum.yaml
+    active:
+      type: boolean
+      description: Activity
+      example: true
+    name:
+      type: string
+      description: Name
+      example: In the widget
+BannerTypeFillableRequiredProperties:
+  required:
+    - code
+    - active
+    - name
+  type: object
+  additionalProperties:
+    type: string
+BannerType:
+  allOf:
+    - $ref: "#/BannerTypeReadonlyProperties"
+    - $ref: "#/BannerTypeFillableProperties"
+    - $ref: "#/BannerTypeFillableRequiredProperties"
+SearchBannerTypesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../../common_schemas.yaml#/RequestBodyInclude
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    pagination:
+      $ref: ../../../common_schemas.yaml#/RequestBodyPagination
+SearchBannerTypesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/BannerType"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

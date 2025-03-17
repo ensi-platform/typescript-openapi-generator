@@ -1,0 +1,87 @@
+TypeReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор статуса
+      example: 1
+  required:
+    - id
+TypeFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Имя статуса
+      example: Новый
+    active:
+      type: boolean
+      description: Активность
+      nullable: true
+    channel:
+      type: array
+      description: Каналы
+      nullable: true
+      items:
+        type: integer
+TypeRequiredFillableProperties:
+  type: object
+  required:
+    - name
+    - active
+    - channel
+  additionalProperties:
+    type: string
+Type:
+  allOf:
+    - $ref: "#/TypeReadonlyProperties"
+    - $ref: "#/TypeFillableProperties"
+    - $ref: "#/TypeRequiredFillableProperties"
+CreateTypeRequest:
+  allOf:
+    - $ref: "#/TypeFillableProperties"
+    - $ref: "#/TypeRequiredFillableProperties"
+PatchTypeRequest:
+  allOf:
+    - $ref: "#/TypeFillableProperties"
+SearchTypesFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchTypesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchTypesFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+TypeResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Type"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchTypesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Type"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

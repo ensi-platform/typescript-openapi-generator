@@ -1,0 +1,188 @@
+OrderItemProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: id элемента корзины
+    order_id:
+      type: integer
+      description: ID заказа
+      example: 1234
+    shipment_id:
+      type: integer
+      description: ID отгрузки
+      example: 1234
+    offer_id:
+      type: integer
+      description: ID оффера
+      example: 1234
+    name:
+      type: string
+      description: Название товара
+    qty:
+      type: number
+      description: Кол-во товара
+    old_qty:
+      type: number
+      description: Старое кол-во товара
+      nullable: true
+    price:
+      type: integer
+      description: Цена товара (цена * qty - скидки), коп.
+      example: 10000
+    price_per_one:
+      type: integer
+      description: Цена единичного товара (в коп.)
+      example: 10000
+    cost:
+      type: integer
+      description: Цена товара до скидок (цена * qty), коп.
+      example: 10000
+    cost_per_one:
+      type: integer
+      description: Цена единичного товара до скидок (в коп.)
+      example: 10000
+    product_data:
+      type: object
+      description: Информация о товаре
+      properties:
+        weight:
+          type: number
+          description: Вес нетто товара (кг)
+          example: 10
+        weight_gross:
+          type: number
+          description: Вес брутто товара (кг)
+          example: 8.5
+        width:
+          type: number
+          description: Ширина товара (мм)
+          example: 100
+        height:
+          type: number
+          description: Высота товара (мм)
+          example: 100
+        length:
+          type: number
+          description: Длина товара (мм)
+          example: 100
+        barcode:
+          type: string
+          description: артикул (EAN)
+          example: "14853"
+          nullable: true
+      required:
+        - weight
+        - weight_gross
+        - width
+        - height
+        - length
+        - barcode
+    refund_qty:
+      type: number
+      description: Количество возвращаемых элементов корзины в заявке
+      example: 10
+      nullable: true
+    created_at:
+      type: string
+      format: date-time
+      description: дата создания
+    updated_at:
+      type: string
+      format: date-time
+      description: дата обновления
+    is_added:
+      type: boolean
+      description: флаг, что товар был добавлен
+    is_deleted:
+      type: boolean
+      description: флаг, что товар был удалён
+  required:
+    - id
+    - order_id
+    - shipment_id
+    - offer_id
+    - name
+    - qty
+    - old_qty
+    - price
+    - price_per_one
+    - cost
+    - cost_per_one
+    - refund_qty
+    - created_at
+    - updated_at
+OrderItemIncludes:
+  type: object
+  properties:
+    product:
+      $ref: ../../catalog/schemas/products.yaml#/Product
+    stock:
+      $ref: ../../catalog/schemas/stocks.yaml#/Stock
+OrderItem:
+  allOf:
+    - $ref: "#/OrderItemProperties"
+    - $ref: "#/OrderItemIncludes"
+OrderItemChangeQtyRequest:
+  type: object
+  properties:
+    order_items:
+      type: array
+      items:
+        type: object
+        properties:
+          item_id:
+            type: integer
+            description: Идентификатор элемента заказа
+          qty:
+            type: number
+            description: Новое количество
+        required:
+          - item_id
+          - qty
+  required:
+    - order_items
+OrderItemChangeQtyResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/OrderItem"
+  required:
+    - data
+OrderItemsAddRequest:
+  type: object
+  properties:
+    order_items:
+      type: array
+      items:
+        type: object
+        properties:
+          offer_id:
+            type: integer
+            description: Идентификатор товарного предолжения
+          qty:
+            type: number
+            description: Количество товара
+        required:
+          - offer_id
+          - qty
+  required:
+    - order_items
+OrderItemsDeleteRequest:
+  type: object
+  properties:
+    offer_ids:
+      type: array
+      items:
+        type: integer
+  required:
+    - offer_ids
+OrderItemsAddResponse:
+  type: object
+  properties:
+    data:
+      $ref: ./orders.yaml#/Order
+  required:
+    - data

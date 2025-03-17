@@ -1,0 +1,187 @@
+GetResourceMetaResponse:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: "#/Field"
+        detail_link:
+          type: string
+          nullable: true
+          description: The code of the field that should be used to display a link to the
+            detail page. This field cannot be hidden by the user
+          example: number
+        default_sort:
+          type: string
+          description: Code of the field that should be sorted by default
+          example: id
+        default_list:
+          type: array
+          description: Codes of fields that are output to the table by default
+          items:
+            type: string
+          example:
+            - id
+            - created_at
+        default_filter:
+          type: array
+          description: Field codes that are displayed in the filter by default
+          items:
+            type: string
+          example:
+            - id
+            - created_at
+      required:
+        - fields
+        - detail_link
+        - default_sort
+        - default_list
+        - default_filter
+  required:
+    - data
+Field:
+  type: object
+  properties:
+    code:
+      type: string
+      description: Field symbol code
+      example: id
+    name:
+      type: string
+      description: Field name
+      example: ID
+    list:
+      type: boolean
+      description: Whether the field is available for output to the table
+    type:
+      type: string
+      description: Field type from FieldTypeEnum
+      example: string
+    is_object:
+      type: boolean
+      description: The field is nested in a related object
+    is_array:
+      type: boolean
+      description: The field is an array
+    include:
+      type: string
+      nullable: true
+      description: Include code by which the linked object can be loaded
+    value_types:
+      type: array
+      description: Type values, to display a field with multiple types
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            description: Filter type
+          field:
+            type: string
+            description: Name of the field by which the type is determined
+          field_value:
+            oneOf:
+              - type: string
+              - type: integer
+            description: Field value to which this type corresponds
+        required:
+          - type
+          - field
+          - field_value
+    enum_info:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          description: Endpoint for which the list of values is available. Example of a
+            query in SearchEnumValuesBody. The response will return the values
+            as EnumValue
+        values:
+          type: array
+          items:
+            $ref: "#/EnumValue"
+    sort:
+      type: boolean
+      description: Whether the field is available for sorting
+    sort_key:
+      type: string
+      description: Key to be passed to sort on this field
+      example: id
+    filter:
+      type: string
+      description: Filter type on the given field from FieldFilterTypeEnum
+      nullable: true
+      example: default
+    filter_range_key_from:
+      type: string
+      description: If the range filter type is the key under which the FROM value is
+        to be passed
+      example: id_from
+    filter_range_key_to:
+      type: string
+      description: If filter type by range - the key under which the value TO is to be
+        transferred
+      example: id_to
+    filter_key:
+      type: string
+      description: If the filter type is regular - the key under which the value
+        should be transferred
+      example: id
+  required:
+    - code
+    - name
+    - list
+    - type
+    - is_object
+    - is_array
+    - include
+    - sort
+    - filter
+EnumValue:
+  oneOf:
+    - $ref: "#/EnumValueString"
+    - $ref: "#/EnumValueInteger"
+EnumValueString:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Value identifier
+    title:
+      type: string
+      description: Human-readable value
+  required:
+    - id
+    - title
+EnumValueInteger:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Numeric value identifier
+    title:
+      type: string
+      description: Human-readable value
+  required:
+    - id
+    - title
+SearchEnumValuesBody:
+  type: object
+  properties:
+    filter:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Text entered by the user to filter the list
+        id:
+          type: array
+          items:
+            description: ids
+          description: Filter values by identifier
+          example:
+            - 1
+            - uuid

@@ -1,0 +1,45 @@
+PointWorking:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+    point_id:
+      type: integer
+      description: Идентификатор пункта
+      example: 1
+    is_active:
+      type: boolean
+      description: Активность
+    day:
+      type: integer
+      description: День недели (1-7)
+      example: 1
+    working_start_time:
+      type: string
+      description: Время начала работы склада
+      example: 10:00
+    working_end_time:
+      type: string
+      description: Время конца работы склада
+      example: 19:00
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - point_id
+    - is_active
+    - day
+    - working_start_time
+    - working_end_time
+    - created_at
+    - updated_at

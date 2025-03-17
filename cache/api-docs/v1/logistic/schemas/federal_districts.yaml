@@ -1,0 +1,109 @@
+FederalDistrictReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор федерального округа
+      example: 1
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+FederalDistrictFillableProperties:
+  properties:
+    name:
+      type: string
+      description: Название
+      example: Центральный федеральный округ
+FederalDistrictFillableRequiredProperties:
+  type: object
+  required:
+    - name
+  additionalProperties:
+    type: string
+FederalDistrictIncludes:
+  type: object
+  properties:
+    regions:
+      description: Регионы
+      type: array
+      items:
+        $ref: ./regions.yaml#/Region
+FederalDistrict:
+  allOf:
+    - $ref: "#/FederalDistrictReadonlyProperties"
+    - $ref: "#/FederalDistrictFillableProperties"
+    - $ref: "#/FederalDistrictFillableRequiredProperties"
+    - $ref: "#/FederalDistrictIncludes"
+CreateFederalDistrictRequest:
+  allOf:
+    - $ref: "#/FederalDistrictFillableProperties"
+    - $ref: "#/FederalDistrictFillableRequiredProperties"
+PatchFederalDistrictRequest:
+  allOf:
+    - $ref: "#/FederalDistrictFillableProperties"
+SearchFederalDistrictsFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор федерального округа
+      example: 1
+    name:
+      type: string
+      description: Название
+      example: Центральный федеральный округ
+SearchFederalDistrictsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchFederalDistrictsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - regions
+      example:
+        - regions
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+FederalDistrictResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/FederalDistrict"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchFederalDistrictsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/FederalDistrict"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,131 @@
+DiscountProductReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+DiscountProductFillableProperties:
+  type: object
+  properties:
+    discount_id:
+      type: integer
+      description: Идентификатор скидки
+      example: 1
+DiscountProductFillableRequiredProperties:
+  type: object
+  required:
+    - discount_id
+  additionalProperties:
+    type: string
+DiscountProductFillableLikeIncludeProperties:
+  type: object
+  properties:
+    product_id:
+      type: integer
+      description: Идентификатор товара
+      example: 2
+DiscountProductIncludes:
+  type: object
+  properties:
+    product:
+      $ref: ../../catalog/schemas/products.yaml#/Product
+DiscountProductFillableLikeIncludeRequiredProperties:
+  type: object
+  required:
+    - product_id
+  additionalProperties:
+    type: string
+EditDiscountProduct:
+  allOf:
+    - $ref: "#/DiscountProductFillableLikeIncludeProperties"
+    - $ref: "#/DiscountProductFillableLikeIncludeRequiredProperties"
+PatchDiscountProductsRequest:
+  type: object
+  properties:
+    products:
+      type: array
+      description: Обновление только заданных продуктов в скидке
+      items:
+        $ref: "#/EditDiscountProduct"
+DeleteDiscountProductsRequest:
+  type: object
+  properties:
+    ids:
+      type: array
+      description: Удаление только заданных в запросе продуктов
+      items:
+        type: integer
+        description: Идентификатор продукта
+        example: 202
+  required:
+    - ids
+DiscountProduct:
+  allOf:
+    - $ref: "#/DiscountProductReadonlyProperties"
+    - $ref: "#/DiscountProductFillableProperties"
+    - $ref: "#/DiscountProductFillableLikeIncludeProperties"
+    - $ref: "#/DiscountProductFillableRequiredProperties"
+    - $ref: "#/DiscountProductFillableLikeIncludeRequiredProperties"
+    - $ref: "#/DiscountProductIncludes"
+SearchDiscountProductsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchDiscountProductsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDiscountProductsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - product
+      example:
+        - product
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DiscountProductResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/DiscountProduct"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDiscountProductsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DiscountProduct"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

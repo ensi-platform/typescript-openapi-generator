@@ -1,0 +1,69 @@
+FailedJobProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    uuid:
+      type: string
+      description: Job uuid
+      example: 0814a269-11f2-403c-8b00-ca01812c53b5
+    connection:
+      type: string
+      example: redis
+    queue:
+      type: string
+      example: default
+    payload:
+      type: string
+      description: Full message payload
+      example: "{'uuid':'0814a269-11f2-403c-8b00-ca01812c53b5','timeout':null,'attemp\
+        ts':1}"
+    exception:
+      type: string
+      description: Exception (with stack trace)
+      example: Job has been attempted too many times. in
+        /var/www/vendor/laravel/framework/src/Illuminate/Queue/MaxAttemptsExceededException.php:24
+    failed_at:
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - uuid
+    - connection
+    - queue
+    - payload
+    - exception
+    - failed_at
+FailedJob:
+  allOf:
+    - $ref: "#/FailedJobProperties"
+SearchFailedJobsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchFailedJobsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/FailedJob"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

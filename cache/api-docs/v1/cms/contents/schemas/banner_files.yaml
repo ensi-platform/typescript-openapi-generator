@@ -1,0 +1,38 @@
+BannerFile:
+  type: object
+  properties:
+    url:
+      type: string
+      description: Ссылка
+      example: https://es.ensi-dev.greensight.ru/cms/banners/39/4c/1_desktop_19XRlBz795cFngxd6qwP.jpg
+  required:
+    - url
+UploadBannerFileRequest:
+  type: object
+  properties:
+    type:
+      type: string
+      description: Тип изображения (значение из CmsBannerImageTypeEnum)
+      $ref: ../enums/cms_banner_image_type_enum.yaml
+  required:
+    - type
+DeleteBannerFileRequest:
+  type: object
+  properties:
+    type:
+      type: string
+      description: Тип изображения (значение из CmsBannerImageTypeEnum)
+      $ref: ../enums/cms_banner_image_type_enum.yaml
+  required:
+    - type
+UploadBannerFileResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/BannerFile"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

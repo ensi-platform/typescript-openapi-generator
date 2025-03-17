@@ -1,0 +1,157 @@
+NotificationSettingReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор настроек уведомления
+      example: 1
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+NotificationSettingFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Название уведомления
+      example: Создание заказа
+    event:
+      type: integer
+      description: Идентификатор события уведомления из NotificationEventEnum
+      example: 101
+    channels:
+      type: array
+      items:
+        type: integer
+        description: Канал отправки из NotificationChannelEnum
+      example:
+        - 1
+        - 3
+    theme:
+      type: string
+      nullable: true
+      description: Тема уведомлени
+      example: Заказ №{order_number} создан!
+    text:
+      type: string
+      description: Текст уведомления
+      example: Заказ доставять по адресу {order_delivery_address}. Дата доставки
+        {order_delivery_timeslot} {order_delivery_date}
+NotificationSettingRequiredFillableProperties:
+  type: object
+  required:
+    - name
+    - event
+    - channels
+    - theme
+    - text
+  additionalProperties:
+    type: string
+NotificationSetting:
+  allOf:
+    - $ref: "#/NotificationSettingReadonlyProperties"
+    - $ref: "#/NotificationSettingFillableProperties"
+    - $ref: "#/NotificationSettingRequiredFillableProperties"
+Variable:
+  type: object
+  properties:
+    id:
+      description: Переменная из NotificationVariableEnum
+      type: string
+      example: "{product_name}"
+    title:
+      description: Описание переменной
+      type: string
+      example: Название товара
+    items:
+      type: array
+      items:
+        $ref: "#/Variable"
+  required:
+    - id
+    - title
+    - items
+VariablesDictionary:
+  type: object
+  properties:
+    event:
+      description: Тип события из NotificationEventEnum
+      type: integer
+      example: 101
+    variables:
+      type: array
+      items:
+        $ref: "#/Variable"
+  required:
+    - event
+    - variables
+CreateNotificationSettingRequest:
+  allOf:
+    - $ref: "#/NotificationSettingFillableProperties"
+    - $ref: "#/NotificationSettingRequiredFillableProperties"
+PatchNotificationSettingRequest:
+  allOf:
+    - $ref: "#/NotificationSettingFillableProperties"
+SearchNotificationSettingsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+NotificationSettingResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/NotificationSetting"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchNotificationSettingsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/NotificationSetting"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+VariablesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/VariablesDictionary"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

@@ -1,0 +1,67 @@
+ActualCategoryProperty:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID of actual category property
+    actual_category_property_id:
+      type: integer
+      description: ID of actual category property from Pim
+    property_id:
+      type: integer
+      description: Property ID from Pim
+    category_id:
+      type: integer
+      description: Category ID from Pim
+    is_gluing:
+      type: boolean
+      description: The property is used for gluing products
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+    created_at:
+      type: string
+      format: date-time
+      description: Property created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Property updated at
+  required:
+    - id
+    - actual_category_property_id
+    - property_id
+    - category_id
+    - is_gluing
+    - is_migrated
+    - created_at
+    - updated_at
+SearchActualCategoryPropertiesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchActualCategoryPropertiesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ActualCategoryProperty"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,57 @@
+CloudIntegrationReadonlyProperties:
+  type: object
+  properties:
+    created_at:
+      description: Время создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Время обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - created_at
+    - updated_at
+CloudIntegrationFillableProperties:
+  type: object
+  properties:
+    private_api_key:
+      type: string
+      description: Приватный API-ключ
+      nullable: true
+    public_api_key:
+      type: string
+      description: Публичный API-ключ
+      nullable: true
+    integration:
+      type: boolean
+      description: Интеграция с сервисом Ensi Cloud
+CloudIntegrationRequiredProperties:
+  type: object
+  required:
+    - private_api_key
+    - public_api_key
+    - integration
+  additionalProperties:
+    type: string
+CreateCloudIntegrationRequest:
+  allOf:
+    - $ref: "#/CloudIntegrationFillableProperties"
+    - $ref: "#/CloudIntegrationRequiredProperties"
+PatchCloudIntegrationRequest:
+  allOf:
+    - $ref: "#/CloudIntegrationFillableProperties"
+CloudIntegration:
+  allOf:
+    - $ref: "#/CloudIntegrationReadonlyProperties"
+    - $ref: "#/CloudIntegrationFillableProperties"
+    - $ref: "#/CloudIntegrationRequiredProperties"
+CloudIntegrationResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/CloudIntegration"
+  required:
+    - data

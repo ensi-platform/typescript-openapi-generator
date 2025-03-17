@@ -1,0 +1,47 @@
+ProductGroupsSearch:
+  post:
+    tags:
+      - catalog_cache_product_groups
+    operationId: searchCatalogCacheProductGroups
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\ProductGroupsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of ProductGroups
+    description: Search for objects of ProductGroups
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_groups.yaml#/SearchProductGroupsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_groups.yaml#/SearchProductGroupsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductGroupsMeta:
+  get:
+    tags:
+      - catalog_cache_product_groups
+    operationId: getCatalogCacheProductGroupsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\ProductGroupsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

@@ -1,0 +1,47 @@
+Status:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Cтатус продукта
+      example: 1
+    name:
+      type: string
+      description: Название статуса
+      example: Новый
+    available:
+      type: boolean
+      description: Доступность из текущего статуса
+  required:
+    - id
+    - name
+    - available
+GetNextStatusRequest:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Cтатус продукта
+      nullable: true
+      example: 1
+SetPreviousStatusRequest:
+  type: object
+  properties:
+    ids:
+      type: array
+      items:
+        type: integer
+        description: Cтатус продукта
+      example:
+        - 1
+  required:
+    - ids
+StatusesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Status"
+  required:
+    - data

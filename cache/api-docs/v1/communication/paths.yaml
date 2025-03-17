@@ -1,0 +1,917 @@
+StatusesSearch:
+  post:
+    tags:
+      - communication_statuses
+    operationId: searchStatuses
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\StatusesController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск статусов
+    description: Поиск статусов
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/statuses.yaml#/SearchStatusesRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/statuses.yaml#/SearchStatusesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Statuses:
+  post:
+    tags:
+      - communication_statuses
+    operationId: createStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\StatusesController@create
+    summary: Создание статуса
+    description: Создание статуса
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/statuses.yaml#/CreateStatusRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/statuses.yaml#/StatusResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+StatusesCurrent:
+  patch:
+    tags:
+      - communication_statuses
+    operationId: patchStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\StatusesController@patch
+    summary: Обновление данных статуса
+    description: Обновление данных статуса
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/statuses.yaml#/PatchStatusRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/statuses.yaml#/StatusResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - communication_statuses
+    operationId: deleteStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\StatusesController@delete
+    x-lg-skip-request-generation: true
+    summary: Удаление статуса
+    description: Удаление статуса
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ThemesSearch:
+  post:
+    tags:
+      - communication_themes
+    operationId: searchThemes
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ThemesController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск тем
+    description: Поиск тем
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/themes.yaml#/SearchThemesRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/themes.yaml#/SearchThemesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Themes:
+  post:
+    tags:
+      - communication_themes
+    operationId: createTheme
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ThemesController@create
+    summary: Создание темы
+    description: Создание темы
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/themes.yaml#/CreateThemeRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/themes.yaml#/ThemeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ThemesCurrent:
+  patch:
+    tags:
+      - communication_themes
+    operationId: patchTheme
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ThemesController@patch
+    summary: Обновление данных темы
+    description: Обновление данных темы
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/themes.yaml#/PatchThemeRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/themes.yaml#/ThemeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - communication_themes
+    operationId: deleteTheme
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ThemesController@delete
+    x-lg-skip-request-generation: true
+    summary: Удаление темы
+    description: Удаление темы
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+TypesSearch:
+  post:
+    tags:
+      - communication_types
+    operationId: searchTypes
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\TypesController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск типов
+    description: Поиск типов
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/types.yaml#/SearchTypesRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/types.yaml#/SearchTypesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Types:
+  post:
+    tags:
+      - communication_types
+    operationId: createType
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\TypesController@create
+    summary: Создание типа
+    description: Создание типа
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/types.yaml#/CreateTypeRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/types.yaml#/TypeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+TypesCurrent:
+  patch:
+    tags:
+      - communication_types
+    operationId: patchType
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\TypesController@patch
+    summary: Обновление данных типа
+    description: Обновление данных типа
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/types.yaml#/PatchTypeRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/types.yaml#/TypeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - communication_types
+    operationId: deleteType
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\TypesController@delete
+    x-lg-skip-request-generation: true
+    summary: Удаление типа
+    description: Удаление типа
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+MessagesSearch:
+  post:
+    tags:
+      - communication_messages
+    operationId: searchMessages
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\MessagesController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск сообщений
+    description: Поиск сообщений
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/messages.yaml#/SearchMessagesRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/messages.yaml#/SearchMessagesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Broadcasts:
+  post:
+    tags:
+      - communication
+    operationId: createBroadcast
+    summary: Создание рассылки
+    description: Создание рассылки
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\BroadcastsController@create
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/broadcasts.yaml#/CreateBroadcastRequest
+    responses:
+      "200":
+        description: Успех
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Attachments:
+  post:
+    tags:
+      - communication_attachments
+    operationId: createAttachment
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\AttachmentsController@create
+    summary: Загрузка вложения
+    description: Загрузка вложения
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: ../common_schemas.yaml#/MultipartFileUploadRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 634
+                    name:
+                      type: string
+                      example: logo.png
+                    path:
+                      type: string
+                      example: attachments/08/af/LM_logo.png_YwMby5gPFwnOoKgjDkuD.png
+                    disk:
+                      type: string
+                      example: public
+                    url:
+                      type: string
+                      example: https://es.ensi-dev.greensight.ru/attachments/08/d3/logo.png_HaqQxnve28jgK1TB43W3.png
+                  required:
+                    - id
+                    - name
+                    - path
+                    - disk
+                    - url
+              required:
+                - data
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+AttachmentsMassDelete:
+  post:
+    tags:
+      - communication_attachments
+    operationId: massDeleteAttachments
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\AttachmentsController@massDelete
+    x-lg-skip-request-generation: true
+    summary: Массовое удаление вложений
+    description: Массовое удаление вложений
+    requestBody:
+      $ref: ../index.yaml#/components/requestBodies/MassDeleteBody
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ChannelsSearch:
+  post:
+    tags:
+      - communication_channels
+    operationId: searchChannels
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChannelsController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск каналов
+    description: Поиск каналов
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/channels.yaml#/SearchChannelsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/channels.yaml#/SearchChannelsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Channels:
+  post:
+    tags:
+      - communication_channels
+    operationId: createChannel
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChannelsController@create
+    summary: Создание канала
+    description: Создание канала
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/channels.yaml#/CreateChannelRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/channels.yaml#/ChannelResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ChannelsCurrent:
+  patch:
+    tags:
+      - communication_channels
+    operationId: patchChannel
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChannelsController@patch
+    summary: Обновление данных канала
+    description: Обновление данных канала
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/channels.yaml#/PatchChannelRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/channels.yaml#/ChannelResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - communication_channels
+    operationId: deleteChannel
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChannelsController@delete
+    x-lg-skip-request-generation: true
+    summary: Удаление канала
+    description: Удаление канала
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ChatsSearch:
+  post:
+    tags:
+      - communication_chats
+    operationId: searchChats
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChatsController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск чатов
+    description: Поиск чатов
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/chats.yaml#/SearchChatsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/chats.yaml#/SearchChatsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Chats:
+  post:
+    tags:
+      - communication_chats
+    operationId: createChat
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChatsController@create
+    summary: Создание чата
+    description: Создание чата
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/chats.yaml#/CreateChatRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/chats.yaml#/ChatResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ChatsCurrent:
+  patch:
+    tags:
+      - communication_chats
+    operationId: patchChat
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\ChatsController@patch
+    summary: Обновление данных чата
+    description: Обновление данных чата
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/chats.yaml#/PatchChatRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/chats.yaml#/ChatResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettings:
+  post:
+    tags:
+      - communication_notifications
+    operationId: createNotificationSetting
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@create
+    summary: Создание объекта типа NotificationSetting
+    description: Создание объекта типа NotificationSetting
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/notification_settings.yaml#/CreateNotificationSettingRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notification_settings.yaml#/NotificationSettingResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsOne:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationSetting
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@get
+    summary: Получение объекта типа NotificationSetting
+    description: Получение объекта типа NotificationSetting
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notification_settings.yaml#/NotificationSettingResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - communication_notifications
+    operationId: patchNotificationSetting
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@patch
+    summary: Изменение объекта типа типа NotificationSetting
+    description: Изменение объекта типа типа NotificationSetting
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/notification_settings.yaml#/PatchNotificationSettingRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notification_settings.yaml#/NotificationSettingResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - communication_notifications
+    operationId: deleteNotificationSetting
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@delete
+    x-lg-skip-request-generation: true
+    summary: Удаление объекта типа NotificationSetting
+    description: Удаление объекта типа NotificationSetting
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsSearch:
+  post:
+    tags:
+      - communication_notifications
+    operationId: searchNotificationSettings
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@search
+    x-lg-skip-request-generation: true
+    summary: Поиск объектов типа NotificationSetting
+    description: Поиск объектов типа NotificationSetting
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/notification_settings.yaml#/SearchNotificationSettingsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notification_settings.yaml#/SearchNotificationSettingsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsMeta:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationSettingsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsChannels:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationSettingChannels
+    summary: Получение объектов типа NotificationChannel
+    description: Получение объектов типа NotificationChannel
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\EnumsController@notificationSettingChannels
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetNotificationSettingChannelsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsEvents:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationSettingEvents
+    summary: Получение объектов типа NotificationEvent
+    description: Получение объектов типа NotificationEvent
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\EnumsController@notificationSettingEvents
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetNotificationSettingEventsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationSettingsVariables:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationSettingVariables
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationSettingsController@settingVariables
+    summary: Получение справочника доступных переменных по типу события
+    description: Получение справочника доступных переменных по типу события
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notification_settings.yaml#/VariablesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationsSearch:
+  post:
+    tags:
+      - communication_notifications
+    operationId: searchNotifications
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Notification
+    description: Search for objects of Notification
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/notifications.yaml#/SearchNotificationsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/notifications.yaml#/SearchNotificationsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+NotificationsMeta:
+  get:
+    tags:
+      - communication_notifications
+    operationId: getNotificationsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Communication\Controllers\Notifications\NotificationsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+components:
+  parameters:
+    QueryInclude:
+      $ref: ../common_parameters.yaml#/QueryInclude
+    PathId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Числовой id
+      example: 1

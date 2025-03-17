@@ -1,0 +1,47 @@
+DiscountsSearch:
+  post:
+    tags:
+      - catalog_cache_discounts
+    operationId: searchCatalogCacheDiscounts
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\DiscountsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Discounts
+    description: Search for objects of Discounts
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discounts.yaml#/SearchDiscountsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discounts.yaml#/SearchDiscountsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountsMeta:
+  get:
+    tags:
+      - catalog_cache_offers
+    operationId: getCatalogCacheDiscountsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\DiscountsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

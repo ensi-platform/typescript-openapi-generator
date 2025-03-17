@@ -1,0 +1,104 @@
+OfferReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор оффера
+      example: 202
+    product_id:
+      type: integer
+      description: Идентификатор товара, для которого создается оффер
+      example: 512
+    is_active:
+      type: boolean
+      description: Активность оффера (Вычисляется по активности товара, наличию стоков
+        и т.п.)
+    created_at:
+      type: string
+      format: date-time
+      description: Дата создания оффера
+      example: 2021-06-11T11:27:10.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: Дата обновления оффера
+      example: 2021-06-11T11:27:10.000000Z
+  required:
+    - id
+    - product_id
+    - is_active
+    - created_at
+    - updated_at
+OfferFillableProperties:
+  type: object
+  properties:
+    allow_publish:
+      type: boolean
+      description: Признак активности для витрины
+    price:
+      type: integer
+      nullable: true
+      description: Цена предложения в коп.
+      example: 12500
+OfferFillableRequiredProperties:
+  type: object
+  required:
+    - allow_publish
+    - price
+  additionalProperties:
+    type: string
+OfferIncludes:
+  type: object
+  properties:
+    stocks:
+      type: array
+      items:
+        $ref: ./stocks.yaml#/Stock
+Offer:
+  allOf:
+    - $ref: "#/OfferReadonlyProperties"
+    - $ref: "#/OfferFillableProperties"
+    - $ref: "#/OfferFillableRequiredProperties"
+    - $ref: "#/OfferIncludes"
+PatchOfferRequest:
+  allOf:
+    - $ref: "#/OfferFillableProperties"
+OfferResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Offer"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchOffersRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+SearchOffersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Offer"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

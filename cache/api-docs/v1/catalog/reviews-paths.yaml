@@ -1,0 +1,193 @@
+ReviewsOne:
+  get:
+    tags:
+      - catalog_reviews
+    operationId: getReview
+    summary: Get the object of Review by ID
+    description: |
+      ### Get the object of Review by ID
+
+      Available include values:
+      * _customers_ - Details of the user who created the review
+      * _products_ - Details of the product that was reviewed
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@get
+    parameters:
+      - $ref: "#/PathId"
+      - $ref: ../common_parameters.yaml#/QueryInclude
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/reviews.yaml#/ReviewResponse
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - catalog_reviews
+    operationId: patchReview
+    summary: Patching an object of Review
+    description: Patching an object of Review
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@patch
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/reviews.yaml#/PatchReviewRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/reviews.yaml#/ReviewResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - catalog_reviews
+    operationId: deleteReview
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of Review
+    description: Deleting an object of Review
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewsSearch:
+  post:
+    tags:
+      - catalog_reviews
+    operationId: searchReviews
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Review
+    description: Search for objects of Review
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/reviews.yaml#/SearchReviewsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/reviews.yaml#/SearchReviewsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewsMassDelete:
+  post:
+    tags:
+      - catalog_reviews
+    operationId: massDeleteReviews
+    summary: Mass deleting of object Review
+    description: Mass deleting of object Review
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@massDelete
+    x-lg-skip-request-generation: true
+    requestBody:
+      $ref: ../index.yaml#/components/requestBodies/MassDeleteBody
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewStatuses:
+  get:
+    tags:
+      - catalog_reviews
+    operationId: getReviewStatuses
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@reviewStatuses
+    x-lg-skip-resource-generation: true
+    summary: Get available review statuses
+    description: Get available review statuses corresponding to the ReviewStatusEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/ReviewStatusesResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewsMeta:
+  get:
+    tags:
+      - catalog_reviews
+    operationId: getReviewsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewCustomerMeta:
+  get:
+    tags:
+      - catalog_reviews
+    operationId: getReviewCustomerMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@customerMeta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ReviewProductMeta:
+  get:
+    tags:
+      - catalog_reviews
+    operationId: getReviewProductMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Reviews\ReviewsController@productMeta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

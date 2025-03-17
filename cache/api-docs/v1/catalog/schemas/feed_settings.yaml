@@ -1,0 +1,150 @@
+FeedSettingsReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+FeedSettingsFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Название фида
+      example: Фид для Яндекс.Маркета
+    code:
+      type: string
+      description: Код
+      example: yandex.xml
+    active:
+      type: boolean
+      description: Активность фида
+    type:
+      type: integer
+      description: Тип фида из FeedTypeEnum
+      example: 1
+    platform:
+      type: integer
+      description: Платформа фида из FeedPlatformEnum
+      example: 1
+    active_product:
+      type: boolean
+      description: Добавлять в фид только активные товары
+    active_category:
+      type: boolean
+      description: Добавлять в фид только активные категории
+    shop_name:
+      type: string
+      description: Название магазина
+      example: Shop ENSI
+    shop_url:
+      type: string
+      description: Сайт магазина
+      example: https://example.com
+    shop_company:
+      type: string
+      description: Название организации
+      example: OOO ENSI
+    update_time:
+      type: integer
+      description: Частота обновления (в часах)
+      example: 4
+    delete_time:
+      type: integer
+      description: Время хранения старых версий фидов (в днях)
+      example: 1
+FeedSettingsRequiredProperties:
+  required:
+    - name
+    - code
+    - active
+    - type
+    - platform
+    - active_product
+    - active_category
+    - shop_name
+    - shop_url
+    - shop_company
+    - update_time
+    - delete_time
+  type: object
+  additionalProperties:
+    type: string
+FeedSettingsIncludes:
+  type: object
+  properties:
+    feeds:
+      type: array
+      items:
+        $ref: ./feeds.yaml#/Feed
+FeedSettingsForCreate:
+  allOf:
+    - $ref: "#/FeedSettingsFillableProperties"
+    - $ref: "#/FeedSettingsRequiredProperties"
+FeedSettingsForPatch:
+  allOf:
+    - $ref: "#/FeedSettingsFillableProperties"
+FeedSettings:
+  allOf:
+    - $ref: "#/FeedSettingsReadonlyProperties"
+    - $ref: "#/FeedSettingsFillableProperties"
+    - $ref: "#/FeedSettingsRequiredProperties"
+    - $ref: "#/FeedSettingsIncludes"
+SearchFeedSettingsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchFeedSettingsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchFeedSettingsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        enum:
+          - feeds
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+FeedSettingsResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/FeedSettings"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchFeedSettingsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/FeedSettings"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,124 @@
+DeliveryReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID отправления
+      example: 1
+    order_id:
+      type: integer
+      description: ID заказа
+      example: 1
+    number:
+      type: string
+      description: номер отправления
+      example: 1000251-1
+    status_at:
+      type: string
+      format: date-time
+      description: дата установки статуса
+      example: 2020-12-15T15:26:12.000000Z
+    cost:
+      type: integer
+      description: себестоимость доставки, полученная от службы доставки в копейках
+      example: 20000
+    width:
+      type: integer
+      description: ширина
+      example: 100
+    height:
+      type: integer
+      description: высота
+      example: 100
+    length:
+      type: integer
+      description: длина
+      example: 100
+    weight:
+      type: integer
+      description: вес
+      example: 30
+    created_at:
+      type: string
+      format: date-time
+      description: дата создания
+      example: 2020-12-15T15:26:12.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: дата обновления
+      example: 2020-12-15T15:26:12.000000Z
+  required:
+    - id
+    - order_id
+    - number
+    - status_at
+    - cost
+    - width
+    - height
+    - length
+    - created_at
+    - updated_at
+DeliveryFillableProperties:
+  type: object
+  properties:
+    date:
+      type: string
+      format: date
+      description: желаемая дата доставки
+      example: 2020-12-15
+    timeslot:
+      $ref: ./data/timeslot.yaml#/Timeslot
+    status:
+      type: integer
+      nullable: true
+      description: статус отправления из DeliveryStatusEnum
+      example: 1
+DeliveryFillableRequiredProperties:
+  required:
+    - date
+    - timeslot
+    - status
+  type: object
+  additionalProperties:
+    type: string
+DeliveryIncludes:
+  type: object
+  properties:
+    shipments:
+      type: array
+      items:
+        $ref: ./shipments.yaml#/Shipment
+Delivery:
+  allOf:
+    - $ref: "#/DeliveryReadonlyProperties"
+    - $ref: "#/DeliveryFillableProperties"
+    - $ref: "#/DeliveryFillableRequiredProperties"
+    - $ref: "#/DeliveryIncludes"
+PatchDeliveryRequest:
+  allOf:
+    - $ref: "#/DeliveryFillableProperties"
+SearchDeliveriesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DeliveryResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Delivery"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

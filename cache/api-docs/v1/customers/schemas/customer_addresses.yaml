@@ -1,0 +1,193 @@
+CustomerAddressReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор адреса
+      example: 1
+  required:
+    - id
+CustomerAddressFillableProperties:
+  type: object
+  properties:
+    customer_id:
+      type: integer
+      description: Идентификатор клиента
+      example: 11
+    default:
+      type: boolean
+      description: Является адресом по-умолчанию
+      example: true
+    address:
+      type: object
+      properties:
+        address_string:
+          type: string
+          description: Строка с полным описанием адреса
+          example: Москва, Зеленоград, ул Юности, д 20
+        post_index:
+          type: string
+          description: Почтовый индекс
+          nullable: true
+          example: "124321"
+        country_code:
+          type: string
+          description: Код страны
+          nullable: true
+          example: "4"
+        region:
+          type: string
+          description: Регион
+          nullable: true
+          example: Московская область
+        region_guid:
+          type: string
+          description: Код ФИАС региона
+          nullable: true
+          example: "4"
+        area:
+          type: string
+          description: Район
+          nullable: true
+          example: Правобережный
+        area_guid:
+          type: string
+          description: Код ФИАС района
+          nullable: true
+          example: "12"
+        city:
+          type: string
+          description: Город
+          nullable: true
+          example: Москва
+        city_guid:
+          type: string
+          description: Код ФИАС города
+          example: "31"
+        street:
+          type: string
+          description: Улица
+          nullable: true
+          example: Юности
+        house:
+          type: string
+          description: Дом
+          nullable: true
+          example: "3"
+        block:
+          type: string
+          description: Строение
+          nullable: true
+          example: А
+        porch:
+          type: string
+          description: Подъезд
+          nullable: true
+          example: "2"
+        intercom:
+          type: string
+          description: Домофон
+          nullable: true
+          example: 14124K
+        floor:
+          type: string
+          description: Этаж
+          nullable: true
+          example: "3"
+        flat:
+          type: string
+          description: Квартира
+          nullable: true
+          example: "62"
+        comment:
+          type: string
+          description: Комментарий к адресу
+          nullable: true
+          example: Синий дом, стоит буквой Г
+        geo_lat:
+          type: number
+          description: Ширина
+          nullable: true
+          example: 40.7143528
+        geo_lon:
+          type: number
+          description: Долгота
+          nullable: true
+          example: 74.0059731
+      required:
+        - address_string
+        - city_guid
+CustomerAddressFillableRequiredProperties:
+  type: object
+  required:
+    - customer_id
+    - default
+  additionalProperties:
+    type: string
+CustomerAddress:
+  allOf:
+    - $ref: "#/CustomerAddressReadonlyProperties"
+    - $ref: "#/CustomerAddressFillableProperties"
+    - $ref: "#/CustomerAddressFillableRequiredProperties"
+CreateCustomerAddressRequest:
+  allOf:
+    - $ref: "#/CustomerAddressFillableProperties"
+    - $ref: "#/CustomerAddressFillableRequiredProperties"
+ReplaceCustomerAddressRequest:
+  allOf:
+    - $ref: "#/CustomerAddressFillableProperties"
+    - $ref: "#/CustomerAddressFillableRequiredProperties"
+SearchCustomerAddressesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+      nullable: true
+    customer_id:
+      type: integer
+      description: Идентификатор пользователя
+      example: 42
+      nullable: true
+    default:
+      type: boolean
+      description: Адрес по умолчанию
+      nullable: true
+SearchCustomerAddressesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchCustomerAddressesFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+CustomerAddressResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/CustomerAddress"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchCustomerAddressesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/CustomerAddress"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

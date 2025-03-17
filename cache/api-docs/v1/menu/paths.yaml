@@ -1,0 +1,19 @@
+GetMenu:
+  get:
+    tags:
+      - menu
+    operationId: getMenu
+    summary: Получение меню
+    description: Получение меню (разделы недоступные пользователю не передаются)
+    x-lg-handler: App\Http\ApiV1\Modules\Common\Controllers\MenuController@menu
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/menu.yaml#/MenuResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

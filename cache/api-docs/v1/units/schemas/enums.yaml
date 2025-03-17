@@ -1,0 +1,21 @@
+GetSellerStatusesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/SellerStatus"
+  required:
+    - data
+SellerStatus:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID статуса из UnitsSellerStatusEnum
+    name:
+      type: string
+      description: Название статуса
+  required:
+    - id
+    - name

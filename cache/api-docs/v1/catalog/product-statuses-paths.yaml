@@ -1,0 +1,263 @@
+ProductStatusEnumValuesSearch:
+  post:
+    tags:
+      - catalog_product_statuses
+    operationId: searchProductStatusEnumValues
+    summary: Search for objects of ProductStatusSetting for enum
+    description: Search for objects of ProductStatusSetting for enum
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@searchEnumValues
+    x-lg-route-name: catalog.searchProductStatusEnumValues
+    x-lg-skip-request-generation: true
+    requestBody:
+      $ref: ../index.yaml#/components/requestBodies/SearchEnumValuesRequest
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/SearchEnumValuesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusSettingsSearch:
+  post:
+    tags:
+      - catalog_product_statuses
+    operationId: searchProductStatuses
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of ProductStatusSetting
+    description: Search for objects of ProductStatusSetting
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_statuses.yaml#/SearchStatusSettingsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_statuses.yaml#/StatusSettingsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusSettingsMeta:
+  get:
+    tags:
+      - catalog_product_statuses
+    operationId: getProductStatusesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusSettings:
+  post:
+    tags:
+      - catalog_product_statuses
+    operationId: createProductStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@create
+    summary: Creating an object of ProductStatusSetting
+    description: Creating an object of ProductStatusSetting
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_statuses.yaml#/CreateStatusSettingRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_statuses.yaml#/StatusSettingResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusSettingsOne:
+  get:
+    tags:
+      - catalog_product_statuses
+    operationId: getProductStatus
+    summary: Get the object of ProductStatusSetting by ID
+    description: Get the object of ProductStatusSetting by ID
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@get
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_statuses.yaml#/StatusSettingResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - catalog_product_statuses
+    operationId: patchProductStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@patch
+    summary: Patching an object of ProductStatusSetting
+    description: Patching an object of ProductStatusSetting
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_statuses.yaml#/PatchStatusSettingRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_statuses.yaml#/StatusSettingResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - catalog_product_statuses
+    operationId: deleteProductStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of ProductStatusSetting
+    description: Deleting an object of ProductStatusSetting
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusesNext:
+  post:
+    tags:
+      - catalog_product_statuses
+    operationId: nextProductStatuses
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@getNext
+    summary: Getting available statuses from the current one
+    description: Getting available statuses from the current one
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_status_links.yaml#/GetNextStatusRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_status_links.yaml#/StatusesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusesSetPrevious:
+  post:
+    tags:
+      - catalog_product_statuses
+    operationId: setPreviousProductStatuses
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\ProductStatusesController@setPrevious
+    summary: Setting statuses from which you can go to the current one
+    description: Setting statuses from which you can go to the current one
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_status_links.yaml#/SetPreviousStatusRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_statuses.yaml#/StatusSettingResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductStatusTypes:
+  get:
+    tags:
+      - catalog_product_statuses
+    operationId: getProductStatusType
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@productStatusType
+    x-lg-skip-resource-generation: true
+    summary: Search for objects of CatalogProductStatusTypeEnum
+    description: Search for objects of CatalogProductStatusTypeEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/ProductStatusTypesResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

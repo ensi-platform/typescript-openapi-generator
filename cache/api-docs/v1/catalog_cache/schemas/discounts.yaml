@@ -1,0 +1,61 @@
+Discount:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID
+    offer_id:
+      type: integer
+      description: Offer ID from Offers
+    value_type:
+      type: integer
+      description: Value type
+    value:
+      type: integer
+      description: Discount value
+    offer:
+      $ref: ./offers.yaml#/Offer
+    created_at:
+      type: string
+      format: date-time
+      description: Discount created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Discount updated at
+  required:
+    - id
+    - offer_id
+    - value_type
+    - value
+    - created_at
+    - updated_at
+SearchDiscountsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchDiscountsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Discount"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

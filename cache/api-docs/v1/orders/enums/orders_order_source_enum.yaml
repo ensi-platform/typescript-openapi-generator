@@ -1,0 +1,18 @@
+type: integer
+description: |
+  Источник взаимодействия. Расшифровка значений:
+    * `1` - Сайт
+    * `2` - Приложение
+    * `3` - Админ
+enum:
+  - 1
+  - 2
+  - 3
+x-enum-varnames:
+  - SITE
+  - APP
+  - ADMIN
+x-enum-descriptions:
+  - Сайт
+  - Приложение
+  - Админ

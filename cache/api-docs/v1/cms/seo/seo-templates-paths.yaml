@@ -1,0 +1,293 @@
+SeoTemplates:
+  post:
+    tags:
+      - cms_seo_templates
+    operationId: createSeoTemplate
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@create
+    summary: Creating an object of SeoTemplate
+    description: Creating an object of SeoTemplate
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/seo_templates.yaml#/CreateSeoTemplateRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/seo_templates.yaml#/SeoTemplateResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoTemplatesOne:
+  get:
+    tags:
+      - cms_seo_templates
+    operationId: getSeoTemplate
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@get
+    summary: Get the object of SeoTemplate by ID
+    description: Get the object of SeoTemplate by ID
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/seo_templates.yaml#/SeoTemplateResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - cms_seo_templates
+    operationId: patchSeoTemplate
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@patch
+    summary: Patching an object of SeoTemplate
+    description: Patching an object of SeoTemplate
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/seo_templates.yaml#/PatchSeoTemplateRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/seo_templates.yaml#/SeoTemplateResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - cms_seo_templates
+    operationId: deleteSeoTemplate
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of SeoTemplate
+    description: Deleting an object of SeoTemplate
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoProductsOne:
+  get:
+    tags:
+      - cms_seo_templates
+    operationId: getSeoProduct
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoProductsController@get
+    x-lg-skip-resource-generation: true
+    summary: Get the object of SeoTemplate by ID
+    description: Get the object of SeoTemplate by ID
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/seo_templates.yaml#/SeoTemplateResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoTemplatesSearch:
+  post:
+    tags:
+      - cms_seo_templates
+    operationId: searchSeoTemplates
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of SeoTemplate
+    description: Search for objects of SeoTemplate
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/seo_templates.yaml#/SearchSeoTemplatesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/seo_templates.yaml#/SearchSeoTemplatesResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoTemplatesMeta:
+  get:
+    tags:
+      - cms_seo_templates
+    operationId: getSeoTemplatessMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+TemplateTypes:
+  get:
+    tags:
+      - cms_seo_templates
+    operationId: getTemplateTypes
+    summary: Getting objects of CmsSeoVariable
+    description: Getting objects of CmsSeoVariable
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\EnumsController@templateTypes
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetSeoTemplateTypesResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+TemplateVariables:
+  get:
+    tags:
+      - cms_seo_templates
+    operationId: getTemplateVariables
+    summary: Getting objects of CmsSeoTemplateType
+    description: Getting objects of CmsSeoTemplateType
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\EnumsController@templateVariables
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetVariablesResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoTemplateAddProducts:
+  post:
+    tags:
+      - cms_seo_templates
+    operationId: addSeoTemplateProducts
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@addProducts
+    summary: Linking objects of Product to object of SeoTemplate
+    description: Linking objects of Product to object of SeoTemplate
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/seo_templates.yaml#/AddSeoTemplateProductsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+SeoTemplateDeleteProducts:
+  delete:
+    tags:
+      - cms_seo_templates
+    operationId: deleteSeoTemplateProducts
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\SeoTemplatesController@deleteProducts
+    summary: Deleting links between objects of Product and object of SeoTemplate
+    description: Deleting links between objects of Product and object of SeoTemplate
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/seo_templates.yaml#/DeleteSeoTemplateProductsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

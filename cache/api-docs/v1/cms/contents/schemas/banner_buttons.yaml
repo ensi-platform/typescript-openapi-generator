@@ -1,0 +1,46 @@
+BannerButtonReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+  required:
+    - id
+BannerButtonFillableProperties:
+  type: object
+  properties:
+    url:
+      type: string
+      description: Ссылка
+      example: /
+    text:
+      type: string
+      description: Текст
+      example: Просмотреть
+    location:
+      type: string
+      description: Размещение (значение из CmsBannerButtonLocationEnum)
+      $ref: ../enums/cms_banner_button_location_enum.yaml
+    type:
+      type: string
+      description: Тип (значение из CmsBannerButtonTypeEnum)
+      $ref: ../enums/cms_banner_button_type_enum.yaml
+BannerButtonFillableRequiredProperties:
+  required:
+    - url
+    - text
+    - location
+    - type
+  type: object
+  additionalProperties:
+    type: string
+BannerButton:
+  allOf:
+    - $ref: "#/BannerButtonReadonlyProperties"
+    - $ref: "#/BannerButtonFillableProperties"
+    - $ref: "#/BannerButtonFillableRequiredProperties"
+BannerButtonForCreate:
+  allOf:
+    - $ref: "#/BannerButtonFillableProperties"
+    - $ref: "#/BannerButtonFillableRequiredProperties"

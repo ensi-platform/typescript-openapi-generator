@@ -1,0 +1,97 @@
+NotificationReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Notification ID
+      example: 1
+    customer_id:
+      type: integer
+      description: Customer ID
+      example: 1
+    event:
+      type: integer
+      description: ID of notification event from NotificationEventEnum
+      example: 101
+    channels:
+      type: array
+      items:
+        type: integer
+        description: ID of sending channels from NotificationChannelEnum
+      example:
+        - 1
+        - 3
+    theme:
+      type: string
+      nullable: true
+      description: Notification theme
+      example: Order №23323232 created!
+    text:
+      type: string
+      description: Notification text
+      example: The order will be delivered to Zelenograd, Yunosti str., 1. Delivery
+        date:12/10/2023 from 10 to 17
+    created_at:
+      type: string
+      description: Date of creation
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Date of update
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - customer_id
+    - event
+    - channels
+    - theme
+    - text
+    - created_at
+    - updated_at
+NotificationFillableProperties:
+  type: object
+  properties:
+    is_viewed:
+      type: boolean
+      description: Indicates whether the notification has been viewed
+NotificationRequiredFillableProperties:
+  required:
+    - is_viewed
+  type: object
+  additionalProperties:
+    type: string
+Notification:
+  allOf:
+    - $ref: "#/NotificationReadonlyProperties"
+    - $ref: "#/NotificationFillableProperties"
+    - $ref: "#/NotificationRequiredFillableProperties"
+SearchNotificationsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchNotificationsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Notification"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

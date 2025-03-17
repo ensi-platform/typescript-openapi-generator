@@ -1,0 +1,84 @@
+BasketReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Basket ID
+    customer_id:
+      type: integer
+      description: Customer ID
+    created_at:
+      type: string
+      format: date-time
+      description: Date of creation
+    updated_at:
+      type: string
+      format: date-time
+      description: Date of update
+    promo_code:
+      type: string
+      description: The applied promo code
+      nullable: true
+      example: TEST
+  required:
+    - id
+    - customer_id
+    - created_at
+    - updated_at
+    - promo_code
+BasketIncludes:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: ./basket_items.yaml#/BasketItem
+Basket:
+  allOf:
+    - $ref: "#/BasketReadonlyProperties"
+    - $ref: "#/BasketIncludes"
+SearchBasketCustomerRequest:
+  type: object
+  properties:
+    customer_id:
+      type: integer
+      description: Client ID
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+  required:
+    - customer_id
+SearchBasketCustomerResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Basket"
+  required:
+    - data
+SearchBasketsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchBasketsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Basket"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

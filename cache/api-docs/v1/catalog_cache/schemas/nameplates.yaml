@@ -1,0 +1,80 @@
+Nameplate:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Category ID from CMS
+    nameplate_id:
+      type: integer
+      description: Nameplate ID from CMS
+    name:
+      type: string
+      description: Nameplate name
+    code:
+      type: string
+      description: Nameplate code
+    background_color:
+      type: string
+      description: Background color
+    text_color:
+      type: string
+      description: Text color
+    is_active:
+      type: boolean
+      description: Active
+    product_links:
+      type: array
+      description: Array of related NameplateProduct objects
+      items:
+        $ref: ./nameplate_products.yaml#/NameplateProduct
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+    created_at:
+      type: string
+      format: date-time
+      description: Nameplate created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Nameplate updated at
+  required:
+    - id
+    - nameplate_id
+    - name
+    - code
+    - background_color
+    - text_color
+    - is_active
+    - is_migrated
+    - created_at
+    - updated_at
+SearchNameplatesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchNameplatesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Nameplate"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

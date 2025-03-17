@@ -1,0 +1,14 @@
+type: integer
+description: |
+  Доступные платформы. Расшифровка значений:
+    * `1` - Яндекс.Маркет
+    * `2` - Яндекс.Директ
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - YANDEX_MARKET
+  - YANDEX_DIRECT
+x-enum-descriptions:
+  - Яндекс.Маркет
+  - Яндекс.Директ

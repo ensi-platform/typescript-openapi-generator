@@ -1,0 +1,395 @@
+DeliveryServiceReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор службы доставки
+      example: 1
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+DeliveryServiceFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Название
+      example: B2Cpl
+    registered_at:
+      type: string
+      format: date-time
+      description: Дата регистрации
+      example: 2021-01-29T12:36:13.000000Z
+    legal_info_company_name:
+      type: string
+      description: Юр. название компании
+      nullable: true
+      example: Общество с ограниченной ответственностью "Старт-М"
+    legal_info_company_address:
+      $ref: ./data/address.yaml#/Address
+    legal_info_inn:
+      type: string
+      nullable: true
+      description: ИНН
+      example: "7727056471"
+    legal_info_payment_account:
+      type: string
+      nullable: true
+      description: р/с
+      example: "40702810138000027473"
+    legal_info_bik:
+      type: string
+      nullable: true
+      description: БИК
+      example: "044525225"
+    legal_info_bank:
+      type: string
+      nullable: true
+      description: Банк
+      example: ОАО Сбербанк России г. Москва
+    legal_info_bank_correspondent_account:
+      type: string
+      nullable: true
+      description: К/с банка
+      example: "30101810400000000225"
+    general_manager_name:
+      type: string
+      nullable: true
+      description: ФИО ген. директора
+      example: Козловский Матвей Владимирович
+    contract_number:
+      type: string
+      nullable: true
+      description: Номер договора
+      example: "123"
+    contract_date:
+      type: string
+      format: date
+      nullable: true
+      description: Дата договора
+      example: 2021-01-29
+    vat_rate:
+      type: integer
+      nullable: true
+      description: Cтавка НДС
+      example: 13
+    taxation_type:
+      type: integer
+      nullable: true
+      description: Тип налогообложения
+      example: 1
+    status:
+      allOf:
+        - type: integer
+        - $ref: ../enums/logistic_delivery_service_status_enum.yaml
+    comment:
+      type: string
+      nullable: true
+      description: Комментарий
+      example: ""
+    apiship_key:
+      type: string
+      nullable: true
+      description: Код в системе ApiShip
+      example: b2cpl
+    priority:
+      type: integer
+      description: Приоритет (чем меньше, тем выше)
+      example: 1
+    max_shipments_per_day:
+      type: integer
+      nullable: true
+      description: Максимальное кол-во отправлений в день
+      example: 100
+    max_cargo_export_time:
+      type: string
+      nullable: true
+      description: Время создания заявки для забора отправления день-в-день
+      example: 16:00
+    do_consolidation:
+      type: boolean
+      description: Консолидация многоместных отправлений?
+      example: true
+    do_deconsolidation:
+      type: boolean
+      description: Расконсолидация многоместных отправлений?
+      example: true
+    do_zero_mile:
+      type: boolean
+      description: Осуществляет нулевую милю?
+      example: true
+    do_express_delivery:
+      type: boolean
+      description: Осуществляет экспресс-доставку?
+      example: true
+    do_return:
+      type: boolean
+      description: Принимает возвраты?
+      example: true
+    do_dangerous_products_delivery:
+      type: boolean
+      description: Осуществляет доставку опасных грузов?
+      example: true
+    do_transportation_oversized_cargo:
+      type: boolean
+      description: Перевозка крупногабаритных грузов?
+      example: true
+    add_partial_reject_service:
+      type: boolean
+      description: Добавлять услугу частичного отказ в заказ на доставку?
+      example: true
+    add_insurance_service:
+      type: boolean
+      description: Добавлять услугу страхования груза в заказ на доставку?
+      example: true
+    add_fitting_service:
+      type: boolean
+      description: Добавлять услугу примерки в заказ на доставку?
+      example: true
+    add_return_service:
+      type: boolean
+      description: Добавлять услугу возврата в заказ на доставку?
+      example: true
+    add_open_service:
+      type: boolean
+      description: Добавлять услугу вскрытия при получении в заказ на доставку?
+      example: true
+    pct:
+      type: integer
+      description: Planned Consolidation Time - плановое время доставки заказа от
+        склада продавца до логистического хаба ЛО и обработки заказа в
+        сортировочном центре или хабе на стороне ЛО (мин)
+      example: 180
+DeliveryServiceRequiredProperties:
+  type: object
+  required:
+    - name
+    - registered_at
+    - legal_info_company_name
+    - legal_info_company_address
+    - legal_info_inn
+    - legal_info_payment_account
+    - legal_info_bik
+    - legal_info_bank
+    - legal_info_bank_correspondent_account
+    - general_manager_name
+    - contract_number
+    - contract_date
+    - vat_rate
+    - taxation_type
+    - status
+    - comment
+    - apiship_key
+    - priority
+    - max_shipments_per_day
+    - max_cargo_export_time
+    - do_consolidation
+    - do_deconsolidation
+    - do_zero_mile
+    - do_express_delivery
+    - do_transportation_oversized_cargo
+    - do_return
+    - do_dangerous_products_delivery
+    - add_partial_reject_service
+    - add_insurance_service
+    - add_fitting_service
+    - add_return_service
+    - add_open_service
+    - pct
+  additionalProperties:
+    type: string
+DeliveryServiceIncludes:
+  type: object
+  properties:
+    payment_methods:
+      type: array
+      items:
+        type: integer
+        description: Id доступных способов оплаты
+      example:
+        - 1
+DeliveryService:
+  allOf:
+    - $ref: "#/DeliveryServiceReadonlyProperties"
+    - $ref: "#/DeliveryServiceFillableProperties"
+    - $ref: "#/DeliveryServiceRequiredProperties"
+    - $ref: "#/DeliveryServiceIncludes"
+PatchDeliveryServiceRequest:
+  $ref: "#/DeliveryServiceFillableProperties"
+SearchDeliveryServicesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор службы доставки
+      example: 1
+    name:
+      type: string
+      description: Название
+      example: B2Cpl
+    legal_info_company_name:
+      type: string
+      description: Юр. название компании
+      nullable: true
+      example: Общество с ограниченной ответственностью "Старт-М"
+    legal_info_inn:
+      type: string
+      nullable: true
+      description: ИНН
+      example: "7727056471"
+    legal_info_payment_account:
+      type: string
+      nullable: true
+      description: р/с
+      example: "40702810138000027473"
+    legal_info_bik:
+      type: string
+      nullable: true
+      description: БИК
+      example: "044525225"
+    legal_info_bank:
+      type: string
+      nullable: true
+      description: Банк
+      example: ОАО Сбербанк России г. Москва
+    legal_info_bank_correspondent_account:
+      type: string
+      nullable: true
+      description: К/с банка
+      example: "30101810400000000225"
+    general_manager_name:
+      type: string
+      nullable: true
+      description: ФИО ген. директора
+      example: Козловский Матвей Владимирович
+    contract_number:
+      type: string
+      nullable: true
+      description: Номер договора
+      example: "123"
+    status:
+      $ref: ../enums/logistic_delivery_service_status_enum.yaml
+    comment:
+      type: string
+      nullable: true
+      description: Комментарий
+      example: ""
+    do_consolidation:
+      type: boolean
+      description: Консолидация многоместных отправлений?
+      example: true
+    do_deconsolidation:
+      type: boolean
+      description: Расконсолидация многоместных отправлений?
+      example: true
+    do_zero_mile:
+      type: boolean
+      description: Осуществляет нулевую милю?
+      example: true
+    do_express_delivery:
+      type: boolean
+      description: Осуществляет экспресс-доставку?
+      example: true
+    do_return:
+      type: boolean
+      description: Принимает возвраты?
+      example: true
+    do_dangerous_products_delivery:
+      type: boolean
+      description: Осуществляет доставку опасных грузов?
+      example: true
+    add_partial_reject_service:
+      type: boolean
+      description: Добавлять услугу частичного отказ в заказ на доставку?
+      example: true
+    add_insurance_service:
+      type: boolean
+      description: Добавлять услугу страхования груза в заказ на доставку?
+      example: true
+    add_fitting_service:
+      type: boolean
+      description: Добавлять услугу примерки в заказ на доставку?
+      example: true
+    add_return_service:
+      type: boolean
+      description: Добавлять услугу возврата в заказ на доставку?
+      example: true
+    add_open_service:
+      type: boolean
+      description: Добавлять услугу вскрытия при получении в заказ на доставку?
+      example: true
+SearchDeliveryServicesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDeliveryServicesFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - payment_methods
+      example:
+        - payment_methods
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+AddPaymentMethodsToDeliveryServiceRequest:
+  type: object
+  properties:
+    payment_methods:
+      type: array
+      description: Id добавляемых способов оплаты
+      items:
+        type: integer
+        example: 1
+  required:
+    - payment_methods
+DeletePaymentMethodFromDeliveryServiceRequest:
+  type: object
+  properties:
+    payment_method:
+      type: integer
+      description: Id удаляемого способа оплаты
+      example: 1
+  required:
+    - payment_method
+DeliveryServiceResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/DeliveryService"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDeliveryServicesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DeliveryService"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

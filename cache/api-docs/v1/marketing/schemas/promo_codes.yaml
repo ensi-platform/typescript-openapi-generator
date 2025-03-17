@@ -1,0 +1,140 @@
+PromoCodeReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    current_counter:
+      type: integer
+      description: Количество использований промокода
+      nullable: true
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+PromoCodeFillableProperties:
+  type: object
+  properties:
+    status:
+      type: integer
+      description: статус промокода из PromoCodeStatusEnum
+      example: 1
+    name:
+      type: string
+      description: Название промокода
+      example: Черная пятница
+    code:
+      type: string
+      description: Код
+      example: BLACK_FRIDAY
+    counter:
+      type: integer
+      nullable: true
+      description: Ограничение на количество использований промокода
+    start_date:
+      description: Дата начала действия промокода
+      example: 2021-01-29
+      type: string
+      format: date
+      nullable: true
+    end_date:
+      description: Дата окончания действия промокода
+      example: 2021-01-29
+      type: string
+      format: date
+      nullable: true
+    discount_id:
+      type: integer
+      description: ID скидки
+PromoCodeRequiredProperties:
+  required:
+    - status
+    - name
+    - code
+    - counter
+    - start_date
+    - end_date
+    - discount_id
+  type: object
+  additionalProperties:
+    type: string
+PromoCodeIncludes:
+  type: object
+  properties:
+    discount:
+      $ref: ./discounts.yaml#/Discount
+PromoCodeForCreate:
+  allOf:
+    - $ref: "#/PromoCodeFillableProperties"
+    - $ref: "#/PromoCodeRequiredProperties"
+PromoCodeForPatch:
+  allOf:
+    - $ref: "#/PromoCodeFillableProperties"
+PromoCode:
+  allOf:
+    - $ref: "#/PromoCodeReadonlyProperties"
+    - $ref: "#/PromoCodeFillableProperties"
+    - $ref: "#/PromoCodeRequiredProperties"
+    - $ref: "#/PromoCodeIncludes"
+SearchPromoCodesFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchPromoCodesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchPromoCodesFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - discount
+          - discount.products
+          - discount.products.product
+      example:
+        - discount
+        - discount.products
+        - discount.products.product
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+PromoCodeResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/PromoCode"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchPromoCodesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/PromoCode"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

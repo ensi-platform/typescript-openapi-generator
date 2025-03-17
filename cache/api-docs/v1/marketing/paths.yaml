@@ -1,0 +1,560 @@
+PromoCodesSearch:
+  post:
+    tags:
+      - marketing_promo_codes
+    operationId: searchPromoCodes
+    summary: Поиск объектов типа PromoCode
+    description: Поиск объектов типа PromoCode
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@search
+    x-lg-skip-request-generation: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/promo_codes.yaml#/SearchPromoCodesRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/promo_codes.yaml#/SearchPromoCodesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PromoCodes:
+  post:
+    tags:
+      - marketing_promo_codes
+    operationId: createPromoCode
+    summary: Создание объекта типа PromoCode
+    description: Создание объекта типа PromoCode
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@create
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/promo_codes.yaml#/PromoCodeForCreate
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/promo_codes.yaml#/PromoCodeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PromoCodesCurrent:
+  get:
+    tags:
+      - marketing_promo_codes
+    operationId: getPromoCode
+    summary: Получение объекта типа PromoCode
+    description: Получение объекта типа PromoCode
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@get
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/promo_codes.yaml#/PromoCodeResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - marketing_promo_codes
+    operationId: patchPromoCode
+    summary: Обновления части полей объекта типа PromoCode
+    description: Обновления части полей объекта типа PromoCode
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@patch
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/promo_codes.yaml#/PromoCodeForPatch
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/promo_codes.yaml#/PromoCodeResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - marketing_promo_codes
+    operationId: deletePromoCode
+    summary: Удаление объекта типа PromoCode
+    description: Удаление объекта типа PromoCode
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@delete
+    x-lg-skip-request-generation: true
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PromoCodesMeta:
+  get:
+    tags:
+      - marketing_promo_codes
+    operationId: getPromoCodesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\PromoCodesController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountsSearch:
+  post:
+    tags:
+      - marketing_discounts
+    operationId: searchDiscounts
+    summary: Поиск объектов типа Discount
+    description: Поиск объектов типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@search
+    x-lg-skip-request-generation: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discounts.yaml#/SearchDiscountsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discounts.yaml#/SearchDiscountsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountsMassStatusUpdate:
+  post:
+    tags:
+      - marketing_discounts
+    operationId: massDiscountsStatusUpdate
+    summary: Массовое обновление статусов для объектов типа Discount
+    description: Массовое обновление статусов для объектов типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@massStatusUpdate
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discounts.yaml#/MassDiscountsStatusUpdateRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Discounts:
+  post:
+    tags:
+      - marketing_discounts
+    operationId: createDiscount
+    summary: Создание объекта типа Discount
+    description: Создание объекта типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@create
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discounts.yaml#/DiscountForCreate
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discounts.yaml#/DiscountResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountsCurrent:
+  get:
+    tags:
+      - marketing_discounts
+    operationId: getDiscount
+    summary: Получение объекта типа Discount
+    description: Получение объекта типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@get
+    parameters:
+      - $ref: "#/PathId"
+      - $ref: ../common_parameters.yaml#/QueryInclude
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discounts.yaml#/DiscountResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - marketing_discounts
+    operationId: patchDiscount
+    summary: Обновления части полей объекта типа Discount
+    description: Обновления части полей объекта типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@patch
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discounts.yaml#/DiscountForPatch
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discounts.yaml#/DiscountResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - marketing_discounts
+    operationId: deleteDiscount
+    summary: Удаление объекта типа Discount
+    description: Удаление объекта типа Discount
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@delete
+    x-lg-skip-request-generation: true
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountsMeta:
+  get:
+    tags:
+      - marketing_discounts
+    operationId: getDiscountsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountsController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountProductsSearch:
+  post:
+    tags:
+      - marketing_discount_products
+    operationId: searchDiscountProducts
+    summary: Поиск объектов типа DiscountProduct
+    description: Поиск объектов типа DiscountProduct
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountProductsController@search
+    x-lg-skip-request-generation: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discount_products.yaml#/SearchDiscountProductsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discount_products.yaml#/SearchDiscountProductsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountProductsEdit:
+  post:
+    tags:
+      - marketing_discounts
+    operationId: patchDiscountProducts
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountRelationsController@patchProducts
+    parameters:
+      - $ref: "#/PathId"
+    summary: Обновление только заданных продуктов в скидке
+    description: Обновление только заданных продуктов в скидке
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discount_products.yaml#/PatchDiscountProductsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - marketing_discounts
+    operationId: deleteDiscountProducts
+    summary: Удаление заданных продуктов в скидке
+    description: Удаление заданных продуктов в скидке
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountRelationsController@deleteProducts
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/discount_products.yaml#/DeleteDiscountProductsRequest
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountProductsCurrent:
+  get:
+    tags:
+      - marketing_discount_products
+    operationId: getDiscountProduct
+    summary: Получение объекта типа DiscountProduct
+    description: Получение объекта типа DiscountProduct
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountProductsController@get
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/discount_products.yaml#/DiscountProductResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountProductsMeta:
+  get:
+    tags:
+      - marketing_discount_products
+    operationId: getDiscountProductsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\DiscountProductsController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountStatuses:
+  get:
+    tags:
+      - marketing_discounts
+    operationId: getDiscountStatuses
+    summary: Получение объектов типа DiscountStatus
+    description: Получение объектов типа DiscountStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\EnumsController@discountStatuses
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetDiscountStatusesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountTypes:
+  get:
+    tags:
+      - marketing_discounts
+    operationId: getDiscountTypes
+    summary: Получение объектов типа DiscountType
+    description: Получение объектов типа DiscountType
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\EnumsController@discountTypes
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetDiscountTypesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+DiscountValueTypes:
+  get:
+    tags:
+      - marketing_discounts
+    operationId: getDiscountValueTypes
+    summary: Получение объектов типа DiscountValueType
+    description: Получение объектов типа DiscountValueType
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\EnumsController@discountValueTypes
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/DiscountValueTypesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PromoCodeStatuses:
+  get:
+    tags:
+      - marketing_promo_codes
+    operationId: getPromoCodeStatuses
+    summary: Получение объектов типа PromoCodeStatus
+    description: Получение объектов типа PromoCodeStatus
+    x-lg-handler: App\Http\ApiV1\Modules\Marketing\Controllers\EnumsController@promoCodeStatuses
+    x-lg-skip-resource-generation: true
+    responses:
+      "200":
+        description: Успешный ответ
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetPromoCodeStatusesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Числовой id
+  example: 1

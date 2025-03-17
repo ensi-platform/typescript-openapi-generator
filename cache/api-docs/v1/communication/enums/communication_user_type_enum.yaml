@@ -1,0 +1,18 @@
+type: integer
+description: |
+  Тип пользователя. Расшифровка значений:
+    * `1` - Сотрудник
+    * `2` - Продавец
+    * `3` - Покупатель
+enum:
+  - 1
+  - 2
+  - 3
+x-enum-varnames:
+  - ADMIN
+  - SELLER
+  - CUSTOMER
+x-enum-descriptions:
+  - Сотрудник
+  - Продавец
+  - Покупатель

@@ -1,0 +1,133 @@
+ProductFieldReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор поля
+      example: 1
+    code:
+      type: string
+      description: Символьный код поля
+      example: width
+    edit_mask:
+      type: array
+      items:
+        type: integer
+      description: Значения из FieldSettingsMaskEnum, соответствующие доступным для
+        редактирования свойствам
+      example:
+        - 1
+        - 4
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+  required:
+    - id
+    - code
+    - edit_mask
+    - created_at
+    - updated_at
+ProductFieldFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Наименование поля товара
+      example: Длина
+    is_required:
+      type: boolean
+      description: Признак обязательности заполнения
+      example: false
+    is_moderated:
+      type: boolean
+      description: Признак модерируемого поля
+      example: true
+    metric_category:
+      type: string
+      nullable: true
+      description: Категория метрики товара - значение перечисления
+        MetricsCategoryEnum или null
+      example: master
+ProductFieldFillableRequiredProperties:
+  required:
+    - name
+    - is_required
+    - is_moderated
+    - metric_category
+  type: object
+  additionalProperties:
+    type: string
+ProductField:
+  allOf:
+    - $ref: "#/ProductFieldReadonlyProperties"
+    - $ref: "#/ProductFieldFillableProperties"
+    - $ref: "#/ProductFieldFillableRequiredProperties"
+PatchProductFieldRequest:
+  allOf:
+    - $ref: "#/ProductFieldFillableProperties"
+SearchProductFieldsFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор(ы) полей
+      example: 2
+    name:
+      type: string
+      description: Наименование(я) поля
+      example: Ширина
+    is_required:
+      type: boolean
+      description: Признак обязательности заполнения
+      example: false
+    is_moderated:
+      type: boolean
+      description: Признак модерируемого поля
+      example: false
+    metrics_category:
+      type: string
+      nullable: true
+      description: Категория метрики товара из перечисления MetricsCategoryEnum
+      example: master
+SearchProductFieldsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      $ref: "#/SearchProductFieldsFilter"
+ProductFieldResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/ProductField"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchProductFieldsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ProductField"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

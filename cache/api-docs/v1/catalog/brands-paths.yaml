@@ -1,0 +1,302 @@
+BrandsMeta:
+  get:
+    tags:
+      - catalog_brands
+    operationId: getBrandsMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+BrandsSearch:
+  post:
+    tags:
+      - catalog_brands
+    operationId: searchBrands
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Brand
+    description: Search for objects of Brand
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/brands.yaml#/SearchBrandsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/SearchBrandsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+BrandEnumValuesSearch:
+  post:
+    tags:
+      - catalog_brands
+    operationId: searchBrandEnumValues
+    summary: Search for objects of Brand for enum
+    description: Search for objects of Brand for enum
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@searchEnumValues
+    x-lg-route-name: catalog.searchBrandEnumValues
+    x-lg-skip-request-generation: true
+    requestBody:
+      $ref: ../index.yaml#/components/requestBodies/SearchEnumValuesRequest
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/SearchEnumValuesResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+Brands:
+  post:
+    tags:
+      - catalog_brands
+    operationId: createBrand
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@create
+    summary: Creating an object of Brand
+    description: Creating an object of Brand
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/brands.yaml#/CreateBrandRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+BrandsCurrent:
+  get:
+    tags:
+      - catalog_brands
+    operationId: getBrand
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@get
+    summary: Get the object of Brand by ID
+    description: Get the object of Brand by ID
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  put:
+    tags:
+      - catalog_brands
+    operationId: replaceBrand
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@replace
+    summary: Replacing an object of Brand
+    description: Replacing an object of Brand
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/brands.yaml#/ReplaceBrandRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - catalog_brands
+    operationId: patchBrand
+    summary: Patching an object of Brand
+    description: Patching an object of Brand
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@patch
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/brands.yaml#/PatchBrandRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - catalog_brands
+    operationId: deleteBrand
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of Brand
+    description: Deleting an object of Brand
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/DeleteResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PreloadBrandImage:
+  post:
+    tags:
+      - catalog_brands
+    operationId: preloadBrandImage
+    summary: Uploading image for brands to use
+    description: Uploading image for brands to use
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@preloadImage
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: ../common_schemas.yaml#/MultipartFileUploadRequest
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/PreloadFileResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+BrandsUploadImage:
+  post:
+    tags:
+      - catalog_brands
+    operationId: uploadBrandImage
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@uploadImage
+    summary: Uploading image for Brand
+    description: Uploading image for Brand
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: ../common_schemas.yaml#/MultipartFileUploadRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+BrandsDeleteImage:
+  post:
+    tags:
+      - catalog_brands
+    operationId: deleteBrandImage
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Classifiers\BrandsController@deleteImage
+    x-lg-skip-request-generation: true
+    summary: Deleting current Brand image
+    description: Deleting current Brand image
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/brands.yaml#/BrandResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

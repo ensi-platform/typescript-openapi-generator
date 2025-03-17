@@ -1,0 +1,10 @@
+type: string
+description: |
+  Banner type:
+    * `main` - Main banner
+enum:
+  - main
+x-enum-varnames:
+  - MAIN_CODE
+x-enum-descriptions:
+  - Главный баннер

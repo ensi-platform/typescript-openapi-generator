@@ -1,0 +1,192 @@
+CargoReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: id
+      example: 1
+    seller_id:
+      type: integer
+      description: Идентификатор продавца
+      example: 30
+    store_id:
+      type: integer
+      description: Идентификатор склада продавца
+      example: 30
+    delivery_service_id:
+      type: integer
+      description: Идентификатор сервиса доставки
+      example: 20
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    status_at:
+      description: Дата установки статуса
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-01-29T12:36:13.000000Z
+    is_problem_at:
+      description: Дата установки флага проблемного груза
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-01-29T12:36:13.000000Z
+    is_canceled_at:
+      description: Дата установки флага отмены груза
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - seller_id
+    - store_id
+    - delivery_service_id
+    - created_at
+    - updated_at
+    - status_at
+    - is_problem_at
+    - is_canceled_at
+CargoFillableProperties:
+  type: object
+  properties:
+    status:
+      allOf:
+        - type: integer
+        - $ref: ../enums/logistic_cargo_status_enum.yaml
+    is_problem:
+      type: boolean
+      description: Флаг, что у груза проблемы при отгрузке
+      example: true
+    is_canceled:
+      type: boolean
+      description: Флаг, что груз отменен
+      example: false
+    width:
+      type: number
+      format: float
+      description: Ширина
+      example: 2
+    height:
+      type: number
+      format: float
+      description: Высота
+      example: 2
+    length:
+      type: number
+      format: float
+      description: Длина
+      example: 2
+    weight:
+      type: number
+      format: float
+      description: Вес
+      example: 2
+    shipping_problem_comment:
+      type: string
+      description: Последнее сообщение мерчанта о проблеме с отгрузкой
+CargoFillableRequiredProperties:
+  required:
+    - status
+    - is_problem
+    - is_canceled
+    - width
+    - height
+    - length
+    - weight
+    - shipping_problem_comment
+  type: object
+  additionalProperties:
+    type: string
+CargoIncludes:
+  type: object
+  properties:
+    shipments:
+      description: Ссылки на отправления в OMS
+      type: array
+      items:
+        $ref: ../../orders/schemas/shipments.yaml#/Shipment
+    delivery_service:
+      $ref: ./delivery_services.yaml#/DeliveryService
+Cargo:
+  allOf:
+    - $ref: "#/CargoReadonlyProperties"
+    - $ref: "#/CargoFillableProperties"
+    - $ref: "#/CargoFillableRequiredProperties"
+    - $ref: "#/CargoIncludes"
+PatchCargoRequest:
+  allOf:
+    - $ref: "#/CargoFillableProperties"
+SearchCargoFilter:
+  type: object
+  properties:
+    seller_id:
+      type: integer
+      description: Идентификатор продавца
+      example: 30
+    store_id:
+      type: integer
+      description: Идентификатор склада продавца
+      example: 30
+    status:
+      type: integer
+      description: Статус
+      example: 1
+SearchCargoRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      allOf:
+        - type: object
+          additionalProperties:
+            type: string
+        - $ref: "#/SearchCargoFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - shipments
+          - delivery_service
+      example:
+        - shipments
+        - delivery_service
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+CargoResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Cargo"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchCargoResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Cargo"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,42 @@
+GetVariablesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Variables"
+  required:
+    - data
+Variables:
+  type: object
+  properties:
+    id:
+      type: string
+      description: SEO variable from CmsSeoVariableEnum
+    name:
+      type: string
+      description: SEO variable description
+  required:
+    - id
+    - name
+GetSeoTemplateTypesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/SeoTemplateTypes"
+  required:
+    - data
+SeoTemplateTypes:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Type ID from CmsSeoTemplateTypeEnum
+    name:
+      type: string
+      description: Type description
+  required:
+    - id
+    - name

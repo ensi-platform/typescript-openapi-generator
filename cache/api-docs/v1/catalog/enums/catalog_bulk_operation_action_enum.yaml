@@ -1,0 +1,11 @@
+type: string
+description: |
+  Действие массовой операции:
+   * `patch` - Изменение атрибутов
+enum:
+  - patch
+x-enum-varnames:
+  - PATCH
+x-enum-descriptions:
+  - Изменение атрибутов
+example: patch

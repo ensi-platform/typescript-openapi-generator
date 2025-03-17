@@ -1,0 +1,275 @@
+AdminUserReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор пользователя
+      example: 1
+    full_name:
+      type: string
+      description: Полное ФИО
+      example: Иванов Иван Иванович
+    short_name:
+      type: string
+      description: Сокращенное ФИО
+      example: Иванов И.И.
+    created_at:
+      description: Дата регистрации
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - full_name
+    - short_name
+    - created_at
+    - updated_at
+AdminUserFillableProperties:
+  type: object
+  properties:
+    active:
+      type: boolean
+      description: Активен
+      example: true
+    login:
+      type: string
+      description: Логин
+      example: TestLogin
+    last_name:
+      type: string
+      description: Фамилия
+      example: Иванов
+      nullable: true
+    first_name:
+      type: string
+      description: Имя
+      example: Иван
+      nullable: true
+    middle_name:
+      type: string
+      description: Отчество
+      example: Иванович
+      nullable: true
+    email:
+      type: string
+      description: Email
+      example: test@mail.ru
+    phone:
+      type: string
+      description: Телефон
+      example: "+79191000000"
+    timezone:
+      type: string
+      description: Временная зона
+      example: Europe/Moscow
+AdminUserFillableRequiredProperties:
+  type: object
+  required:
+    - active
+    - login
+    - last_name
+    - first_name
+    - middle_name
+    - email
+    - phone
+    - timezone
+  additionalProperties:
+    type: string
+AdminUserWriteOnlyProperties:
+  type: object
+  properties:
+    password:
+      type: string
+      description: Пароль
+      example: testPassword775105k#i*
+AdminUserRequiredProperties:
+  type: object
+  required:
+    - active
+    - login
+    - password
+    - email
+    - phone
+    - timezone
+  additionalProperties:
+    type: string
+AdminUserIncludes:
+  type: object
+  properties:
+    roles:
+      description: Роли пользователя. Объект, в котором ключ - ID роли (см.
+        UnitsAdminAdminUserRoleEnum)
+      type: array
+      items:
+        $ref: ./admin_user_roles_included.yaml#/AdminUserRoleIncluded
+AdminUser:
+  allOf:
+    - $ref: "#/AdminUserReadonlyProperties"
+    - $ref: "#/AdminUserFillableProperties"
+    - $ref: "#/AdminUserFillableRequiredProperties"
+    - $ref: "#/AdminUserIncludes"
+CreateAdminUserRequest:
+  allOf:
+    - $ref: "#/AdminUserFillableProperties"
+    - $ref: "#/AdminUserWriteOnlyProperties"
+    - $ref: "#/AdminUserRequiredProperties"
+PatchAdminUserRequest:
+  allOf:
+    - $ref: "#/AdminUserFillableProperties"
+    - $ref: "#/AdminUserWriteOnlyProperties"
+    - type: object
+      properties:
+        cause_deactivation:
+          type: string
+          description: Причина деактивации
+MassChangeActiveRequest:
+  type: object
+  properties:
+    user_ids:
+      type: array
+      description: ID пользователей
+      items:
+        type: integer
+    active:
+      type: boolean
+      description: Статус пользователя (true - Активен, false - Деактивирован)
+    cause_deactivation:
+      type: string
+      description: Причина деактивации
+  required:
+    - user_ids
+    - active
+AddRolesToAdminUserRequest:
+  type: object
+  properties:
+    roles:
+      type: array
+      description: Идентификаторы добавляемых ролей
+      items:
+        type: integer
+    expires:
+      description: Время жизни роли
+      format: date-time
+      nullable: true
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - roles
+    - expires
+DeleteRoleFromAdminUserRequest:
+  type: object
+  properties:
+    role_id:
+      type: integer
+      description: Идентификатор удаляемой роли
+  required:
+    - role_id
+SearchAdminUsersFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID пользователя
+      example: 1
+    email:
+      type: string
+      description: Email пользователя
+      example: test@test.ru
+    phone:
+      type: string
+      description: Телефон пользователя
+      example: "+79996663322"
+    phone_like:
+      type: string
+      description: Телефон пользователя
+      example: "3322"
+    last_name_like:
+      type: string
+      description: Фамилия
+      example: Иванов
+    first_name_like:
+      type: string
+      description: Имя
+      example: Иван
+    middle_name_like:
+      type: string
+      description: Отчество
+      example: Иванович
+    created_at_gte:
+      type: string
+      format: date-time
+      description: Дата создания (от)
+      example: 2020-01-01T15:47:21.000000Z
+    created_at_lte:
+      type: string
+      format: date-time
+      description: Дата создания (до)
+      example: 2020-01-01T15:47:21.000000Z
+    updated_at_gte:
+      type: string
+      format: date-time
+      description: Дата последнего обновления (от)
+      example: 2020-01-01T15:47:21.000000Z
+    updated_at_lte:
+      type: string
+      format: date-time
+      description: Дата последнего обновления (до)
+      example: 2020-01-01T15:47:21.000000Z
+    login:
+      type: string
+      description: Логин пользователя
+      example: test@test.ru
+    active:
+      type: boolean
+      description: Статус пользователя (true - Активен, false - Деактивирован)
+      example: true
+    role:
+      type: integer
+      description: ID роли
+      example: 1
+SearchAdminUsersRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchAdminUsersFilter"
+    include:
+      type: array
+      items:
+        type: string
+        enum:
+          - roles
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+AdminUserResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/AdminUser"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchAdminUsersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/AdminUser"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

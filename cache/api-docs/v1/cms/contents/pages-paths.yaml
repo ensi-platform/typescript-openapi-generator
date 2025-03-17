@@ -1,0 +1,206 @@
+PagesMeta:
+  get:
+    tags:
+      - cms_pages
+    operationId: getPagesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PagesSearch:
+  post:
+    tags:
+      - cms_pages
+    operationId: searchPages
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Page
+    description: Search for objects of Page
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/pages.yaml#/SearchPagesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/pages.yaml#/SearchPagesResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PagesSearchOne:
+  post:
+    tags:
+      - cms_pages
+    operationId: searchOnePage
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@searchOne
+    x-lg-skip-request-generation: true
+    summary: Search for an object ofPage
+    description: Search for an object ofPage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/pages.yaml#/SearchOnePageRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/pages.yaml#/PageResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+Pages:
+  post:
+    tags:
+      - cms_pages
+    operationId: createPage
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@create
+    summary: Creating an object of Page
+    description: Creating an object of Page
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/pages.yaml#/CreatePageRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/pages.yaml#/PageResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PagesCurrent:
+  get:
+    tags:
+      - cms_pages
+    operationId: getPage
+    summary: Get the object of Page by ID
+    description: Get the object of Page by ID
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@get
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/pages.yaml#/PageResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - cms_pages
+    operationId: patchPage
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@patch
+    summary: Patching an object of Page
+    description: Patching an object of Page
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/pages.yaml#/PatchPageRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/pages.yaml#/PageResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - cms_pages
+    operationId: deletePage
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\PagesController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of Page
+    description: Deleting an object of Page
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

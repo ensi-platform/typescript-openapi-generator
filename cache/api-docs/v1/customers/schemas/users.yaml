@@ -1,0 +1,123 @@
+UserReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор пользователя
+      example: 1
+    created_at:
+      description: Дата регистрации
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+UserFillableProperties:
+  type: object
+  properties:
+    active:
+      type: boolean
+      description: Активен
+      example: true
+    login:
+      type: string
+      description: Логин
+      example: TestLogin
+UserFillableRequiredProperties:
+  type: object
+  required:
+    - active
+    - login
+  additionalProperties:
+    type: string
+UserWriteOnlyProperties:
+  type: object
+  properties:
+    password:
+      type: string
+      description: Пароль
+      example: testPassword775105k#i*
+UserRequiredProperties:
+  type: object
+  required:
+    - active
+    - login
+    - password
+  additionalProperties:
+    type: string
+User:
+  allOf:
+    - $ref: "#/UserReadonlyProperties"
+    - $ref: "#/UserFillableProperties"
+    - $ref: "#/UserFillableRequiredProperties"
+CreateUserRequest:
+  allOf:
+    - $ref: "#/UserFillableProperties"
+    - $ref: "#/UserWriteOnlyProperties"
+    - $ref: "#/UserRequiredProperties"
+PatchUserRequest:
+  allOf:
+    - $ref: "#/UserFillableProperties"
+    - $ref: "#/UserWriteOnlyProperties"
+SearchUsersFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор пользователя
+      example: 1
+      nullable: true
+    login:
+      type: string
+      description: Логин
+      example: TestLogin
+      nullable: true
+    active:
+      type: boolean
+      description: Активен
+      example: true
+      nullable: true
+SearchUsersRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchUsersFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+UserResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/User"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchUsersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/User"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

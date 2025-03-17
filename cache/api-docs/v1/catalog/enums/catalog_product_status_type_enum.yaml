@@ -1,0 +1,15 @@
+type: integer
+description: |
+  Доступные типы статусов:
+  * 1 - автоматический
+  * 2 - ручной
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - AUTOMATIC
+  - MANUAL
+x-enum-descriptions:
+  - Автоматический
+  - Ручной
+example: 1

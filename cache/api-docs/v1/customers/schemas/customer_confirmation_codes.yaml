@@ -1,0 +1,79 @@
+SearchConfirmationCodesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchConfirmationCodesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ConfirmationCode"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+ConfirmationCode:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Identifier of verification code
+      example: 1
+    user_id:
+      type: integer
+      description: Identifier of user
+      nullable: true
+      example: 1
+    phone:
+      type: string
+      description: Phone number
+      example: "+78889996655"
+    attempt:
+      type: integer
+      description: Request verification code attempt number
+      example: 1
+    failed_checks_count:
+      type: integer
+      description: Number of errors when entering the verification code
+      example: 0
+    expired_at:
+      description: Expiration date of the verification code
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    verified_at:
+      description: Verification date (correct code entry)
+      format: date-time
+      type: string
+      nullable: true
+      example: 2021-01-29T12:36:13.000000Z
+    created_at:
+      description: Date of creation
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - phone
+    - attempt
+    - failed_checks_count
+    - expired_at
+    - created_at
+SearchConfirmationCodesFilter:
+  type: object
+  description: Filter. See the fields available for filtering in :meta
+  additionalProperties:
+    type: string

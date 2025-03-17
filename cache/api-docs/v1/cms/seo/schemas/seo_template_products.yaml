@@ -1,0 +1,96 @@
+SeoTemplateProductReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    template_id:
+      type: integer
+      description: Идентификатор SEO-шаблона
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - template_id
+    - created_at
+    - updated_at
+SeoTemplateProductFillableProperties:
+  type: object
+  properties:
+    product_id:
+      type: integer
+      description: Идентификатор товара
+      example: 2
+SeoTemplateProductRequiredProperties:
+  type: object
+  required:
+    - product_id
+  additionalProperties:
+    type: string
+SeoTemplateProductIncludes:
+  type: object
+  properties:
+    product:
+      $ref: ../../../catalog/schemas/products.yaml#/Product
+SeoTemplateProduct:
+  allOf:
+    - $ref: "#/SeoTemplateProductReadonlyProperties"
+    - $ref: "#/SeoTemplateProductFillableProperties"
+    - $ref: "#/SeoTemplateProductRequiredProperties"
+    - $ref: "#/SeoTemplateProductIncludes"
+SeoTemplateProductResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/SeoTemplateProduct"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchSeoTemplateProductsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchSeoTemplateProductsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchSeoTemplateProductsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - product
+      example:
+        - product
+    pagination:
+      $ref: ../../../common_schemas.yaml#/RequestBodyPagination
+SearchSeoTemplateProductsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/SeoTemplateProduct"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

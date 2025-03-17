@@ -1,0 +1,22 @@
+EntitiesMigrate:
+  post:
+    tags:
+      - catalog_cache_common
+    operationId: entitiesMigrationCatalogCache
+    summary: Start synchronization of data objects from master services
+    description: Start synchronization of data objects from master services
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\CatalogCache\EntitiesController@migrate
+    x-lg-skip-request-generation: true
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../common_schemas.yaml#/EmptyDataResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

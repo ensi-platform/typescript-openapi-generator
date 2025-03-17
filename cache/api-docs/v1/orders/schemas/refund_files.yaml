@@ -1,0 +1,54 @@
+RefundFile:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: идентификатор
+      example: 1
+    refund_id:
+      type: integer
+      description: идентификатор заявки на возврат
+      example: 1
+    original_name:
+      type: string
+      description: Оригинальное название файла
+      example: example.doc
+    file:
+      $ref: ../../common_schemas.yaml#/FileProtected
+    created_at:
+      type: string
+      format: date-time
+      description: дата загрузки файла
+      example: 2020-12-17T21:24:28.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: дата обновления файла
+      example: 2021-04-23T11:04:57.000000Z
+  required:
+    - id
+    - refund_id
+    - original_name
+    - file
+    - created_at
+    - updated_at
+DeleteRefundFilesRequest:
+  type: object
+  properties:
+    file_ids:
+      type: array
+      items:
+        type: integer
+        description: Идентификатор вложения
+        example: 1
+RefundFileResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/RefundFile"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

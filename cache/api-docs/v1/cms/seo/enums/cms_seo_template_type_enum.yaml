@@ -1,0 +1,14 @@
+type: integer
+description: |
+  Доступные типы шаблонов:
+    * `1` - шаблон на конкретный товар
+    * `2` - общий шаблон на товар
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - PRODUCT
+  - PRODUCT_DEFAULT
+x-enum-descriptions:
+  - На конкретный товар
+  - Общий на товар

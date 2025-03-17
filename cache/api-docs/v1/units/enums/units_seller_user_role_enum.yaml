@@ -1,0 +1,14 @@
+type: integer
+description: |
+  Роли. Расшифровка значений:
+    * `201` - Оператор продавца
+    * `202` - Администратор продавца
+enum:
+  - 201
+  - 202
+x-enum-varnames:
+  - SAS_SELLER_OPERATOR
+  - SAS_SELLER_ADMIN
+x-enum-descriptions:
+  - Оператор продавца
+  - Администратор продавца

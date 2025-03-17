@@ -1,0 +1,22 @@
+type: string
+description: |
+  Тип кнопки:
+    * `outline_black` - С чёрной обводкой
+    * `outline_white` - С белой обводкой
+    * `black` - Чёрная
+    * `white` - Белая
+enum:
+  - outline_black
+  - outline_white
+  - black
+  - white
+x-enum-varnames:
+  - TYPE_OUTLINE_BLACK
+  - TYPE_OUTLINE_WHITE
+  - TYPE_BLACK
+  - TYPE_WHITE
+x-enum-descriptions:
+  - С чёрной обводкой
+  - С белой обводкой
+  - Чёрная
+  - Белая

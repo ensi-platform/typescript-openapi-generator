@@ -1,0 +1,75 @@
+Property:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Category ID from Pim
+    property_id:
+      type: integer
+      description: Property ID from PIM
+    name:
+      type: string
+      description: Name
+    code:
+      type: string
+      description: Property code
+    type:
+      type: string
+      description: Type
+    is_public:
+      type: boolean
+      description: Display on the showcase
+    is_active:
+      type: boolean
+      description: Property active
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+    created_at:
+      type: string
+      format: date-time
+      description: Property created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Property updated at
+  required:
+    - id
+    - property_id
+    - name
+    - code
+    - type
+    - is_public
+    - is_active
+    - is_migrated
+    - created_at
+    - updated_at
+SearchPropertiesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchPropertiesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Property"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

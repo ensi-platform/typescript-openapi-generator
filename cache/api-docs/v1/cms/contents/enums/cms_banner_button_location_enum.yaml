@@ -1,0 +1,38 @@
+type: string
+description: |
+  Расположение кнопки:
+    * `top_left` - Сверху слева
+    * `top` - Сверху
+    * `top_right` - Сверху справа
+    * `right` - Справа
+    * `bottom_right` - Снизу справа
+    * `bottom` - Снизу
+    * `bottom_left` - Снизу слева
+    * `left` - Слева
+enum:
+  - top_left
+  - top
+  - top_right
+  - right
+  - bottom_right
+  - bottom
+  - bottom_left
+  - left
+x-enum-varnames:
+  - LOCATION_TOP_LEFT
+  - LOCATION_TOP
+  - LOCATION_TOP_RIGHT
+  - LOCATION_RIGHT
+  - LOCATION_BOTTOM_RIGHT
+  - LOCATION_BOTTOM
+  - LOCATION_BOTTOM_LEFT
+  - LOCATION_LEFT
+x-enum-descriptions:
+  - Сверху слева
+  - Сверху
+  - Сверху справа
+  - Справа
+  - Снизу справа
+  - Снизу
+  - Снизу слева
+  - Слева

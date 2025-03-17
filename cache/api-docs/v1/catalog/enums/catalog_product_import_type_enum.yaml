@@ -1,0 +1,11 @@
+type: integer
+example: 1
+description: |
+  Тип импорта:
+   * 1 - Свойства товара
+enum:
+  - 1
+x-enum-varnames:
+  - PRODUCT
+x-enum-descriptions:
+  - Свойства товара

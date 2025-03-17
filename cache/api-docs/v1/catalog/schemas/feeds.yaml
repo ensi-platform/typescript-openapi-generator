@@ -1,0 +1,90 @@
+FeedReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    code:
+      type: string
+      description: Код фида
+      example: yandex
+    file_url:
+      type: string
+      description: Ссылка
+      example: https://es.ensi-dev.greensight.ru/catalog/feeds/39/4c/1_desktop_19XRlBz795cFngxd6qwP.xml
+    planned_delete_at:
+      type: string
+      description: плановаяя дата удаления фида
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - code
+    - file_url
+    - planned_delete_at
+    - created_at
+    - updated_at
+FeedIncludes:
+  type: object
+  properties:
+    feed_settings:
+      $ref: ./feed_settings.yaml#/FeedSettings
+Feed:
+  allOf:
+    - $ref: "#/FeedReadonlyProperties"
+    - $ref: "#/FeedIncludes"
+SearchFeedsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchFeedsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchFeedsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        enum:
+          - feed_settings
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+FeedResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Feed"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchFeedsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Feed"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

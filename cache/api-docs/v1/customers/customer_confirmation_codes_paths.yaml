@@ -1,0 +1,48 @@
+CustomerConfirmationCodesSearch:
+  post:
+    tags:
+      - customers_confirmation_codes
+    operationId: customerConfirmationCodesSearch
+    x-lg-handler: App\Http\ApiV1\Modules\Customers\Controllers\CustomerConfirmationCodesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for customer confirmation codes
+    description: Search for customer confirmation codes
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/customer_confirmation_codes.yaml#/SearchConfirmationCodesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/customer_confirmation_codes.yaml#/SearchConfirmationCodesResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+CustomerConfirmationCodesMeta:
+  get:
+    tags:
+      - customers_confirmation_codes
+    operationId: customerConfirmationCodesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Customers\Controllers\CustomerConfirmationCodesController@meta
+    x-lg-skip-request-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

@@ -1,0 +1,126 @@
+LoginRequest:
+  type: object
+  properties:
+    login:
+      type: string
+      description: Логин
+      example: TestLogin
+    password:
+      type: string
+      description: Пароль
+      example: testPassword775105k#i*
+  required:
+    - login
+    - password
+RefreshRequest:
+  type: object
+  properties:
+    refresh_token:
+      type: string
+      description: Refresh token
+  required:
+    - refresh_token
+AuthResponse:
+  type: object
+  x-lg-resource-class-name: TokensResource
+  properties:
+    data:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Access Token
+        refresh_token:
+          type: string
+          description: Refresh token
+        expires_in:
+          type: integer
+          description: Время действия токена (в секундах)
+          example: 86400
+      required:
+        - access_token
+        - refresh_token
+        - expires_in
+  required:
+    - data
+CurrentUserResponse:
+  type: object
+  x-lg-resource-class-name: CurrentUserResource
+  properties:
+    data:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Идентификатор admin-пользователя
+          example: 1
+        full_name:
+          type: string
+          description: Полное ФИО
+          example: Иванов Иван Иванович
+        short_name:
+          type: string
+          description: Сокращенное ФИО
+          example: Иванов И.И.
+        active:
+          type: boolean
+          description: Активен
+          example: true
+        login:
+          type: string
+          description: Логин
+          example: TestLogin
+        last_name:
+          type: string
+          description: Фамилия
+          example: Иванов
+          nullable: true
+        first_name:
+          type: string
+          description: Имя
+          example: Иван
+          nullable: true
+        middle_name:
+          type: string
+          description: Отчество
+          example: Иванович
+          nullable: true
+        email:
+          type: string
+          description: Email
+          example: test@mail.ru
+        phone:
+          type: string
+          description: Телефон
+          example: "+79191000000"
+        roles:
+          type: array
+          description: Роли пользователя
+          items:
+            type: integer
+            description: Идентификатор роли пользователя
+            example: 101
+        rights_access:
+          type: array
+          description: Права пользователя
+          items:
+            $ref: ../../units/enums/units_admin_user_role_rights_access_enum.yaml
+      required:
+        - id
+        - full_name
+        - short_name
+        - active
+        - login
+        - last_name
+        - first_name
+        - middle_name
+        - email
+        - phone
+        - roles
+        - rights_access
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

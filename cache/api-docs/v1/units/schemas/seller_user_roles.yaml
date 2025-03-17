@@ -1,0 +1,59 @@
+SellerUserRoleReadonlyProperties:
+  type: object
+  properties:
+    id:
+      description: ID роли
+      type: integer
+      example: 1
+  required:
+    - id
+SellerUserRoleFillableProperties:
+  type: object
+  properties:
+    title:
+      description: Название роли
+      type: string
+      example: customer
+SellerUserRole:
+  allOf:
+    - $ref: "#/SellerUserRoleReadonlyProperties"
+    - $ref: "#/SellerUserRoleFillableProperties"
+SearchSellerUserRolesRequest:
+  type: object
+  properties:
+    sort:
+      type: array
+      items:
+        type: string
+        enum:
+          - id
+          - created_at
+          - updated_at
+    filter:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID пользователя
+          example: 1
+        title:
+          type: string
+          description: Название роли
+          example: customer
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchSellerUserRolesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/SellerUserRole"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,10 @@
+type: integer
+description: |
+  Доступные типы скидок:
+    * `1` - скидка на оффер
+enum:
+  - 1
+x-enum-varnames:
+  - OFFER
+x-enum-descriptions:
+  - Скидка на оффер

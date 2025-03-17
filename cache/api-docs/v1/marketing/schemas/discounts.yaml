@@ -1,0 +1,168 @@
+DiscountReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    created_at:
+      type: string
+      description: Дата создания скидки
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления скидки
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+DiscountCreateProperties:
+  type: object
+  properties:
+    type:
+      type: integer
+      description: Тип скидки из DiscountTypeEnum
+      example: 1
+  required:
+    - type
+DiscountFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Наименование скидки
+      example: Черная пятница
+    value_type:
+      type: integer
+      description: Тип значения скидки из DiscountValueTypeEnum
+      example: 1
+    value:
+      type: integer
+      description: Размер скидки
+    status:
+      type: integer
+      description: Статус скидки из DiscountStatusEnum
+      example: 4
+    start_date:
+      description: Дата начала действия скидки
+      example: 2021-01-01
+      type: string
+      format: date
+      nullable: true
+    end_date:
+      description: Дата окончания действия скидки
+      example: 2021-12-01
+      type: string
+      format: date
+      nullable: true
+    promo_code_only:
+      type: boolean
+      description: Скидка действительна только по промокоду
+      example: true
+DiscountRequiredProperties:
+  type: object
+  required:
+    - name
+    - value_type
+    - value
+    - status
+    - start_date
+    - end_date
+    - promo_code_only
+  additionalProperties:
+    type: string
+DiscountIncludes:
+  type: object
+  properties:
+    products:
+      type: array
+      items:
+        $ref: ./discount_products.yaml#/DiscountProduct
+DiscountCreateIncludesProductsProperties:
+  type: object
+  properties:
+    products:
+      type: array
+      items:
+        $ref: "#/DiscountCreateIncludesProduct"
+DiscountCreateIncludesProduct:
+  allOf:
+    - $ref: ./discount_products.yaml#/DiscountProductFillableLikeIncludeProperties
+    - $ref: ./discount_products.yaml#/DiscountProductFillableLikeIncludeRequiredProperties
+DiscountForCreate:
+  allOf:
+    - $ref: "#/DiscountCreateProperties"
+    - $ref: "#/DiscountFillableProperties"
+    - $ref: "#/DiscountRequiredProperties"
+    - $ref: "#/DiscountCreateIncludesProductsProperties"
+DiscountForPatch:
+  allOf:
+    - $ref: "#/DiscountFillableProperties"
+Discount:
+  allOf:
+    - $ref: "#/DiscountReadonlyProperties"
+    - $ref: "#/DiscountCreateProperties"
+    - $ref: "#/DiscountFillableProperties"
+    - $ref: "#/DiscountRequiredProperties"
+    - $ref: "#/DiscountIncludes"
+SearchDiscountsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchDiscountsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchDiscountsFilter"
+    include:
+      type: array
+      items:
+        type: string
+        description: Подгружаемые связанные сущности
+        enum:
+          - products
+          - products.product
+      example:
+        - products
+        - products.product
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+DiscountResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Discount"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchDiscountsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Discount"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+MassDiscountsStatusUpdateRequest:
+  allOf:
+    - $ref: ../../common_schemas.yaml#/IdsObject
+    - type: object
+      properties:
+        status:
+          type: integer
+          description: Статус скидки из DiscountStatusEnum
+          example: 4

@@ -1,0 +1,341 @@
+OrderReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: ID заказа
+      example: 1
+    number:
+      type: string
+      description: номер заказа
+      example: "1000001"
+    customer_id:
+      type: integer
+      description: id покупателя
+      example: 5
+    customer_email:
+      type: string
+      description: email покупателя
+      example: example@domain.ru
+    cost:
+      type: integer
+      description: стоимость (без учета скидки) (рассчитывается автоматически) в коп.
+      example: 10000
+    price:
+      type: integer
+      description: стоимость (с учетом скидок) (рассчитывается автоматически) в коп.
+      example: 10000
+    promo_code:
+      type: string
+      description: Использованный промокод
+      example: promo_code
+      nullable: true
+    source:
+      type: integer
+      description: источник взаимодействия из OrdersOrderSourceEnum
+      example: 1
+    status_at:
+      type: string
+      description: дата установки статуса заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    payment_status:
+      type: integer
+      description: статус оплаты из OrdersPaymentStatusEnum
+      example: 1
+    payment_status_at:
+      type: string
+      description: дата установки статуса оплаты
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    payed_at:
+      type: string
+      format: date-time
+      description: Дата оплаты
+      example: 2020-12-15T15:21:34.000000Z
+      nullable: true
+    payment_expires_at:
+      type: string
+      format: date-time
+      description: Дата, до которой нужно провести оплату
+      nullable: true
+      example: 2020-12-15T15:21:34.000000Z
+    payment_method:
+      type: integer
+      description: метод оплаты из PaymentMethodEnum
+    payment_system:
+      type: integer
+      description: система оплаты из PaymentSystemEnum
+    payment_external_id:
+      type: string
+      description: ID оплаты во внешней системе
+      nullable: true
+    is_problem_at:
+      type: string
+      description: дата установки флага проблемного заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    is_editable:
+      type: boolean
+      description: флаг, что заказ может быть изменён
+    is_changed:
+      type: boolean
+      description: флаг, что заказ был изменён
+    is_expired:
+      type: boolean
+      description: флаг, что заказ просроченный
+    is_expired_at:
+      type: string
+      description: дата установки флага просроченного заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    is_return:
+      type: boolean
+      description: флаг, что заказ возвращен
+    is_return_at:
+      type: string
+      description: дата установки флага возвращенного заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    is_partial_return:
+      type: boolean
+      description: флаг, что заказ частично возвращен
+    is_partial_return_at:
+      type: string
+      description: дата установки флага частично возвращенного заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    created_at:
+      type: string
+      description: дата создания заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+    updated_at:
+      type: string
+      description: дата обновления заказа
+      example: 2021-06-11T11:27:10.000000Z
+      nullable: true
+  required:
+    - id
+    - number
+    - customer_id
+    - customer_email
+    - cost
+    - price
+    - promo_code
+    - source
+    - status_at
+    - payment_status
+    - payment_status_at
+    - payed_at
+    - payment_expires_at
+    - payment_method
+    - payment_system
+    - payment_external_id
+    - is_problem_at
+    - is_expired
+    - is_expired_at
+    - is_return
+    - is_return_at
+    - is_partial_return
+    - is_partial_return_at
+    - created_at
+    - updated_at
+OrderFillableProperties:
+  type: object
+  properties:
+    status:
+      type: integer
+      description: статус заказа из OrdersOrderStatusEnum
+      example: 1
+    client_comment:
+      type: string
+      description: комментарий менеджера
+      example: покупатель хамит
+      nullable: true
+    receiver_name:
+      type: string
+      description: имя получателя
+      example: Иванов Иван Иванович
+      nullable: true
+    receiver_phone:
+      type: string
+      description: телефон получателя
+      example: "+79998887766"
+      nullable: true
+    receiver_email:
+      type: string
+      description: e-mail получателя
+      example: ivanov@example.ru
+      nullable: true
+    is_problem:
+      type: boolean
+      description: флаг, что заказ проблемный
+      example: true
+      nullable: true
+    problem_comment:
+      type: string
+      description: последнее сообщение продавца о проблеме со сборкой
+      example: нет части корзины
+      nullable: true
+OrderDeliveryFillableProperties:
+  type: object
+  properties:
+    delivery_service:
+      type: integer
+      description: служба доставки
+      example: 11
+    delivery_method:
+      type: integer
+      description: метод доставки
+      example: 1
+    delivery_cost:
+      type: integer
+      description: стоимость доставки (без учета скидки) в коп.
+      example: 20000
+    delivery_price:
+      type: integer
+      description: стоимость доставки (с учетом скидки) в коп.
+      example: 20000
+    delivery_point_id:
+      type: integer
+      description: ID пункта самовывоза из сервиса логистики
+      example: 55
+      nullable: true
+    delivery_address:
+      $ref: ./data/address.yaml#/Address
+    delivery_comment:
+      type: string
+      description: комментарий к доставке
+      example: Остановиться перед воротами
+      nullable: true
+OrderFillableRequiredProperties:
+  required:
+    - status
+    - client_comment
+    - receiver_name
+    - receiver_phone
+    - receiver_email
+    - is_problem
+    - problem_comment
+  type: object
+  additionalProperties:
+    type: string
+OrderDeliveryFillableRequiredProperties:
+  required:
+    - delivery_service
+    - delivery_method
+    - delivery_cost
+    - delivery_price
+    - delivery_point_id
+    - delivery_address
+    - delivery_comment
+  type: object
+  additionalProperties:
+    type: string
+OrderIncludes:
+  type: object
+  properties:
+    deliveries:
+      type: array
+      items:
+        $ref: ./deliveries.yaml#/Delivery
+    customer:
+      $ref: ../../customers/schemas/customers.yaml#/Customer
+    responsible:
+      $ref: ../../units/schemas/admin_users.yaml#/AdminUser
+    files:
+      type: array
+      items:
+        $ref: ./order_files.yaml#/OrderFile
+Order:
+  allOf:
+    - $ref: "#/OrderReadonlyProperties"
+    - $ref: "#/OrderFillableProperties"
+    - $ref: "#/OrderFillableRequiredProperties"
+    - $ref: "#/OrderDeliveryFillableProperties"
+    - $ref: "#/OrderIncludes"
+PatchOrderRequest:
+  allOf:
+    - $ref: "#/OrderFillableProperties"
+PatchOrderDeliveryRequest:
+  allOf:
+    - $ref: "#/OrderDeliveryFillableProperties"
+OrderChangePaymentSystemRequest:
+  type: object
+  properties:
+    payment_system:
+      type: integer
+      description: Система оплаты из PaymentSystemEnum
+  required:
+    - payment_system
+SearchOrdersRequest:
+  type: object
+  properties:
+    sort:
+      type: array
+      items:
+        type: string
+        enum:
+          - number
+          - created_at
+          - price
+          - delivery_price
+    filter:
+      type: object
+      description: Большая часть доступных фильтров указана в /orders:meta
+      properties:
+        deliveries.shipments.store_id:
+          type: array
+          items:
+            type: integer
+            description: Продавец отгрузки
+    include:
+      type: array
+      items:
+        type: string
+        description: orderItems.* будет добавляться только если загрузить элементы
+          корзины через один из доступных способов (пока это только
+          deliveries.shipments.orderItems)
+        enum:
+          - files
+          - deliveries
+          - deliveries.shipments
+          - deliveries.shipments.orderItems
+          - deliveries.shipments.store
+          - responsible
+          - customer
+          - customer.user
+          - orderItems.product
+          - orderItems.product.images
+          - orderItems.product.categories
+          - orderItems.product.brand
+          - orderItems.stock
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchOrdersResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Order"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+OrderResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Order"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

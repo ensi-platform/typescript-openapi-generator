@@ -1,0 +1,230 @@
+EmptyDataResponse:
+  type: object
+  properties:
+    data:
+      type: object
+      nullable: true
+      example: null
+      additionalProperties:
+        type: string
+    meta:
+      type: object
+      description: Object with meta-information
+      additionalProperties:
+        type: string
+  required:
+    - data
+IdObject:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: id
+      example: 1
+IdsObject:
+  type: object
+  properties:
+    ids:
+      type: array
+      items:
+        type: integer
+        description: id
+        example: 1
+  required:
+    - ids
+MultipartFileUploadRequest:
+  type: object
+  properties:
+    file:
+      type: string
+      format: binary
+      description: Uploaded file
+PaginationTypeCursorEnum:
+  type: string
+  description: |
+    * Pagination types:
+    * `cursor`
+  enum:
+    - cursor
+  x-enum-varnames:
+    - CURSOR
+PaginationTypeOffsetEnum:
+  type: string
+  description: |
+    * Pagination types:
+    * `offset`
+  enum:
+    - offset
+  x-enum-varnames:
+    - OFFSET
+PaginationTypeEnum:
+  type: string
+  description: |
+    Pagination types:
+    * `cursor`
+    * `offset`
+  enum:
+    - cursor
+    - offset
+  x-enum-varnames:
+    - CURSOR
+    - OFFSET
+RequestBodySort:
+  type: array
+  example: []
+  items:
+    type: string
+RequestBodyInclude:
+  type: array
+  example: []
+  items:
+    type: string
+RequestBodyPagination:
+  oneOf:
+    - $ref: "#/RequestBodyCursorPagination"
+    - $ref: "#/RequestBodyOffsetPagination"
+RequestBodyCursorPagination:
+  type: object
+  properties:
+    cursor:
+      type: string
+      nullable: true
+      example: null
+    limit:
+      type: integer
+      example: 20
+    type:
+      description: Pagination type
+      allOf:
+        - type: string
+        - $ref: "#/PaginationTypeCursorEnum"
+RequestBodyOffsetPagination:
+  type: object
+  properties:
+    limit:
+      type: integer
+      example: 20
+    offset:
+      type: integer
+      example: 0
+    type:
+      description: Pagination type
+      allOf:
+        - type: string
+        - $ref: "#/PaginationTypeOffsetEnum"
+RequestBodyMassOperation:
+  type: object
+  properties:
+    ids:
+      type: array
+      items:
+        type: integer
+      description: Target entity IDs
+      example:
+        - 103
+        - 115
+  required:
+    - ids
+ResponseBodyPagination:
+  oneOf:
+    - $ref: "#/ResponseBodyCursorPagination"
+    - $ref: "#/ResponseBodyOffsetPagination"
+ResponseBodyCursorPagination:
+  type: object
+  properties:
+    cursor:
+      type: string
+      example: eyJpZCI6MTAsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0
+      nullable: true
+    limit:
+      type: integer
+      example: 20
+    next_cursor:
+      type: string
+      example: eyJpZCI6MTAsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0
+      nullable: true
+    previous_cursor:
+      type: string
+      example: eyJpZCI6MTAsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0
+      nullable: true
+    type:
+      description: Pagination type
+      allOf:
+        - type: string
+        - $ref: "#/PaginationTypeCursorEnum"
+FileProtected:
+  x-skip-response-validation: true
+  type: object
+  description: Information about the file as an object. For the consumer it does
+    not matter what keys are inside
+  additionalProperties:
+    type: string
+FileOrNullProtected:
+  x-skip-response-validation: true
+  type: object
+  nullable: true
+  description: Information about the file as an object. For the consumer it does
+    not matter what keys are inside
+  additionalProperties:
+    type: string
+ResponseBodyOffsetPagination:
+  type: object
+  properties:
+    limit:
+      type: integer
+      example: 20
+    offset:
+      type: integer
+      example: 0
+    total:
+      type: integer
+      example: 253
+    type:
+      description: Pagination type
+      allOf:
+        - type: string
+        - $ref: "#/PaginationTypeOffsetEnum"
+MassOperationResult:
+  type: object
+  properties:
+    data:
+      $ref: "#/MassOperationResultData"
+MassOperationResultData:
+  type: object
+  nullable: true
+  properties:
+    processed:
+      type: array
+      items:
+        type: integer
+    errors:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 122
+          message:
+            type: string
+            example: Insufficient rights
+        required:
+          - id
+          - message
+  required:
+    - processed
+    - errors
+PreloadFile:
+  type: object
+  properties:
+    preload_file_id:
+      type: integer
+      description: Uploaded file ID
+      example: 2032
+    url:
+      type: string
+      description: Temporary file URL
+      example: https://files.ensi.ru/catalog/12/6d/image_001.png
+  required:
+    - preload_file_id
+    - url

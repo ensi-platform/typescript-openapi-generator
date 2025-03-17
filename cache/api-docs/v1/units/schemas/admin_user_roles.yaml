@@ -1,0 +1,143 @@
+AdminUserRoleReadonlyProperties:
+  type: object
+  properties:
+    id:
+      description: ID роли
+      type: integer
+      example: 1
+    created_at:
+      description: Дата создания
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+    updated_at:
+      description: Дата обновления
+      format: date-time
+      type: string
+      example: 2021-01-29T12:36:13.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+AdminUserRoleFillableProperties:
+  type: object
+  properties:
+    title:
+      description: Название роли
+      type: string
+      example: customer
+    active:
+      description: Активность
+      type: boolean
+      example: true
+    rights_access:
+      description: Права доступа
+      type: array
+      items:
+        $ref: ../enums/units_admin_user_role_rights_access_enum.yaml
+AdminUserRoleRequiredProperties:
+  required:
+    - title
+    - rights_access
+  type: object
+  additionalProperties:
+    type: string
+AdminUserRole:
+  allOf:
+    - $ref: "#/AdminUserRoleReadonlyProperties"
+    - $ref: "#/AdminUserRoleFillableProperties"
+    - $ref: "#/AdminUserRoleRequiredProperties"
+CreateAdminUserRoleRequest:
+  allOf:
+    - $ref: "#/AdminUserRoleFillableProperties"
+    - $ref: "#/AdminUserRoleRequiredProperties"
+PatchAdminUserRoleRequest:
+  allOf:
+    - $ref: "#/AdminUserRoleFillableProperties"
+RightsAccess:
+  type: object
+  properties:
+    id:
+      description: ID права доступа
+      type: integer
+      example: 101
+    title:
+      description: Описание права доступа
+      type: string
+      example: Пользователю доступен табличный список с фильтрами и поиском
+RightsAccessDictionary:
+  type: object
+  properties:
+    section:
+      description: Подраздел
+      type: string
+      example: Список заказов
+    items:
+      type: array
+      items:
+        $ref: "#/RightsAccess"
+SearchAdminUserRolesRequest:
+  type: object
+  properties:
+    sort:
+      type: array
+      items:
+        type: string
+        enum:
+          - id
+          - created_at
+          - updated_at
+    filter:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID пользователя
+          example: 1
+        title:
+          type: string
+          description: Название роли
+          example: customer
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+AdminUserRoleResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/AdminUserRole"
+    meta:
+      type: object
+      nullable: true
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchAdminUserRolesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/AdminUserRole"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+RightsAccessResponse:
+  type: object
+  x-lg-resource-class-name: RightsAccessDictionaryResource
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/RightsAccessDictionary"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

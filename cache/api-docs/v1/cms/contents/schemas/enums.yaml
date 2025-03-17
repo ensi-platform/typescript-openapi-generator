@@ -1,0 +1,42 @@
+GetBannerButtonTypesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/BannerButtonType"
+  required:
+    - data
+BannerButtonType:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Button type ID from CmsBannerButtonTypeEnum
+    name:
+      type: string
+      description: Button type name
+  required:
+    - id
+    - name
+GetBannerButtonLocationsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/BannerButtonLocation"
+  required:
+    - data
+BannerButtonLocation:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Location type ID from CmsBannerButtonLocationEnum
+    name:
+      type: string
+      description: Location name
+  required:
+    - id
+    - name

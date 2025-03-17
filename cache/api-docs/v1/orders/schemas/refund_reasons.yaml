@@ -1,0 +1,68 @@
+RefundReasonReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: идентификатор
+      example: 1
+    created_at:
+      type: string
+      format: date-time
+      description: дата создания
+      example: 2020-12-17T21:24:28.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: дата обновления
+      example: 2021-04-23T11:04:57.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+RefundReasonFillableProperties:
+  type: object
+  properties:
+    code:
+      type: string
+      description: Символьный код причины возврата
+      example: LOW_QUALITY
+    name:
+      type: string
+      description: Название причины возврата
+      example: Низкое качество
+    description:
+      type: string
+      description: Детальное описание причины возврата
+      nullable: true
+      example: Низкое качество товара ...
+RefundReasonFillableRequiredProperties:
+  required:
+    - code
+    - name
+    - description
+  type: object
+  additionalProperties:
+    type: string
+RefundReason:
+  allOf:
+    - $ref: "#/RefundReasonReadonlyProperties"
+    - $ref: "#/RefundReasonFillableProperties"
+    - $ref: "#/RefundReasonFillableRequiredProperties"
+CreateRefundReasonRequest:
+  allOf:
+    - $ref: "#/RefundReasonFillableProperties"
+    - $ref: "#/RefundReasonFillableRequiredProperties"
+PatchRefundReasonRequest:
+  allOf:
+    - $ref: "#/RefundReasonFillableProperties"
+RefundReasonResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/RefundReason"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

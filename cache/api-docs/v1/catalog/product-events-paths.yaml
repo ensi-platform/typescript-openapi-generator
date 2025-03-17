@@ -1,0 +1,83 @@
+ProductEvents:
+  get:
+    tags:
+      - catalog_product_events
+    operationId: getProductEvents
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@productEvents
+    x-lg-skip-resource-generation: true
+    summary: Search for objects of CatalogProductEventEnum
+    description: Search for objects of CatalogProductEventEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/ProductEventsResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductEventOperations:
+  get:
+    tags:
+      - catalog_product_events
+    operationId: getProductEventOperations
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@productEventOperations
+    x-lg-skip-resource-generation: true
+    summary: Search for objects of CatalogEventOperationEnum
+    description: Search for objects of CatalogEventOperationEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/ProductEventOperationsResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductEventsSearch:
+  post:
+    tags:
+      - catalog_product_events
+    operationId: searchProductEvent
+    summary: Search for objects of ProductEvent
+    description: Search for objects of ProductEvent
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\ProductEvents\ProductEventsController@search
+    x-lg-skip-request-generation: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/product_events.yaml#/SearchProductEventsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/product_events.yaml#/SearchProductEventsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+ProductEventsMeta:
+  get:
+    tags:
+      - catalog_product_events
+    operationId: getProductEventsMeta
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\ProductEvents\ProductEventsController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError

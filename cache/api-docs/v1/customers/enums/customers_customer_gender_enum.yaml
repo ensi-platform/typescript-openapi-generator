@@ -1,0 +1,14 @@
+type: integer
+description: |
+  Пол покупателя. Расшифровка значений:
+    * `1` - Женщина
+    * `2` - Мужчина
+enum:
+  - 1
+  - 2
+x-enum-varnames:
+  - GENDER_FEMALE
+  - GENDER_MALE
+x-enum-descriptions:
+  - Женщина
+  - Мужчина

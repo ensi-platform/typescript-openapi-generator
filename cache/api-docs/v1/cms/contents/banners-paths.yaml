@@ -1,0 +1,352 @@
+BannersSearch:
+  post:
+    tags:
+      - cms_banners
+    operationId: searchBanners
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of Banner
+    description: Search for objects of Banner
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banners.yaml#/SearchBannersRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banners.yaml#/SearchBannersResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannersSearchOne:
+  post:
+    tags:
+      - cms_banners
+    operationId: searchOneBanner
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@searchOne
+    x-lg-skip-request-generation: true
+    summary: Search for an object of Banner
+    description: Search for an object of Banner
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banners.yaml#/SearchOneBannerRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banners.yaml#/BannerResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+Banners:
+  post:
+    tags:
+      - cms_banners
+    operationId: createBanner
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@create
+    summary: Creating an object of Banner
+    description: Creating an object of Banner
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banners.yaml#/CreateBannersRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banners.yaml#/BannerResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannersMeta:
+  get:
+    tags:
+      - cms_banners
+    operationId: getBannersMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannersCurrent:
+  put:
+    tags:
+      - cms_banners
+    operationId: replaceBanner
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@replace
+    summary: Replacing an object of Banner
+    description: Replacing an object of Banner
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banners.yaml#/ReplaceBannersRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banners.yaml#/BannerResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+  delete:
+    tags:
+      - cms_banners
+    operationId: deleteBanner
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannersController@delete
+    x-lg-skip-request-generation: true
+    summary: Deleting an object of Banner
+    description: Deleting an object of Banner
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannersCurrentFileUpload:
+  post:
+    tags:
+      - cms_banners
+    operationId: uploadBannerFile
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannerFilesController@upload
+    summary: Uploading file for object type Banner
+    description: Uploading file for object type Banner
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Image type (value from BannerImageTypeEnum)
+                example: desktop
+              file:
+                type: string
+                format: binary
+                description: Uploaded file
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banner_files.yaml#/UploadBannerFileResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannersCurrentFileDelete:
+  post:
+    tags:
+      - cms_banners
+    operationId: deleteBannerFile
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannerFilesController@delete
+    summary: Deleting a file for an object of type Banner
+    description: Deleting a file for an object of type Banner
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banner_files.yaml#/DeleteBannerFileRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ../../common_schemas.yaml#/EmptyDataResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannerTypesSearch:
+  post:
+    tags:
+      - cms_banners
+    operationId: searchBannerTypes
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannerTypesController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of BannerType
+    description: Search for objects of BannerType
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/banner_types.yaml#/SearchBannerTypesRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/banner_types.yaml#/SearchBannerTypesResponse
+      "400":
+        $ref: ../../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannerTypesMeta:
+  get:
+    tags:
+      - cms_banners
+    operationId: getBannerTypesMeta
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\BannerTypesController@meta
+    x-lg-skip-resource-generation: true
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannerButtonTypes:
+  get:
+    tags:
+      - cms_banners
+    operationId: getBannerButtonTypes
+    summary: Getting objects of BannerButtonType
+    description: Getting objects of BannerButtonType
+    x-lg-skip-resource-generation: true
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\EnumsController@bannerButtonTypes
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetBannerButtonTypesResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+BannerButtonLocations:
+  get:
+    tags:
+      - cms_banners
+    operationId: getBannerButtonLocations
+    summary: Getting objects of BannerButtonLocation
+    description: Getting objects of BannerButtonLocation
+    x-lg-skip-resource-generation: true
+    x-lg-handler: App\Http\ApiV1\Modules\Cms\Controllers\Banners\EnumsController@bannerButtonLocations
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/GetBannerButtonLocationsResponse
+      "401":
+        $ref: ../../index.yaml#/components/responses/Unauthorized
+      "500":
+        $ref: ../../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1
+QueryInclude:
+  in: query
+  name: include
+  required: false
+  description: Related entities for uploading, separated by commas
+  schema:
+    type: string

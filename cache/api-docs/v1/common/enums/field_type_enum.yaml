@@ -1,0 +1,62 @@
+type: string
+description: |
+  Типы поля. Расшифровка значений:
+    * `string` - Строка
+    * `email` - Email
+    * `phone` - Телефон
+    * `datetime` - Дата со временем
+    * `date` - Дата без времени
+    * `url` - Ссылка
+    * `int` - Целое число
+    * `price` - Цена
+    * `float` - Число с плавающей точкой
+    * `enum` - Перечисление
+    * `bool` - Булево
+    * `photo` - Фото
+    * `image` - Картинка
+    * `plural_numeric` - Числовое поле с несколькими типами
+enum:
+  - string
+  - email
+  - phone
+  - datetime
+  - date
+  - url
+  - int
+  - price
+  - float
+  - enum
+  - bool
+  - photo
+  - image
+  - plural_numeric
+x-enum-varnames:
+  - STRING
+  - EMAIL
+  - PHONE
+  - DATETIME
+  - DATE
+  - URL
+  - INT
+  - PRICE
+  - FLOAT
+  - ENUM
+  - BOOL
+  - PHOTO
+  - IMAGE
+  - PLURAL_NUMERIC
+x-enum-descriptions:
+  - Строка
+  - Email
+  - Телефон
+  - Дата со временем
+  - Дата без времени
+  - Ссылка
+  - Целое число
+  - Цена
+  - Число с плавающей точкой
+  - Перечисление
+  - Булево
+  - Фото
+  - Картинка
+  - Числовое поле с несколькими типами

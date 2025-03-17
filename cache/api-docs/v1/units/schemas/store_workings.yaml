@@ -1,0 +1,107 @@
+StoreWorkingReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор записи о времени работы
+      example: 1
+    created_at:
+      type: string
+      format: date-time
+      description: Время создания записи о времени работы
+      example: 2021-01-15T14:55:35.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: Время обновления записи о времени работы
+      example: 2021-01-15T14:55:35.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+StoreWorkingFillableProperties:
+  type: object
+  properties:
+    store_id:
+      type: integer
+      description: ID склада
+      example: 17
+    active:
+      type: boolean
+      description: Флаг активности дня работы склада
+      example: false
+    day:
+      type: integer
+      description: День недели (1-7)
+      example: 1
+    working_start_time:
+      nullable: true
+      type: string
+      description: Время начала работы склада (00:00)
+      example: 00:00
+    working_end_time:
+      nullable: true
+      type: string
+      description: Время конца работы склада (00:00)
+      example: 00:00
+StoreWorkingFillableRequiredProperties:
+  required:
+    - store_id
+    - active
+    - day
+    - working_start_time
+    - working_end_time
+  type: object
+  additionalProperties:
+    type: string
+StoreWorking:
+  allOf:
+    - $ref: "#/StoreWorkingReadonlyProperties"
+    - $ref: "#/StoreWorkingFillableProperties"
+    - $ref: "#/StoreWorkingFillableRequiredProperties"
+CreateStoreWorkingRequest:
+  allOf:
+    - $ref: "#/StoreWorkingFillableProperties"
+    - $ref: "#/StoreWorkingFillableRequiredProperties"
+PatchStoreWorkingRequest:
+  allOf:
+    - $ref: "#/StoreWorkingFillableProperties"
+SearchStoreWorkingsRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+StoreWorkingResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/StoreWorking"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchStoreWorkingsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/StoreWorking"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

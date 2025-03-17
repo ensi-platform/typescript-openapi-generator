@@ -51,10 +51,6 @@ export const resolvePathSegments = (paths: string[]) => {
 
     const lastPath = paths.at(-1) || '';
 
-    if (lastPath.startsWith('/') || lastPath.startsWith('#/')) {
-        return lastPath;
-    }
-
     const isLastPathWithFile = /\.[\dA-Za-z]+/.test(lastPath);
     const parsedPath = paths.map((p, i) => {
         if (i === paths.length - 1) return p;
@@ -62,14 +58,10 @@ export const resolvePathSegments = (paths: string[]) => {
         return p.split('#')[0];
     });
 
-    if (lastPath === '#/PathId') {
-        console.log('resolvePathSegments', paths, isLastPathWithFile, parsedPath);
-    }
-
     const segmentsPathArray = parsedPath.join('/').split('/');
 
     const result = segmentsPathArray
-        .reduce<string[]>((acc, segment, i) => {
+        .reduce<string[]>((acc, segment) => {
             if (!segment) return acc;
             if (segment === '.') {
                 const prevSegment = acc.at(-1);
@@ -84,7 +76,7 @@ export const resolvePathSegments = (paths: string[]) => {
 
             const prevSegment = acc.at(-1);
             if (segment === '#') {
-                acc[i - 1] = `${prevSegment}#`;
+                acc[acc.length - 1] = `${prevSegment}#`;
                 return acc;
             }
 

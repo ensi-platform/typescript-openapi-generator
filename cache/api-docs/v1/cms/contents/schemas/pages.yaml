@@ -1,0 +1,149 @@
+PageReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+    created_at:
+      type: string
+      format: date-time
+      description: Дата создания
+      example: 2022-09-01T15:47:21.000000Z
+    updated_at:
+      type: string
+      format: date-time
+      description: Дата обновления
+      example: 2022-09-01T15:47:21.000000Z
+  required:
+    - id
+    - created_at
+    - updated_at
+PageFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Наименование страницы
+      example: Услуги компании
+    slug:
+      type: string
+      description: Человекопонятный идентификатор для url
+      example: uslugi-companii
+    content:
+      type: string
+      description: Html блок-контент
+      example: <h1>Содержание страницы</h1>
+    is_active:
+      type: boolean
+      description: Активность страницы
+      example: true
+    active_from:
+      type: string
+      format: date-time
+      nullable: true
+      description: Дата и время начала публикации страницы
+      example: 2022-09-01T15:47:21.000000Z
+    active_to:
+      type: string
+      format: date-time
+      nullable: true
+      description: Дата и время окончания публикации страницы
+      example: 2022-09-02T15:47:21.000000Z
+PageRequiredFillableProperties:
+  type: object
+  required:
+    - name
+    - slug
+    - content
+    - is_active
+    - active_from
+    - active_to
+  additionalProperties:
+    type: string
+CreatePageRequest:
+  allOf:
+    - $ref: "#/PageFillableProperties"
+    - $ref: "#/PageRequiredFillableProperties"
+PatchPageRequest:
+  allOf:
+    - $ref: "#/PageFillableProperties"
+Page:
+  allOf:
+    - $ref: "#/PageReadonlyProperties"
+    - $ref: "#/PageFillableProperties"
+    - $ref: "#/PageRequiredFillableProperties"
+SearchPagesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+      example: 1
+    name:
+      type: string
+      description: Наименование страницы
+      example: День рождения компании
+    slug:
+      type: string
+      description: Человекопонятный идентификатор для url
+      example: den-rozhdeniya-kompanii
+    name_like:
+      type: string
+      description: Полное или частичное наименование
+      example: День ро
+    content_like:
+      type: string
+      description: Полный или частичный Html блок-контент
+      example: <h1>Содержание страницы</h1>
+    is_active:
+      type: boolean
+      description: Активность страницы
+      example: true
+    is_visible:
+      type: boolean
+      description: Только активные записи (имеют флаг активности и попадают в ее
+        промежуток времени)
+      example: true
+SearchPagesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchPagesFilter"
+    pagination:
+      $ref: ../../../common_schemas.yaml#/RequestBodyPagination
+SearchOnePageRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchPagesFilter"
+SearchPagesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Page"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
+PageResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Page"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data

@@ -1,0 +1,176 @@
+FeedSettings:
+  post:
+    tags:
+      - catalog_feed_settings
+    operationId: createFeedSettings
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Feeds\FeedSettingsController@create
+    summary: Creating an object of FeedSettings
+    description: Creating an object of FeedSettings
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/feed_settings.yaml#/FeedSettingsForCreate
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/feed_settings.yaml#/FeedSettingsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+FeedSettingsOne:
+  get:
+    tags:
+      - catalog_feed_settings
+    operationId: getFeedSettings
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Feeds\FeedSettingsController@get
+    summary: Get the object of FeedSettings by ID
+    description: Get the object of FeedSettings by ID
+    parameters:
+      - $ref: "#/PathId"
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/feed_settings.yaml#/FeedSettingsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+  patch:
+    tags:
+      - catalog_feed_settings
+    operationId: patchFeedSettings
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Feeds\FeedSettingsController@patch
+    summary: Patching an object of FeedSettings
+    description: Patching an object of FeedSettings
+    parameters:
+      - $ref: "#/PathId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/feed_settings.yaml#/FeedSettingsForPatch
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/feed_settings.yaml#/FeedSettingsResponse
+      "400":
+        $ref: ../index.yaml#/components/responses/BadRequest
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "404":
+        $ref: ../index.yaml#/components/responses/NotFound
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+FeedSettingsSearch:
+  post:
+    tags:
+      - catalog_feed_settings
+    operationId: searchFeedSettings
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\Feeds\FeedSettingsController@search
+    x-lg-skip-request-generation: true
+    summary: Search for objects of FeedSettings
+    description: Search for objects of FeedSettings
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/feed_settings.yaml#/SearchFeedSettingsRequest
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/feed_settings.yaml#/SearchFeedSettingsResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+FeedSettingsMeta:
+  get:
+    tags:
+      - catalog_feed_settings
+    operationId: getFeedSettingsMeta
+    x-lg-handler: \App\Http\ApiV1\Modules\Catalog\Controllers\Feeds\FeedSettingsController@meta
+    summary: Getting a list of available fields
+    description: Getting a list of available fields
+    responses:
+      "200":
+        $ref: ../index.yaml#/components/responses/GetResourceMetaResponse
+      "401":
+        $ref: ../index.yaml#/components/responses/Unauthorized
+      "403":
+        $ref: ../index.yaml#/components/responses/Forbidden
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+FeedTypes:
+  get:
+    tags:
+      - catalog_feed_settings
+    operationId: getFeedTypes
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@feedTypes
+    x-lg-skip-resource-generation: true
+    summary: Search for objects of CatalogFeedTypeEnum
+    description: Search for objects of CatalogFeedTypeEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/FeedTypesResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+FeedPlatforms:
+  get:
+    tags:
+      - catalog_feed_settings
+    operationId: getFeedPlatforms
+    x-lg-handler: App\Http\ApiV1\Modules\Catalog\Controllers\EnumsController@feedPlatforms
+    x-lg-skip-resource-generation: true
+    summary: Search for objects of CatalogFeedPlatformEnum
+    description: Search for objects of CatalogFeedPlatformEnum
+    responses:
+      "200":
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/enums.yaml#/FeedPlatformsResponse
+      "500":
+        $ref: ../index.yaml#/components/responses/ServerError
+PathId:
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+    minimum: 1
+  description: Numeric ID
+  example: 1

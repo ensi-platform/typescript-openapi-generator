@@ -1,0 +1,77 @@
+PropertyDirectoryValue:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Directory value id
+    directory_value_id:
+      type: integer
+      description: Directory value id from PIM
+    property_id:
+      type: integer
+      description: Property ID from PIM
+    name:
+      type: string
+      description: Value name
+      nullable: true
+    code:
+      type: string
+      description: Code
+      nullable: true
+    value:
+      type: string
+      description: Value
+    type:
+      type: string
+      description: Type of stored value
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+    created_at:
+      type: string
+      format: date-time
+      description: Nameplate created at
+    updated_at:
+      type: string
+      format: date-time
+      description: Nameplate updated at
+  required:
+    - id
+    - directory_value_id
+    - property_id
+    - name
+    - code
+    - value
+    - type
+    - is_migrated
+    - created_at
+    - updated_at
+SearchPropertyDirectoryValuesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      type: object
+      description: Filter. See the fields available for filtering in :meta
+      additionalProperties:
+        type: string
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+SearchPropertyDirectoryValuesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/PropertyDirectoryValue"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

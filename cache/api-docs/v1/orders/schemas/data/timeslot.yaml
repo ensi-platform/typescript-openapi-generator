@@ -1,0 +1,16 @@
+Timeslot:
+  type: object
+  nullable: true
+  description: Слот доставки
+  properties:
+    id:
+      type: string
+      description: Идентификатор слота
+    from:
+      type: string
+      description: Время начала
+      example: 10:00
+    to:
+      type: string
+      description: Время окончания
+      example: 12:00

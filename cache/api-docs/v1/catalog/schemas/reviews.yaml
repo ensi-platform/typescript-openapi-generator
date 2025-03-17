@@ -1,0 +1,113 @@
+ReviewReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор
+    grade:
+      type: integer
+      description: Оценка (от 1 до 5)
+      example: 1
+    created_at:
+      type: string
+      description: Дата создания
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+    updated_at:
+      type: string
+      description: Дата обновления
+      format: date-time
+      example: 2021-12-20T18:00:10.000000Z
+  required:
+    - id
+    - grade
+    - created_at
+    - updated_at
+ReviewFillableProperties:
+  type: object
+  properties:
+    status_id:
+      type: integer
+      description: Статус публикации отзыва из ReviewStatusEnum
+      example: 1
+    comment:
+      type: string
+      nullable: true
+      description: Комментарий
+ReviewRequiredProperties:
+  required:
+    - comment
+    - status_id
+  type: object
+  additionalProperties:
+    type: string
+ReviewIncludes:
+  type: object
+  properties:
+    customer:
+      type: object
+      description: Пользователь, оставивший отзыв
+      allOf:
+        - $ref: ../../customers/schemas/customers.yaml#/Customer
+      additionalProperties:
+        type: string
+    product:
+      type: object
+      description: Товар, на который оставивлен отзыв
+      allOf:
+        - $ref: ./products.yaml#/Product
+      additionalProperties:
+        type: string
+Review:
+  allOf:
+    - $ref: "#/ReviewReadonlyProperties"
+    - $ref: "#/ReviewFillableProperties"
+    - $ref: "#/ReviewRequiredProperties"
+    - $ref: "#/ReviewIncludes"
+PatchReviewRequest:
+  allOf:
+    - $ref: "#/ReviewFillableProperties"
+SearchReviewsFilter:
+  type: object
+  additionalProperties:
+    type: string
+SearchReviewsRequest:
+  type: object
+  description: >
+    Доступные для сортировки поля: `id, product_id, created_at, updated_at`.
+    Загружаемые через include связанные сущности: `customers, products`.
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    filter:
+      $ref: "#/SearchReviewsFilter"
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+ReviewResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/Review"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchReviewsResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Review"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta
