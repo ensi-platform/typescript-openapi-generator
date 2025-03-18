@@ -3,7 +3,7 @@ import path from 'node:path';
 import { OpenAPI3, PathsObject, ReferenceObject, SchemaObject } from 'openapi-typescript';
 import yaml from 'yaml';
 
-import { cleanPathFromTheFile, resolvePathSegments } from '../../common/helpers';
+import { cleanPathFromTheFile, resolvePathSegments, serializeToCamelCase } from '../../common/helpers';
 
 type SchemaObjectValueType =
     | ReferenceObject
@@ -16,12 +16,6 @@ type SchemaObjectValueType =
     | number
     | number[];
 type ValidSchemaObjectType = string[] | ReferenceObject | ReferenceObject[] | SchemaObject | SchemaObject[] | number[];
-const serializeToCamelCase = (str: string) => {
-    const words = str.split('_'); // Разделяем по символу '_'
-    const camelCaseName = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(''); // Собираем обратно в строку
-
-    return camelCaseName;
-};
 
 const getNestedValue = (obj: any, objPath: string[]) => {
     const target = objPath.reduce<any>((acc, key) => acc[key] || {}, obj);
@@ -39,9 +33,21 @@ export class RefResolver {
     private componentResponses = new Map<string, any>();
     private componentParameters = new Map<string, any>();
 
-    constructor(pathToIndex: string) {
+    private duplicateMap = new Map<string, { name: string; newName: string }>();
+
+    constructor(
+        pathToIndex: string,
+        duplicateMap: Map<
+            string,
+            {
+                name: string;
+                newName: string;
+            }
+        >
+    ) {
         this.pathToIndex = pathToIndex;
         this.cachedPath = cleanPathFromTheFile(pathToIndex);
+        this.duplicateMap = duplicateMap;
     }
 
     private getObjectFromMap(map: Map<string, any>) {
@@ -195,12 +201,14 @@ export class RefResolver {
                 return;
             }
 
+            const newNodeName = this.duplicateMap.get(filePathWithNode)?.newName;
+
             if (node) {
                 const isCompondNode = node.includes('/');
                 const nodeObj = (
                     isCompondNode ? getNestedValue(response, node.split('/')) : (response as any)[node]
                 ) as SchemaObjectValueType;
-                const nodeName = (isCompondNode ? node.split('/').at(-1) : node) as string;
+                const nodeName = newNodeName || ((isCompondNode ? node.split('/').at(-1) : node) as string);
 
                 const componentObj = this.getComponentObj(nodeObj, nodeName);
 
@@ -215,7 +223,7 @@ export class RefResolver {
                 const file = filePath.split('/').at(-1);
                 if (!file) return;
                 const fileName = file.replace('.yaml', '');
-                const serializedFileName = serializeToCamelCase(fileName);
+                const serializedFileName = newNodeName || serializeToCamelCase(fileName);
 
                 const componentObj = this.getComponentObj(response, serializedFileName);
 
@@ -309,18 +317,14 @@ export class RefResolver {
     public resolve = async () => {
         const indexFileContent = fs.readFileSync(this.pathToIndex, 'utf8');
         const jsonIndexFile: OpenAPI3 = yaml.parse(indexFileContent);
+        const { paths, ...otherJsonFile } = jsonIndexFile;
 
-        // const paths = jsonIndexFile.paths;
-        if (jsonIndexFile.paths) {
-            this.resolveSchemaPaths(jsonIndexFile.paths);
-            this.resolveObjectsInSchemaPaths(jsonIndexFile.paths);
+        if (paths) {
+            this.resolveSchemaPaths(paths);
+            this.resolveObjectsInSchemaPaths(paths);
         }
 
-        // this.resolveSchemaAnyObject(jsonIndexFile, this.cachedPath);
-
-        // this.resolveMap(this.componentResponses);
-        // this.resolveMap(this.componentParameters);
-        // this.resolveMap(this.componentSchemas);
+        this.resolveSchemaAnyObject(otherJsonFile, this.cachedPath);
 
         const totalJson = {
             ...jsonIndexFile,
@@ -342,37 +346,5 @@ export class RefResolver {
         };
 
         return totalJson;
-
-        // Первый резолв
-        // const resolvedPaths = this.resolveIndexPaths(paths);
-        // Повторно обходим поинты в схеме для того чтобы зарезолвить локальные пути и сделать локальные ссылки на componnents
-        // this.resolveItemFromIndexPaths(resolvedPaths);
-        // this.paths.clear();
-
-        // const resolvedJsonindexFile = { ...jsonIndexFile, paths: resolvedPaths };
-        // this.searchComponents(resolvedJsonindexFile, this.cachedPath);
-        // this.resolveMap(this.componentResponses);
-        // this.resolveMap(this.componentParameters);
-        // this.resolveMap(this.componentSchemas);
-
-        // const totalJson = {
-        //     ...resolvedJsonindexFile,
-        //     components: {
-        //         ...resolvedJsonindexFile.components,
-        //         responses: {
-        //             ...resolvedJsonindexFile.components.responses,
-        //             ...this.getObjectFromMap(this.componentResponses),
-        //         },
-        //         parameters: {
-        //             ...resolvedJsonindexFile.components.parameters,
-        //             ...this.getObjectFromMap(this.componentParameters),
-        //         },
-        //         schemas: {
-        //             ...resolvedJsonindexFile.components.schemas,
-        //             ...this.getObjectFromMap(this.componentSchemas),
-        //         },
-        //     },
-        // };
-        // return resolvedJsonindexFile;
     };
 }

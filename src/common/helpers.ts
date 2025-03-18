@@ -89,3 +89,10 @@ export const resolvePathSegments = (paths: string[]) => {
 
     return result;
 };
+
+export const serializeToCamelCase = (str: string) => {
+    const words = str.split('_');
+    const camelCaseName = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('');
+
+    return camelCaseName;
+};

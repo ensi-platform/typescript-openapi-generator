@@ -1,16 +1,12 @@
-import { Args, Command } from '@oclif/core';
+import { Command } from '@oclif/core';
 import fs from 'node:fs';
 import path from 'node:path';
+import { generate } from 'orval';
 import yaml from 'yaml';
 
+import { DuplicateResolver } from '../../classes/DuplicateResolver';
 import { Loader } from '../../classes/Loader';
-import { getSchemaLoaderForOrigin } from '../../classes/Loaders';
-import { OpenApiParser } from '../../classes/OpenApiSchemaParser';
 import { RefResolver } from '../../classes/RefResolver';
-import { TypesGenerator } from '../../classes/TypesGenerator';
-import { runEslintAutoFix } from '../../common/helpers';
-import { Config, ConfigSchema } from '../../config/Config';
-import { traverseAndModify } from '../../deref';
 
 // setInterval(() => {
 //     const memoryUsage = process.memoryUsage();
@@ -134,15 +130,62 @@ export default class Generate extends Command {
             const pathname = new URL(OPENAPI_URL).pathname;
             const pathToIndex = path.join(CACHE_DIR, pathname);
 
-            const refResolver = new RefResolver(pathToIndex);
+            const duplicateResolver = new DuplicateResolver(pathToIndex);
+
+            const duplicateMap = duplicateResolver.resolve();
+            const refResolver = new RefResolver(pathToIndex, duplicateMap);
 
             const resolvedSchema = await refResolver.resolve();
 
             const yamlString = yaml.stringify(resolvedSchema);
             fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
 
-            // const spec = yaml.parse(fs.readFileSync(RESOLVED_SCHEMA_PATH, 'utf8'));
-            // console.log(spec);
+            await generate({
+                output: {
+                    override: {
+                        header: () => ['Не трогать руками, файлы автогенерируемые'],
+
+                        /**
+                         * /customers/product-subscribes:clear post
+                {
+                  tags: [ 'customers_preferences' ],
+                  operationId: 'searchCustomerPreferences',
+                  'x-lg-handler': 'App\\Http\\ApiV1\\Modules\\Customers\\Controllers\\CustomersPreferencesController@search',
+                  'x-lg-skip-request-generation': true,
+                  summary: 'Поиск предпочтений клиента',
+                  description: 'Поиск предпочтений клиента',
+                  requestBody: { required: true, content: { 'application/json': [Object] } },
+                  responses: {
+                    '200': { description: 'Успешный ответ', content: [Object] },
+                    '400': { description: 'Bad Request', content: [Object] },
+                    '401': { description: 'Unauthorized', content: [Object] },
+                    '404': { description: 'Not Found', content: [Object] },
+                    '500': { description: 'Internal Server Error', content: [Object] }
+                  }
+                         */
+                        // operationName: (operation: any, route: string, verb: any) => {
+                        //   console.log(operation, route, verb);
+                        //   return route;
+                        // },
+                    },
+                    mode: 'tags-split', // Разделение кода по тегам
+                    // schema: false,
+                    target: './app/gen/',
+                    schemas: './app/gen/models',
+                    client: 'fetch',
+                    // baseUrl: 'http://localhost:3000', // Базовый URL API
+                    prettier: true, // Форматирование с помощью Prettier
+                },
+                input: {
+                    // validation: true,
+                    target: './cache/api-docs/v1/resolved-schema.yaml', // Ссылка на OpenAPI-спецификацию
+                    // target:
+                    //   'https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml',
+                    // override: {
+                    //   transformer: './transformer.js',
+                    // },
+                },
+            });
         } catch (error) {
             console.error(error);
         }
