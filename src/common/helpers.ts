@@ -96,3 +96,16 @@ export const serializeToCamelCase = (str: string) => {
 
     return camelCaseName;
 };
+
+export const getNestedValue = <T extends Record<string, any>>(obj: T, objPath: string[]) => {
+    const target = objPath.reduce<T>((acc, key) => acc[key] || {}, obj);
+
+    return target;
+};
+
+export const serializeNodeName = (filePath: string) => {
+    const file = filePath.split('/').at(-1);
+    if (!file) return;
+    const fileName = file.replace('.yaml', '');
+    return serializeToCamelCase(fileName);
+};

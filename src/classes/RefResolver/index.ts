@@ -1,27 +1,27 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { OpenAPI3, PathsObject, ReferenceObject, SchemaObject } from 'openapi-typescript';
+import {
+    OpenAPI3,
+    ParameterObject,
+    PathsObject,
+    ReferenceObject,
+    ResponseObject,
+    SchemaObject,
+} from 'openapi-typescript';
 import yaml from 'yaml';
 
-import { cleanPathFromTheFile, resolvePathSegments, serializeToCamelCase } from '../../common/helpers';
+import { NODE_SEPARATOR } from '../../common/constants';
+import { getFile } from '../../common/file';
+import { cleanPathFromTheFile, getNestedValue, resolvePathSegments, serializeNodeName } from '../../common/helpers';
+import { SchemaObjectValueType, ValidSchemaObjectType } from '../../common/types';
 
-type SchemaObjectValueType =
-    | ReferenceObject
-    | ReferenceObject[]
-    | SchemaObject
-    | SchemaObject[]
-    | string
-    | string[]
-    | boolean
-    | number
-    | number[];
-type ValidSchemaObjectType = string[] | ReferenceObject | ReferenceObject[] | SchemaObject | SchemaObject[] | number[];
+enum ComponentTypeEnum {
+    RESPONSES = 'responses',
+    SCHEMAS = 'schemas',
+    PARAMETERS = 'parameters',
+}
 
-const getNestedValue = (obj: any, objPath: string[]) => {
-    const target = objPath.reduce<any>((acc, key) => acc[key] || {}, obj);
-
-    return target;
-};
+type SchemaComponentType = ParameterObject | ResponseObject | SchemaObject;
 
 export class RefResolver {
     private pathToIndex: string;
@@ -29,9 +29,9 @@ export class RefResolver {
 
     private paths = new Map<string, string>();
 
-    private componentSchemas = new Map<string, any>();
-    private componentResponses = new Map<string, any>();
-    private componentParameters = new Map<string, any>();
+    private componentSchemas = new Map<string, SchemaComponentType>();
+    private componentResponses = new Map<string, SchemaComponentType>();
+    private componentParameters = new Map<string, SchemaComponentType>();
 
     private duplicateMap = new Map<string, { name: string; newName: string }>();
 
@@ -58,104 +58,59 @@ export class RefResolver {
         }, {});
     }
 
-    private getComponentObj = (component: any, name: string) => {
-        if (component.in) {
-            return {
-                type: 'parameter',
-                path: `#/components/parameters/${name}`,
-            };
+    private getComponentObj = (component: SchemaComponentType, name: string) => {
+        let type: ComponentTypeEnum | undefined;
+
+        if ((component as ParameterObject).in) {
+            type = ComponentTypeEnum.PARAMETERS;
+        } else if ((component as ResponseObject).content) {
+            type = ComponentTypeEnum.RESPONSES;
+        } else if (Object.keys(component).length > 0) {
+            type = ComponentTypeEnum.SCHEMAS;
         }
 
-        if (component.content) {
+        if (type) {
             return {
-                type: 'reponse',
-                path: `#/components/responses/${name}`,
+                type,
+                path: `${NODE_SEPARATOR}components/${type}/${name}`,
             };
         }
-
-        if (Object.keys(component).length > 0) {
-            return {
-                type: 'schema',
-                path: `#/components/schemas/${name}`,
-            };
-        }
-        // if (component.type || component.allOf || component.oneOf || component.anyOf || component.$ref) {
-        //     return {
-        //         type: 'schema',
-        //         path: `#/components/schemas/${name}`,
-        //     };
-        // }
 
         return null;
     };
 
-    private setComponentToMap = (component: any, type: string, componentPath: string) => {
-        if (type === 'parameter') this.componentParameters.set(componentPath, component);
-        if (type === 'schema') this.componentSchemas.set(componentPath, component);
-        if (type === 'responses') this.componentResponses.set(componentPath, component);
+    private setComponentToMap = (component: SchemaComponentType, type: string, componentPath: string) => {
+        if (type === ComponentTypeEnum.PARAMETERS) this.componentParameters.set(componentPath, component);
+        if (type === ComponentTypeEnum.SCHEMAS) this.componentSchemas.set(componentPath, component);
+        if (type === ComponentTypeEnum.RESPONSES) this.componentResponses.set(componentPath, component);
     };
 
     private getComponentForIndex = (pathToNode: string) => {
-        if (this.componentParameters.has(pathToNode)) {
-            const obj = this.componentParameters.get(pathToNode);
+        let map: Map<string, SchemaComponentType> | undefined;
+        let type: ComponentTypeEnum | undefined;
 
-            return {
-                component: obj,
-                path: `#/components/parameters/${Object.keys(obj)[0]}`,
-            };
+        if (this.componentParameters.has(pathToNode)) {
+            map = this.componentParameters;
+            type = ComponentTypeEnum.PARAMETERS;
         }
 
         if (this.componentSchemas.has(pathToNode)) {
-            const obj = this.componentSchemas.get(pathToNode);
-
-            return {
-                component: obj,
-                path: `#/components/schemas/${Object.keys(obj)[0]}`,
-            };
+            map = this.componentSchemas;
+            type = ComponentTypeEnum.SCHEMAS;
         }
 
         if (this.componentResponses.has(pathToNode)) {
-            const obj = this.componentResponses.get(pathToNode);
+            map = this.componentResponses;
+            type = ComponentTypeEnum.RESPONSES;
+        }
 
+        if (map && type) {
+            const obj = map.get(pathToNode)!;
             return {
                 component: obj,
-                path: `#/components/responses/${Object.keys(obj)[0]}`,
+                path: `${NODE_SEPARATOR}components/${type}/${Object.keys(obj)[0]}`,
             };
         }
-    };
-
-    private resolveAllIndexPath = (obj: any | any[], originalObj: any): any => {
-        const clonedObj = JSON.parse(JSON.stringify(obj)) as any;
-        // Если obj не является объектом или равен null/undefined, завершаем рекурсию
-        if (!clonedObj || typeof clonedObj !== 'object') {
-            return clonedObj;
-        }
-
-        // Если obj — массив, обрабатываем каждый элемент рекурсивно
-        if (Array.isArray(obj)) {
-            return (clonedObj as any[]).map(item => this.resolveAllIndexPath(item, originalObj)) as never as any;
-        }
-
-        // Если obj содержит ссылку ($ref), разрешаем её
-        const ref = obj.$ref;
-
-        if (ref) {
-            const [, node] = ref.split('#/');
-            const resolvedObj = originalObj[node];
-
-            if (resolvedObj) {
-                // Удаляем $ref и объединяем текущий объект с разрешённым объектом
-                delete clonedObj.$ref;
-                return { ...clonedObj, ...resolvedObj };
-            }
-        }
-
-        // Рекурсивно обрабатываем все свойства объекта
-        for (const [key, value] of Object.entries(clonedObj)) {
-            clonedObj[key] = this.resolveAllIndexPath(value, originalObj);
-        }
-
-        return clonedObj;
     };
 
     private getValidSchemaObject = (value: SchemaObjectValueType): ValidSchemaObjectType | undefined => {
@@ -164,15 +119,26 @@ export class RefResolver {
         return value;
     };
 
-    private getFile = (filePath: string) => {
-        try {
-            const content = fs.readFileSync(filePath, 'utf8');
-            return yaml.parse(content) as SchemaObject;
-        } catch (error) {
-            console.error(`Error reading file: ${filePath} - ${error}`);
-            return null;
-        }
-    };
+    private setSchemaObject({
+        referenceObj,
+        componentObj,
+        obj,
+        name,
+        filePath,
+        filePathWithNode,
+    }: {
+        referenceObj: ReferenceObject;
+        componentObj: { type: ComponentTypeEnum; path: string };
+        name: string;
+        filePath: string;
+        filePathWithNode: string;
+        obj: SchemaObjectValueType;
+    }) {
+        referenceObj.$ref = componentObj.path;
+        const objFormMap = { [name]: obj };
+        this.setComponentToMap(objFormMap as never as ParameterObject, componentObj.type, filePathWithNode);
+        this.resolveSchemaAnyObject(obj, filePath);
+    }
 
     private resolveReferenceObject = (obj: SchemaObjectValueType, relativePath: string) => {
         const ref = (obj as ReferenceObject).$ref;
@@ -182,10 +148,10 @@ export class RefResolver {
 
             const filePathWithNode = path.join(resolvePathSegments([relativePath, ref]));
 
-            const [filePath, node] = filePathWithNode.split('#/');
+            const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
 
             if (filePathWithNode.includes(this.pathToIndex)) {
-                referenceObj.$ref = `#/${node}`;
+                referenceObj.$ref = `${NODE_SEPARATOR}${node}`;
                 return;
             }
 
@@ -196,7 +162,7 @@ export class RefResolver {
                 return;
             }
 
-            const response = this.getFile(filePath);
+            const response = getFile(filePath);
             if (!response) {
                 return;
             }
@@ -210,28 +176,34 @@ export class RefResolver {
                 ) as SchemaObjectValueType;
                 const nodeName = newNodeName || ((isCompondNode ? node.split('/').at(-1) : node) as string);
 
-                const componentObj = this.getComponentObj(nodeObj, nodeName);
+                const componentObj = this.getComponentObj(nodeObj as ParameterObject, nodeName);
 
                 if (componentObj) {
-                    referenceObj.$ref = componentObj.path;
-                    const objFormMap = { [nodeName]: nodeObj };
-                    this.setComponentToMap(objFormMap, componentObj.type, filePathWithNode);
-
-                    this.resolveSchemaAnyObject(nodeObj, filePath);
+                    this.setSchemaObject({
+                        referenceObj,
+                        componentObj,
+                        name: nodeName,
+                        filePath,
+                        filePathWithNode,
+                        obj: nodeObj,
+                    });
                 }
             } else {
-                const file = filePath.split('/').at(-1);
-                if (!file) return;
-                const fileName = file.replace('.yaml', '');
-                const serializedFileName = newNodeName || serializeToCamelCase(fileName);
+                const serializedFileName = newNodeName || serializeNodeName(filePath);
+
+                if (!serializedFileName) return;
 
                 const componentObj = this.getComponentObj(response, serializedFileName);
 
                 if (componentObj) {
-                    referenceObj.$ref = componentObj.path;
-                    const objFormMap = { [serializedFileName]: response };
-                    this.setComponentToMap(objFormMap, componentObj.type, filePathWithNode);
-                    this.resolveSchemaAnyObject(response, filePath);
+                    this.setSchemaObject({
+                        referenceObj,
+                        componentObj,
+                        name: serializedFileName,
+                        filePath,
+                        filePathWithNode,
+                        obj: response,
+                    });
                 }
             }
 
@@ -280,9 +252,9 @@ export class RefResolver {
 
             const filePathWithNode = path.join(resolvePathSegments([this.cachedPath, ref]));
 
-            const [filePath, node] = filePathWithNode.split('#/');
+            const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
 
-            const response = this.getFile(filePath);
+            const response = getFile(filePath);
             if (!response) continue;
 
             this.paths.set(endpoint, filePath);

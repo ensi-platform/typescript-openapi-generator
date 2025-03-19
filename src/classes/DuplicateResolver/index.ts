@@ -3,19 +3,10 @@ import path from 'node:path';
 import { ReferenceObject, SchemaObject } from 'openapi-typescript';
 import yaml from 'yaml';
 
-import { cleanPathFromTheFile, resolvePathSegments, serializeToCamelCase } from '../../common/helpers';
-
-type SchemaObjectValueType =
-    | ReferenceObject
-    | ReferenceObject[]
-    | SchemaObject
-    | SchemaObject[]
-    | string
-    | string[]
-    | boolean
-    | number
-    | number[];
-type ValidSchemaObjectType = string[] | ReferenceObject | ReferenceObject[] | SchemaObject | SchemaObject[] | number[];
+import { NODE_SEPARATOR } from '../../common/constants';
+import { getFile } from '../../common/file';
+import { cleanPathFromTheFile, resolvePathSegments, serializeNodeName } from '../../common/helpers';
+import { SchemaObjectValueType, ValidSchemaObjectType } from '../../common/types';
 
 export class DuplicateResolver {
     private pathToIndex: string;
@@ -34,16 +25,6 @@ export class DuplicateResolver {
         return value;
     };
 
-    private getFile = (filePath: string) => {
-        try {
-            const content = fs.readFileSync(filePath, 'utf8');
-            return yaml.parse(content) as SchemaObject;
-        } catch (error) {
-            console.error(`Error reading file: ${filePath} - ${error}`);
-            return null;
-        }
-    };
-
     private hasDuplicate = (node: string, filePathWithNode: string) => {
         if (this.nodes.has(node)) {
             this.nodes.get(node)?.push(filePathWithNode);
@@ -60,16 +41,15 @@ export class DuplicateResolver {
             return;
         }
 
-        const [filePath, node] = filePathWithNode.split('#/');
-        const file = this.getFile(filePath);
+        const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
+        const file = getFile(filePath);
         if (!file) return;
 
-        let nodeName = (node?.includes('/') ? (node.split('/') || []).at(-1) : node) as string;
+        const nodeName =
+            (node?.includes('/') ? (node.split('/') || []).at(-1) : node) ||
+            (serializeNodeName(filePath) as string | undefined);
         if (!nodeName) {
-            const f = filePath.split('/').at(-1);
-            if (!f) return;
-            const fileName = f.replace('.yaml', '');
-            nodeName = serializeToCamelCase(fileName);
+            return;
         }
 
         const isDuplicate = this.hasDuplicate(nodeName, filePathWithNode);
