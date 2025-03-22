@@ -1,10 +1,12 @@
-/* eslint-disable no-await-in-loop */
 import { parse } from '@stoplight/yaml';
 import cloneDeep from 'lodash.clonedeep';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ArraySubtype, ObjectSubtype, SchemaObject } from 'openapi-typescript';
 import yaml from 'yaml';
+
+import { consoleWarn } from '../../common/console';
+import { NODE_SEPARATOR } from '../../common/constants';
 
 type LocalSchemaObjectType = SchemaObject & {
     type: 'string' | 'number' | 'integer' | 'array' | 'boolean' | 'null' | 'object';
@@ -22,14 +24,14 @@ const OPENAPI_DEFAULT_VALUES = {
                 },
             ],
         },
-    } as LocalSchemaObjectType,
+    },
     object: {
         type: 'object',
         additionalProperties: {
             type: 'string',
         },
-    } as LocalSchemaObjectType,
-} as any;
+    },
+} as const;
 
 const parseItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType => {
     if (schema.type === 'array' && !(schema as ArraySubtype).items) {
@@ -37,10 +39,6 @@ const parseItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType => {
     }
 
     if (schema.type === 'object' && !(schema as ObjectSubtype).properties) {
-        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.object) } as LocalSchemaObjectType;
-    }
-
-    if (schema.required && Array.isArray(schema.required) && !(schema as ObjectSubtype).properties) {
         return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.object) } as LocalSchemaObjectType;
     }
 
@@ -85,13 +83,26 @@ const parseSchema = (inputSchema: LocalSchemaObjectType) => {
 
 export class Loader {
     private cacheDir: string;
-    private queue: string[] = []; // Queue of URLs to process
+    private indexUrl: string;
     private visitedUrls: Set<string> = new Set();
+    private downloadedUrls: Set<string> = new Set();
+    private allUrls: Set<string> = new Set();
 
     constructor(url: string, cacheDir: string) {
-        this.queue.push(url);
+        this.indexUrl = url;
         this.cacheDir = cacheDir;
     }
+
+    private loadYaml = async (url: string) => {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch ${url}: ${response.status}`);
+        }
+
+        const responseContent = await response.text();
+
+        return responseContent;
+    };
 
     private updateFilePath = (filePath: string, baseUrl: string) => {
         if (filePath.startsWith('/')) {
@@ -104,15 +115,37 @@ export class Loader {
         }
     };
 
-    private loadYaml = async (url: string) => {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch ${url}: ${response.status}`);
+    private getFilePath = (url: string) => {
+        try {
+            const relativePath = new URL(url).pathname;
+            const filePath = path.join(this.cacheDir, relativePath);
+
+            // Ensure the directory exists
+            const dirName = path.dirname(filePath);
+
+            if (!fs.existsSync(dirName)) {
+                fs.mkdirSync(dirName, { recursive: true });
+            }
+
+            return filePath;
+        } catch {}
+    };
+
+    private savingFile = (content: string, url: string) => {
+        try {
+            const filePath = this.getFilePath(url);
+            if (!filePath) throw new Error(`File ${url} was't saving`);
+
+            const parsedFile: LocalSchemaObjectType = parse(content);
+            const parsedSchema = parseSchema(parsedFile);
+            const yamlSchema = yaml.stringify(parsedSchema);
+
+            fs.writeFileSync(filePath, yamlSchema);
+
+            return parsedSchema;
+        } catch (error) {
+            consoleWarn((error as any).message);
         }
-
-        const responseContent = await response.text();
-
-        return responseContent;
     };
 
     private preprocessSchema = (schema: LocalSchemaObjectType, baseUrl: string) => {
@@ -145,12 +178,21 @@ export class Loader {
         return clonedSchema;
     };
 
+    private addAllUrls = (refs: string[]) => {
+        for (const r of refs) this.allUrls.add(r);
+    };
+
     // Traverse the schema to find $ref references
-    private addingRefToQueue = (obj: LocalSchemaObjectType, baseUrl: string) => {
+    private getRefsFromFile = (obj: LocalSchemaObjectType, baseUrl: string) => {
+        const refs: string[] = [];
+
         if (typeof obj === 'object' && obj !== null) {
             if (Array.isArray(obj)) {
-                for (const item of obj) this.addingRefToQueue(item, baseUrl);
-                return;
+                for (const item of obj) {
+                    refs.push(...this.getRefsFromFile(item, baseUrl));
+                }
+
+                return refs;
             }
 
             for (const key of Object.keys(obj)) {
@@ -164,67 +206,66 @@ export class Loader {
 
                     if (!fs.existsSync(refFilePath)) {
                         // Add the file to the queue for downloading
-                        this.queue.push(value);
+                        refs.push(value.split(NODE_SEPARATOR)[0]);
                     }
 
                     continue;
                 }
 
-                if (typeof value === 'object') this.addingRefToQueue(value, baseUrl);
+                if (typeof value === 'object') {
+                    refs.push(...this.getRefsFromFile(value, baseUrl));
+                }
             }
+        }
+
+        return refs;
+    };
+
+    private loadSchema = async (
+        url: string,
+        getFilesData: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void
+    ) => {
+        const fileUrl = url.split(NODE_SEPARATOR)[0];
+        // Skip already processed URLs
+        if (this.visitedUrls.has(fileUrl)) {
+            return;
+        }
+
+        this.visitedUrls.add(fileUrl);
+
+        try {
+            const responseContent = await this.loadYaml(fileUrl);
+
+            const parsedSchema = this.savingFile(responseContent, fileUrl);
+
+            this.downloadedUrls.add(url);
+
+            if (!parsedSchema) return;
+
+            const parsedUrl = new URL(fileUrl);
+
+            const pathParts = parsedUrl.pathname.split('/').slice(0, -1);
+            const internalBaseUrl = `${parsedUrl.origin}${pathParts.join('/')}/`;
+
+            const preprocessedSchema = this.preprocessSchema(parsedSchema, internalBaseUrl);
+            const refs = this.getRefsFromFile(preprocessedSchema, this.cacheDir);
+
+            if (refs.length > 0) {
+                this.addAllUrls(refs);
+                getFilesData({ downloadedUrls: this.downloadedUrls, allUrls: this.allUrls });
+
+                await Promise.all(refs.map(ref => this.loadSchema(ref, getFilesData)));
+            }
+        } catch (error) {
+            consoleWarn(`⚠️ Error processing URL ${fileUrl}: ${(error as any).message}`);
         }
     };
 
-    public download = async () => {
-        while (this.queue.length > 0) {
-            const currentUrl = this.queue.shift();
-            if (!currentUrl) continue;
-
-            // Skip already processed URLs
-            if (this.visitedUrls.has(currentUrl)) {
-                continue;
-            }
-
-            this.visitedUrls.add(currentUrl);
-
-            try {
-                // Download the file
-                console.info(`Downloading ${currentUrl}...`);
-
-                const responseContent = await this.loadYaml(currentUrl);
-
-                // Determine the relative path for caching
-                const relativePath = new URL(currentUrl).pathname;
-                const filePath = path.join(this.cacheDir, relativePath);
-
-                // Ensure the directory exists
-                const dirName = path.dirname(filePath);
-
-                if (!fs.existsSync(dirName)) {
-                    fs.mkdirSync(dirName, { recursive: true });
-                    console.info(`Created directory: ${dirName}`);
-                }
-
-                const parsedFile: LocalSchemaObjectType = parse(responseContent);
-                const parsedSchema = parseSchema(parsedFile);
-                const yamlSchema = yaml.stringify(parsedSchema);
-
-                // Write the file to the cache
-                fs.writeFileSync(filePath, yamlSchema);
-                console.info(`Downloaded ${currentUrl} to ${filePath}`);
-
-                // Parse the file content
-                const parsedUrl = new URL(currentUrl);
-
-                const pathParts = parsedUrl.pathname.split('/').slice(0, -1);
-                const internalBaseUrl = `${parsedUrl.origin}${pathParts.join('/')}/`;
-
-                // Preprocess the schema to resolve $ref references
-                const preprocessedSchema = this.preprocessSchema(parsedSchema, internalBaseUrl);
-                this.addingRefToQueue(preprocessedSchema, this.cacheDir);
-            } catch (error) {
-                console.error(`Error processing URL ${currentUrl}: ${(error as any).message}`);
-            }
-        }
+    public download = async ({
+        getFilesData,
+    }: {
+        getFilesData: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void;
+    }) => {
+        await this.loadSchema(this.indexUrl, getFilesData);
     };
 }
