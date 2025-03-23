@@ -18,11 +18,7 @@ const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
 const FILES = [
     {
         input: 'https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml',
-        output: './app/gen/folderOne',
-    },
-    {
-        input: 'https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml',
-        output: './app/gen/folderTwo',
+        output: './app/gen/',
     },
 ];
 
@@ -31,7 +27,7 @@ const serialize = async (file: { input: string; output: string }) => {
         const progress = new Progress({
             startInfo: `Downloading files from ${file.input} has started`,
             processInfo: 'Downloading files',
-            finishInfo: `🎉 File from ${file.input} download completed successfully`,
+            finishInfo: `🎉 Files from ${file.input} download completed successfully`,
         });
 
         if (fs.existsSync(CACHE_DIR)) {
@@ -54,9 +50,9 @@ const serialize = async (file: { input: string; output: string }) => {
         const pathToIndex = path.join(CACHE_DIR, pathname);
 
         const terminalLoader = new TerminalLoader({
-            startInfo: 'File resolved has started',
+            startInfo: 'Files resolved has started',
             processInfo: 'Resolving files',
-            finishInfo: '🎉 File resolve completed successfully',
+            finishInfo: '🎉 Files resolve completed successfully',
         });
         const duplicateResolver = new DuplicateResolver(pathToIndex);
 
@@ -71,28 +67,34 @@ const serialize = async (file: { input: string; output: string }) => {
         const yamlString = yaml.stringify(resolvedSchema);
         fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
 
-        await generate({
-            output: {
-                headers: true,
-                docs: true,
-                clean: true,
-                override: {
-                    fetch: {
-                        includeHttpResponseReturnType: false,
-                    },
-                    header: () => ['Не трогать руками, файлы автогенерируемые'],
-                },
-                mode: 'tags-split',
-                target: file.output,
-                schemas: path.join(file.output, './models'),
-                client: 'fetch',
-                prettier: true,
-            },
-            input: {
-                // validation: true,
-                target: './cache/resolved-schema.yaml',
-            },
+        terminalLoader.reinit({
+            startInfo: 'Files generation has started',
+            processInfo: 'Generationing files',
+            finishInfo: '🎉 Files generation completed successfully',
         });
+
+        await terminalLoader.processing(() =>
+            generate({
+                output: {
+                    headers: true,
+                    docs: true,
+                    clean: true,
+                    override: {
+                        fetch: {
+                            includeHttpResponseReturnType: false,
+                        },
+                        header: () => ['The file is automatically generated, do not touch it manually'],
+                    },
+                    mode: 'tags-split',
+                    target: file.output,
+                    schemas: path.join(file.output, './models'),
+                    client: 'fetch',
+                },
+                input: {
+                    target: './cache/resolved-schema.yaml',
+                },
+            })
+        );
         if (fs.existsSync(CACHE_DIR)) {
             await fsExtra.remove(CACHE_DIR);
         }

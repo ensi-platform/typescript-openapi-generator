@@ -19,6 +19,20 @@ export class TerminalLoader {
         this.finishInfo = finishInfo;
     }
 
+    public reinit({
+        startInfo,
+        finishInfo,
+        processInfo,
+    }: {
+        startInfo: string;
+        finishInfo: string;
+        processInfo: string;
+    }) {
+        this.startInfo = startInfo;
+        this.processInfo = processInfo;
+        this.finishInfo = finishInfo;
+    }
+
     private start = () => {
         console.info(this.startInfo);
         console.info(this.processInfo + '...');
