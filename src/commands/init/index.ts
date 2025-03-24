@@ -14,6 +14,6 @@ export default class Init extends Command {
     async run(): Promise<void> {
         await Config.create();
 
-        console.log('✔️ Создан файл конфигурации ./openapi-generator.json');
+        console.log('\u001B[32m%s\u001B[0m', '✔️ Configuration file created typescript-openapi-generator.ts');
     }
 }

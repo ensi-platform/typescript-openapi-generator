@@ -11,18 +11,15 @@ import { Progress } from '../../classes/Progress';
 import { RefResolver } from '../../classes/RefResolver';
 import { TerminalLoader } from '../../classes/TerminalLoader';
 import { displayLogs } from '../../common/console';
+import { Config, ITypescriptOpenapiGeneratorConfig } from '../../config/Config';
 
 const CACHE_DIR = './cache';
 const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
 
-const FILES = [
-    {
-        input: 'https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml',
-        output: './app/gen/',
-    },
-];
-
-const serialize = async (file: { input: string; output: string }) => {
+const serialize = async (
+    file: { input: string; output: string },
+    orval: ITypescriptOpenapiGeneratorConfig['orval']
+) => {
     try {
         const progress = new Progress({
             startInfo: `Downloading files from ${file.input} has started`,
@@ -75,20 +72,11 @@ const serialize = async (file: { input: string; output: string }) => {
 
         await terminalLoader.processing(() =>
             generate({
+                ...orval,
                 output: {
-                    headers: true,
-                    docs: true,
-                    clean: true,
-                    override: {
-                        fetch: {
-                            includeHttpResponseReturnType: false,
-                        },
-                        header: () => ['The file is automatically generated, do not touch it manually'],
-                    },
-                    mode: 'tags-split',
+                    ...orval.output,
                     target: file.output,
                     schemas: path.join(file.output, './models'),
-                    client: 'fetch',
                 },
                 input: {
                     target: './cache/resolved-schema.yaml',
@@ -105,9 +93,15 @@ const serialize = async (file: { input: string; output: string }) => {
 
 export default class Generate extends Command {
     async run(): Promise<void> {
-        for (const file of FILES) {
+        const config = new Config();
+        const configData = await config.load();
+        if (!configData?.cache) {
+            return;
+        }
+
+        for (const file of configData.cache) {
             // eslint-disable-next-line no-await-in-loop
-            await serialize(file);
+            await serialize(file, configData.orval);
         }
     }
 }

@@ -10,4 +10,4 @@ out-tsc
 /tmp
 oclif.manifest.json
 output
-openapi-generator.json
+typescript-openapi-generator.ts

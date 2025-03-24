@@ -1,60 +1,54 @@
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { Options } from 'orval';
 
-export interface ConfigSchema {
-    openapi_path: string;
-    output_path: string;
-    is_unix: boolean;
+interface IConfigOrval extends Omit<Options, 'input'> {
+    output?: {
+        target: never;
+        schemas: never;
+    };
+}
+export interface ITypescriptOpenapiGeneratorConfig {
+    cache: {
+        input: string;
+        output: string;
+    }[];
+    orval: IConfigOrval;
 }
 
-// eslint-disable-next-line unicorn/no-static-only-class
 export class Config {
-    static DEFAULT: ConfigSchema = {
-        is_unix: ['darwin', 'linux'].includes(process.platform),
-        openapi_path: '',
-        output_path: '',
-    };
+    static DEFAULT = `export default {
+    cache: [
+        {
+            input: '',
+            output: '',
+        },
+    ],
+    orval: {},
+};`;
 
     static async create() {
-        const path = './openapi-generator.json';
+        const path = './typescript-openapi-generator.ts';
 
         if (existsSync(path)) {
-            throw new Error('Файл уже существует.');
+            throw new Error('The file already exists');
         }
 
-        await writeFile(path, JSON.stringify(Config.DEFAULT, null, 2));
+        await writeFile(path, Config.DEFAULT);
     }
 
-    static async save(config: ConfigSchema) {
-        const path = './openapi-generator.json';
-
-        await writeFile(path, JSON.stringify(config, null, 2));
-    }
-
-    static async load() {
-        const path = './openapi-generator.json';
-
-        if (!existsSync(path)) {
-            return Config.DEFAULT;
-        }
-
-        const content = await readFile(path, 'utf8');
+    public async load() {
+        const path = resolve(process.cwd(), './typescript-openapi-generator.ts');
 
         try {
-            const data = JSON.parse(content) as ConfigSchema;
-
-            if (typeof data.is_unix !== 'boolean') {
-                data.is_unix = Config.DEFAULT.is_unix;
-            }
-
-            if (typeof data.output_path !== 'string') {
-                data.output_path = Config.DEFAULT.output_path;
-            }
-
-            return data;
-        } catch (error) {
-            console.error(error);
-            return Config.DEFAULT;
+            const configModule = await import(path);
+            const exportedContent = configModule.default as ITypescriptOpenapiGeneratorConfig;
+            // eslint-disable-next-line unicorn/error-message
+            if (!exportedContent) throw new Error('');
+            return exportedContent;
+        } catch {
+            console.error('Cannot find module typescript-openapi-generator.ts');
         }
     }
 }
