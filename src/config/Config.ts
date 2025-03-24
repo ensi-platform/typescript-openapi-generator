@@ -42,10 +42,9 @@ export class Config {
         const path = resolve(process.cwd(), './typescript-openapi-generator.ts');
 
         try {
-            const configModule = await import(path);
-            const exportedContent = configModule.default as ITypescriptOpenapiGeneratorConfig;
+            const exportedContent: ITypescriptOpenapiGeneratorConfig = require(path);
             // eslint-disable-next-line unicorn/error-message
-            if (!exportedContent) throw new Error('');
+            if (!exportedContent) throw new Error();
             return exportedContent;
         } catch {
             console.error('Cannot find module typescript-openapi-generator.ts');
