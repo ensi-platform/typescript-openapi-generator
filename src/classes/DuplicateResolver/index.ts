@@ -5,18 +5,16 @@ import yaml from 'yaml';
 
 import { NODE_SEPARATOR } from '../../common/constants';
 import { getFile } from '../../common/file';
-import { cleanPathFromTheFile, resolvePathSegments, serializeNodeName } from '../../common/helpers';
+import { resolvePathSegments, serializeNodeName } from '../../common/helpers';
 import { SchemaObjectValueType, ValidSchemaObjectType } from '../../common/types';
 
 export class DuplicateResolver {
     private pathToIndex: string;
-    private cachedPath: string;
     private nodes = new Map<string, string[]>();
     private nodesObj = new Map<string, { name: string; newName: string }>();
 
     constructor(pathToIndex: string) {
         this.pathToIndex = pathToIndex;
-        this.cachedPath = cleanPathFromTheFile(pathToIndex);
     }
 
     private getValidSchemaObject = (value: SchemaObjectValueType): ValidSchemaObjectType | undefined => {
@@ -42,6 +40,7 @@ export class DuplicateResolver {
         }
 
         const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
+
         const file = getFile(filePath);
         if (!file) return;
 
@@ -105,8 +104,7 @@ export class DuplicateResolver {
     public resolve = () => {
         const indexFileContent = fs.readFileSync(this.pathToIndex, 'utf8');
         const jsonIndexFile: ReferenceObject | SchemaObject = yaml.parse(indexFileContent);
-        this.findRefs(jsonIndexFile, this.cachedPath);
-
+        this.findRefs(jsonIndexFile, this.pathToIndex);
         const resultNodesMap = new Map<string, { name: string; newName: string }>();
 
         for (const [key, v] of this.nodesObj.entries()) {

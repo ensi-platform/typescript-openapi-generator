@@ -2,13 +2,13 @@ import { parse } from '@stoplight/yaml';
 import cloneDeep from 'lodash.clonedeep';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ArraySubtype, ObjectSubtype, SchemaObject } from 'openapi-typescript';
+import { ArraySubtype, ObjectSubtype, ParameterObject, ReferenceObject, SchemaObject } from 'openapi-typescript';
 import yaml from 'yaml';
 
-import { consoleWarn } from '../../common/console';
+import { consoleError, consoleWarn } from '../../common/console';
 import { NODE_SEPARATOR } from '../../common/constants';
 
-type LocalSchemaObjectType = SchemaObject & {
+type LocalSchemaObjectType = (SchemaObject | ParameterObject) & {
     type: 'string' | 'number' | 'integer' | 'array' | 'boolean' | 'null' | 'object';
 };
 const OPENAPI_DEFAULT_VALUES = {
@@ -31,6 +31,11 @@ const OPENAPI_DEFAULT_VALUES = {
             type: 'string',
         },
     },
+    parameter: {
+        schema: {
+            type: 'string',
+        },
+    },
 } as const;
 
 const parseItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType => {
@@ -40,6 +45,14 @@ const parseItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType => {
 
     if (schema.type === 'object' && !(schema as ObjectSubtype).properties) {
         return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.object) } as LocalSchemaObjectType;
+    }
+
+    if (
+        (schema as ParameterObject).in &&
+        !(schema as never as ReferenceObject).$ref &&
+        !(schema as ParameterObject).schema
+    ) {
+        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.parameter) } as any;
     }
 
     return schema;
@@ -257,7 +270,7 @@ export class Loader {
                 await Promise.all(refs.map(ref => this.loadSchema(ref, getFilesData)));
             }
         } catch (error) {
-            consoleWarn(`⚠️ Error processing URL ${fileUrl}: ${(error as any).message}`);
+            consoleError(`⚠️ Error processing URL ${fileUrl}: ${(error as any).message}`);
         }
     };
 

@@ -31,7 +31,7 @@ const serialize = async (
             await fsExtra.remove(CACHE_DIR);
         }
 
-        fs.mkdirSync(CACHE_DIR, { recursive: true });
+        await fs.mkdirSync(CACHE_DIR, { recursive: true });
 
         const loader = new Loader(file.input, CACHE_DIR);
 
@@ -62,7 +62,7 @@ const serialize = async (
         });
 
         const yamlString = yaml.stringify(resolvedSchema);
-        fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
+        await fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
 
         terminalLoader.reinit({
             startInfo: 'Files generation has started',

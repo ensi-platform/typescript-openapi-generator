@@ -12,7 +12,7 @@ import yaml from 'yaml';
 
 import { NODE_SEPARATOR } from '../../common/constants';
 import { getFile } from '../../common/file';
-import { cleanPathFromTheFile, getNestedValue, resolvePathSegments, serializeNodeName } from '../../common/helpers';
+import { getNestedValue, resolvePathSegments, serializeNodeName } from '../../common/helpers';
 import { SchemaObjectValueType, ValidSchemaObjectType } from '../../common/types';
 
 enum ComponentTypeEnum {
@@ -25,7 +25,6 @@ type SchemaComponentType = ParameterObject | ResponseObject | SchemaObject;
 
 export class RefResolver {
     private pathToIndex: string;
-    private cachedPath: string;
 
     private paths = new Map<string, string>();
 
@@ -46,7 +45,6 @@ export class RefResolver {
         >
     ) {
         this.pathToIndex = pathToIndex;
-        this.cachedPath = cleanPathFromTheFile(pathToIndex);
         this.duplicateMap = duplicateMap;
     }
 
@@ -250,7 +248,7 @@ export class RefResolver {
 
             const ref = value.$ref;
 
-            const filePathWithNode = path.join(resolvePathSegments([this.cachedPath, ref]));
+            const filePathWithNode = path.join(resolvePathSegments([this.pathToIndex, ref]));
 
             const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
 
@@ -296,7 +294,7 @@ export class RefResolver {
             this.resolveObjectsInSchemaPaths(paths);
         }
 
-        this.resolveSchemaAnyObject(otherJsonFile, this.cachedPath);
+        this.resolveSchemaAnyObject(otherJsonFile, this.pathToIndex);
 
         const totalJson = {
             ...jsonIndexFile,
