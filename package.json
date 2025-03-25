@@ -1,6 +1,6 @@
 {
     "name": "@ensi-platform/typescript-openapi-generator",
-    "version": "2.0.0-beta.1",
+    "version": "2.0.0-beta.2",
     "description": "Generate TS types and react-query hooks from OpenAPIV3 specification\nFor more information use: https://docs.ensi.tech/",
     "author": "Ensi",
     "bin": {
@@ -13,7 +13,8 @@
         "lint": "eslint . --ext .ts --fix",
         "format": "prettier ./src --write --ignore-path .prettierignore",
         "postpack": "rimraf oclif.manifest.json",
-        "prepack": "yarn build && oclif manifest && oclif readme"
+        "prepack": "yarn build && oclif manifest && oclif readme",
+        "publish": "npm publish --access public --tag beta"
     },
     "oclif": {
         "bin": "ts-openapi-gen",
