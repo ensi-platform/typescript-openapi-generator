@@ -1,7 +1,7 @@
 {
     "name": "@ensi-platform/typescript-openapi-generator",
     "license": "MIT",
-    "version": "2.1.0-beta.5",
+    "version": "2.0.0",
     "description": "A swagger client generator for typescript",
     "type": "module",
     "private": false,
@@ -12,7 +12,7 @@
         "prepublishOnly": "npm run build",
         "lint": "eslint . --ext .ts --fix",
         "format": "prettier ./src --write --ignore-path .prettierignore",
-        "publish": "pnpm run build && cd dist && npm publish --tag beta && cd .."
+        "publish": "pnpm run build && cd dist && npm publish && cd .."
     },
     "repository": {
         "type": "git",
