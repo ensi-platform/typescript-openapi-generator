@@ -26,16 +26,23 @@ const serialize = async (
 
         await fs.mkdirSync(CACHE_DIR, { recursive: true });
 
+        const terminalLoader = new TerminalLoader({
+            startInfo: 'Files loading has started',
+            processInfo: 'Loading files',
+            finishInfo: '🎉 Files loading completed successfully',
+            error: 'Generation error, process stopped',
+        });
+
         const loader = new Loader(file.input, CACHE_DIR, loaderOptions);
 
-        await loader.download({});
+        await terminalLoader.processing(async () => loader.download({}));
 
         displayLogs();
 
         const pathname = new URL(file.input).pathname;
         const pathToIndex = path.join(CACHE_DIR, pathname);
 
-        const terminalLoader = new TerminalLoader({
+        terminalLoader.reinit({
             startInfo: 'Files resolved has started',
             processInfo: 'Resolving files',
             finishInfo: '🎉 Files resolve completed successfully',

@@ -1,7 +1,8 @@
 {
     "name": "@ensi-platform/typescript-openapi-generator",
-    "version": "2.0.0-beta.3",
-    "description": "Generate TS types and react-query hooks from OpenAPIV3 specification\nFor more information use: https://docs.ensi.tech/",
+    "license": "MIT",
+    "version": "2.1.0-beta.5",
+    "description": "A swagger client generator for typescript",
     "type": "module",
     "private": false,
     "scripts": {
@@ -11,7 +12,7 @@
         "prepublishOnly": "npm run build",
         "lint": "eslint . --ext .ts --fix",
         "format": "prettier ./src --write --ignore-path .prettierignore",
-        "publish": "npm publish --access public --tag beta"
+        "publish": "pnpm run build && cd dist && npm publish --tag beta && cd .."
     },
     "repository": {
         "type": "git",
@@ -30,17 +31,15 @@
     ],
     "homepage": "https://github.com/ensi-platform/typescript-openapi-generator",
     "files": [
-        "/dist/*",
-        "/npm-shrinkwrap.json"
+        "/dist/*"
     ],
-    "license": "MIT",
     "dependencies": {
         "@stoplight/yaml": "^4.3.0",
         "lodash.clonedeep": "^4.5.0",
         "openapi-typescript": "^6.7.6",
         "orval": "^7.7.0",
-        "prettier": "^2.8.8",
         "rimraf": "^6.0.1",
+        "ts-import": "2.0.40",
         "yaml": "^2.5.1"
     },
     "devDependencies": {
@@ -55,15 +54,12 @@
         "eslint-config-airbnb": "^19.0.4",
         "eslint-config-prettier": "^8.10.0",
         "eslint-plugin-unicorn": "^47.0.0",
+        "prettier": "^3.5.3",
         "rollup-plugin-peer-deps-external": "^2.2.4",
-        "ts-import": "2.0.40",
         "tslib": "^2.7.0",
         "typescript": "^5.6.2",
         "vite": "^6.2.6",
         "vite-plugin-dts": "^4.5.3",
         "vite-plugin-static-copy": "^2.3.1"
-    },
-    "peerDependencies": {
-        "orval": "^7.7.0"
     }
 }

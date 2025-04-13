@@ -19,7 +19,7 @@ export const createDistPackageJson = () => {
         bugs: packageJson.bugs,
         homepage: packageJson.homepage,
         license: packageJson.license,
-        peerDependencies: packageJson.peerDependencies,
+        peerDependencies: packageJson.dependencies,
         types: './index.d.ts',
         module: './index.js',
         main: './index.js',

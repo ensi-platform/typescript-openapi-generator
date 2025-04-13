@@ -1,4 +1,4 @@
 /dist
 /bin
-.eslintrc.js
-.prettierrc.js
+.eslintrc.cjs
+.prettierrc.cjs
