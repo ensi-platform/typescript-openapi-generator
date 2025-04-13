@@ -1,62 +1,65 @@
 # typescript-openapi-generator
 
-`typescript-openapi-generator` это пакет, который генерирует файлы с typescript определениями и файлы с хуками [react-query](https://tanstack.com/query) из файлов спецификаций [OpenAPI](https://spec.openapis.org/oas/v3.1.0) для работы с API в рамках платформы [ENSI](https://ensi.tech).
+`typescript-openapi-generator` is a wrapper package around [orval](https://orval.dev/).
 
-## Для кого этот пакет нужен?
-Для frontend разработчиков, работающих с [ENSI](https://ensi.tech).
+## Who is this package for?
 
-## Для чего этот пакет нужен?
+This package is intended for frontend developers working with [ENSI](https://ensi.tech).
 
-- Сокращает время разработки: с помощью `typescript-openapi-generator` вам не нужно вручную писать хуки или обновлять типы для каждого API эндпоинта, определенной в спецификации OpenAPI. Он автоматически генерирует исходный код для вас, сокращая затраты на разработку.
-- Обеспечивает согласованность API: `typescript-openapi-generator` гарантирует, что сгенерированные хуки и типы соответствуют спецификации OpenAPI, поскольку он напрямую полагается на спецификацию для генерации кода.
-- Упрощает интеграцию API: обеспечивая плавную интеграцию вашего API с react-query, пакет упрощает процесс фетчинга, мутирования и кэширования ответов API, снижая сложность выборки данных и управления состоянием.
+## What is this package for?
 
-## Как использовать?
+-   **Reducing development time**: With `typescript-openapi-generator`, you don't need to manually write hooks or update types for each API endpoint defined in the OpenAPI specification. It automatically generates the source code for you, significantly reducing development costs.
+-   **Simplifying API integration**: The package ensures smooth integration of your API with [react-query](https://tanstack.com/query), simplifying the process of fetching, mutating, and caching API responses, thereby reducing the complexity of data fetching and state management.
 
-1. Установите пакет с помощью npm
-```
-npm i -g @ensi-platform/typescript-openapi-generator
-```
-или yarn
-```
-yarn global add @ensi-platform/typescript-openapi-generator
-```
+## Why is a wrapper needed?
 
-2. Перейдите в существующий, или создайте проект [admin-gui-frontend](https://gitlab.com/greensight/ensi/admin-gui/admin-gui-frontend/)
+Orval has limitations when working with complex schemas. To address this issue, the package performs preliminary processing: the overall schema is resolved, and then passed to orval for serialization.
 
-3. Запустите команду:
-```
-yarn ts-openapi-gen init
+## How to use?
+
+### Install the package
+
+```bash
+npm i @ensi-platform/typescript-openapi-generator
 ```
 
-В результате будет создан файл `openapi-generator.json`
+or
 
-Параметры, доступные для редактирования в файле `openapi-generator.json`:
-|Поле  |Назначение  | Пример|
-|--|--|--|
-|openapi_path  |Полный URL до index.yaml с openapi-документацией  |https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml|
-|output_path|Путь до папки, где будут сгенерированы файлы|./output/src/api
-|targets|Набор включенных плагинов. В данный момент доступно только `["react-query"]`|`["react-query"]`
-|override_policies|Политика перезаписи. Словарь, где ключ - плагин, а значение одна из политик. В данный момент существуют политики: `"override"` - полная перезапись файла и `"skip"`- игнорирование существующих файлов|`{"react-query": "skip","types": "override"}`
-
-Для react-query по ключу `react-query` можно так же изменить некоторые настройки:
-|Поле в объекте `react-query` |Назначение  | Пример|
-|--|--|--|
-|imports|Массив дополнительных импортов в каждом файле с хуками|`[{ "from": "@api/client", "name": "useAuthApiClient"}]`
-|hooks|Массив дополнительных строк кода в теле каждого хука|`["const apiClient = useAuthApiClient();"]`
-|api_client_name|Название переменной экземпляра класса APIClient|`apiClient`
-|generate_invalidations|Включить эвристическое определение ключей поисковых запросов, [подлежащих инвалидации](https://tanstack.com/query/latest/docs/react/guides/invalidations-from-mutations)|`true`
-
-4. Сохраните файл конфигурации и напишите команду:
-```
-yarn ts-openapi-gen generate
+```bash
+yarn add @ensi-platform/typescript-openapi-generator
 ```
 
->Данная команда рекурсивно просканирует все референсы > ($ref) во всех определениях OpenAPI схемы. На основе схем входных и выходных данных в каждом эндпоинте создадутся определения интерфейсов, энамов и иных типов. Корректность выходных типов напрямую зависит от корректности openapi схем, поддерживаемых на стороне бэкенда. Если в `targets` включен `react-query`, то запускается генератор хуков, работающий по схожему с генератором типов принципу. После генераций, происходит эвристическая группировка файлов по папкам на основе общих префиксов и запись содержимого на диск.
+or
 
-Дождитесь окончания программы, и изучите содержимое папки, указанной в `output_path`.
+```bash
+pnpm i @ensi-platform/typescript-openapi-generator
+```
 
-> Рекомендуется использовать типы как есть, и всегда выставлять в
-> `override_policies` для `types` значение  `override`. Однако хуки
-> могут являться частью бизнес-логики, или требовать вспомогательных
-> действий. Поэтому считайте, что фича с генерацией хуков предназначена для упрощения создания нового раздела, но не для полной автоматизации.
+### Initialize the configuration
+
+Run the command:
+
+```
+typescript-openapi-generator-init
+```
+
+As a result, a file named `typescript-openapi-generator.ts` will be created.
+
+Parameters available for editing in the `typescript-openapi-generator.ts` file:
+| Field | Purpose | Example |
+|-----------------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------|
+| `cache > input` | Full URL to the `index.yaml` file containing the OpenAPI documentation | `https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml` |
+| `cache > output` | Path to the folder where the generated files will be saved | `./output/src/api` |
+| `loaderOptions` | Additional loader settings | - |
+| `loaderOptions > parseItem` | A method through which all schemas are recursively parsed during loading. If there are issues with the input schema, you can use `parseItem` to handle special cases or set default values. | - |
+| `orval` |Orval settings (see [documentation](https://orval.dev/overview)) | - |
+
+### Generate
+
+Save the configuration file and run the command:
+
+```
+typescript-openapi-generator-generate
+```
+
+> This command recursively scans all references ($ref) in all OpenAPI schema definitions, downloads all files, resolves them into a single file, and passes it to orval for further processing.

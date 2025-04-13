@@ -1,39 +1,22 @@
-import { JSONSchema } from '@stoplight/json-schema-ref-parser';
-import { OpenAPIV3 } from 'openapi-types';
+import { PathItemObject, ReferenceObject, SchemaObject } from 'openapi-typescript';
 
-export interface ImportData {
-    from: string;
-    name: string;
-    isDefault?: boolean; // default false
-}
+export type ICommonRefObjectItem = PathItemObject;
 
-export type AugmentedOperation = {
-    original: OpenAPIV3.OperationObject;
-    path: string;
-    pathSubstituted: string;
-    pathVariables: string[];
-    queryParams: OpenAPIV3.ParameterObject[];
-    method: string;
-    group: string;
-    isMutation: boolean;
+export type SchemaObjectValueType =
+    | ReferenceObject
+    | ReferenceObject[]
+    | SchemaObject
+    | SchemaObject[]
+    | string
+    | string[]
+    | boolean
+    | number
+    | number[];
 
-    hookName: string;
-    queryKey: string | undefined;
-
-    isFileUpload: boolean;
-    hasPathParams: boolean;
-
-    invalidationTargets: AugmentedOperation[];
-};
-
-export type OverridePolicy = 'override' | 'skip';
-
-export interface RefSchemaData {
-    group: string;
-    name: string;
-    originalPath: string;
-    savedPath: string;
-    importPath: string;
-    schema: JSONSchema;
-}
-
+export type ValidSchemaObjectType =
+    | string[]
+    | ReferenceObject
+    | ReferenceObject[]
+    | SchemaObject
+    | SchemaObject[]
+    | number[];
