@@ -1,29 +1,17 @@
 {
     "name": "@ensi-platform/typescript-openapi-generator",
-    "version": "2.0.0-beta.2",
+    "version": "2.0.0-beta.3",
     "description": "Generate TS types and react-query hooks from OpenAPIV3 specification\nFor more information use: https://docs.ensi.tech/",
-    "author": "Ensi",
-    "bin": {
-        "ts-openapi-gen": "./bin/run"
-    },
+    "type": "module",
     "private": false,
     "scripts": {
-        "build": "rimraf dist && tsc && node ./scripts/addHeaders.js",
+        "build": "rimraf dist && vite build",
+        "init": "pnpm run build && node ./dist/bin/init.js",
+        "generate": "pnpm run build && node ./dist/bin/generate.js",
         "prepublishOnly": "npm run build",
         "lint": "eslint . --ext .ts --fix",
         "format": "prettier ./src --write --ignore-path .prettierignore",
-        "postpack": "rimraf oclif.manifest.json",
-        "prepack": "yarn build && oclif manifest && oclif readme",
         "publish": "npm publish --access public --tag beta"
-    },
-    "oclif": {
-        "bin": "ts-openapi-gen",
-        "dirname": "ts-openapi-gen",
-        "commands": "./dist/commands",
-        "plugins": [
-            "@oclif/plugin-help",
-            "@oclif/plugin-plugins"
-        ]
     },
     "repository": {
         "type": "git",
@@ -34,28 +22,20 @@
     },
     "bugs": "https://github.com/ensi-platform/typescript-openapi-generator/issues",
     "keywords": [
-        "oclif",
-        "orval"
+        "ensi",
+        "front-end",
+        "orval",
+        "typescript",
+        "openapi"
     ],
     "homepage": "https://github.com/ensi-platform/typescript-openapi-generator",
     "files": [
-        "/bin",
-        "/dist",
-        "/npm-shrinkwrap.json",
-        "/oclif.manifest.json"
+        "/dist/*",
+        "/npm-shrinkwrap.json"
     ],
-    "types": "dist/index.d.ts",
-    "license": "ISC",
+    "license": "MIT",
     "dependencies": {
-        "@inquirer/input": "^1.2.16",
-        "@inquirer/prompts": "^1.2.3",
-        "@oclif/core": "^2.16.0",
-        "@oclif/plugin-help": "^5.2.20",
-        "@oclif/plugin-plugins": "^2.4.7",
-        "@orval/core": "^7.7.0",
         "@stoplight/yaml": "^4.3.0",
-        "cli-progress": "^3.12.0",
-        "fs-extra": "^11.3.0",
         "lodash.clonedeep": "^4.5.0",
         "openapi-typescript": "^6.7.6",
         "orval": "^7.7.0",
@@ -64,25 +44,26 @@
         "yaml": "^2.5.1"
     },
     "devDependencies": {
+        "@rollup/plugin-commonjs": "^28.0.3",
         "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-        "@types/cli-progress": "^3.11.6",
-        "@types/fs-extra": "^11.0.4",
         "@types/lodash.clonedeep": "^4.5.9",
         "@types/node": "^18.19.50",
-        "@types/progress": "^2.0.7",
         "@types/rimraf": "^4.0.5",
-        "@types/yargs": "^17.0.33",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "eslint": "^8.57.1",
         "eslint-config-airbnb": "^19.0.4",
-        "eslint-config-oclif": "^4.0.0",
-        "eslint-config-oclif-typescript": "^1.0.3",
         "eslint-config-prettier": "^8.10.0",
         "eslint-plugin-unicorn": "^47.0.0",
-        "oclif": "^3.17.2",
-        "ts-node": "^10.9.2",
+        "rollup-plugin-peer-deps-external": "^2.2.4",
+        "ts-import": "2.0.40",
         "tslib": "^2.7.0",
-        "typescript": "^5.6.2"
+        "typescript": "^5.6.2",
+        "vite": "^6.2.6",
+        "vite-plugin-dts": "^4.5.3",
+        "vite-plugin-static-copy": "^2.3.1"
+    },
+    "peerDependencies": {
+        "orval": "^7.7.0"
     }
 }

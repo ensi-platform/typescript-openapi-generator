@@ -1,45 +1,34 @@
-import { Command } from '@oclif/core';
-import fsExtra from 'fs-extra';
 import fs from 'node:fs';
 import path from 'node:path';
-import { generate } from 'orval';
+import { generate as oravalGenerate } from 'orval';
+import { rimraf } from 'rimraf';
 import yaml from 'yaml';
 
+import { Config, ITypescriptOpenapiGeneratorConfig } from '../../classes/Config';
 import { DuplicateResolver } from '../../classes/DuplicateResolver';
-import { Loader } from '../../classes/Loader';
-import { Progress } from '../../classes/Progress';
+import { ILoaderOptionsParam, Loader } from '../../classes/Loader';
 import { RefResolver } from '../../classes/RefResolver';
 import { TerminalLoader } from '../../classes/TerminalLoader';
 import { displayLogs } from '../../common/console';
-import { Config, ITypescriptOpenapiGeneratorConfig } from '../../config/Config';
 
 const CACHE_DIR = './cache';
 const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
 
 const serialize = async (
     file: { input: string; output: string },
-    orval: ITypescriptOpenapiGeneratorConfig['orval']
+    orval: ITypescriptOpenapiGeneratorConfig['orval'],
+    { loaderOptions = {} }: { loaderOptions?: ILoaderOptionsParam }
 ) => {
     try {
-        const progress = new Progress({
-            startInfo: `Downloading files from ${file.input} has started`,
-            processInfo: 'Downloading files',
-            finishInfo: `🎉 Files from ${file.input} download completed successfully`,
-        });
-
         if (fs.existsSync(CACHE_DIR)) {
-            await fsExtra.remove(CACHE_DIR);
+            await rimraf(CACHE_DIR);
         }
 
         await fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-        const loader = new Loader(file.input, CACHE_DIR);
+        const loader = new Loader(file.input, CACHE_DIR, loaderOptions);
 
-        const updateProgress = ({ downloadedUrls, allUrls }: { downloadedUrls: Set<string>; allUrls: Set<string> }) => {
-            progress.update(downloadedUrls.size, allUrls.size);
-        };
-
-        await progress.processing(loader.download({ getFilesData: updateProgress }));
+        await loader.download({});
 
         displayLogs();
 
@@ -71,7 +60,7 @@ const serialize = async (
         });
 
         await terminalLoader.processing(() =>
-            generate({
+            oravalGenerate({
                 ...orval,
                 output: {
                     ...orval.output,
@@ -84,24 +73,23 @@ const serialize = async (
             })
         );
         if (fs.existsSync(CACHE_DIR)) {
-            await fsExtra.remove(CACHE_DIR);
+            await rimraf(CACHE_DIR);
         }
     } catch (error) {
         console.error(error);
     }
 };
 
-export default class Generate extends Command {
-    async run(): Promise<void> {
-        const config = new Config();
-        const configData = await config.load();
-        if (!configData?.cache) {
-            return;
-        }
+export const generate = async () => {
+    const config = new Config();
+    const configData = await config.load();
 
-        for (const file of configData.cache) {
-            // eslint-disable-next-line no-await-in-loop
-            await serialize(file, configData.orval);
-        }
+    if (!configData?.cache) {
+        return;
     }
-}
+
+    for (const file of configData.cache) {
+        // eslint-disable-next-line no-await-in-loop
+        await serialize(file, configData.orval, { loaderOptions: configData.loaderOptions });
+    }
+};

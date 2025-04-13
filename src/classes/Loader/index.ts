@@ -2,15 +2,33 @@ import { parse } from '@stoplight/yaml';
 import cloneDeep from 'lodash.clonedeep';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ArraySubtype, ObjectSubtype, ParameterObject, ReferenceObject, SchemaObject } from 'openapi-typescript';
+import {
+    ArraySubtype,
+    ObjectSubtype,
+    ParameterObject,
+    ReferenceObject,
+    SchemaObject,
+    Subschema,
+} from 'openapi-typescript';
 import yaml from 'yaml';
 
 import { consoleError, consoleWarn } from '../../common/console';
 import { NODE_SEPARATOR } from '../../common/constants';
 
-type LocalSchemaObjectType = (SchemaObject | ParameterObject) & {
-    type: 'string' | 'number' | 'integer' | 'array' | 'boolean' | 'null' | 'object';
+export type LocalSchemaObjectType = SchemaObject & {
+    type: 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'object';
 };
+
+export type LocalSchemaArrayType = ArraySubtype & {
+    type: 'array';
+};
+
+export type LocalSchemaOtherType = (ParameterObject & ReferenceObject & Subschema) & {
+    type: undefined;
+};
+
+export type LocalSchemaType = LocalSchemaObjectType | LocalSchemaArrayType | LocalSchemaOtherType;
+
 const OPENAPI_DEFAULT_VALUES = {
     array: {
         type: 'array',
@@ -24,7 +42,7 @@ const OPENAPI_DEFAULT_VALUES = {
                 },
             ],
         },
-    },
+    } as ArraySubtype,
     object: {
         type: 'object',
         additionalProperties: {
@@ -35,63 +53,27 @@ const OPENAPI_DEFAULT_VALUES = {
         schema: {
             type: 'string',
         },
-    },
+    } as LocalSchemaOtherType,
 } as const;
 
-const parseItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType => {
-    if (schema.type === 'array' && !(schema as ArraySubtype).items) {
-        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.array) } as LocalSchemaObjectType;
+export interface ILoaderOptionsParam {
+    parseItem?: (schema: LocalSchemaType) => LocalSchemaType;
+}
+
+const parseItemDefault = (schema: LocalSchemaType): LocalSchemaType => {
+    if (schema.type === 'array' && !schema.items) {
+        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.array) };
     }
 
     if (schema.type === 'object' && !(schema as ObjectSubtype).properties) {
-        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.object) } as LocalSchemaObjectType;
+        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.object) };
     }
 
-    if (
-        (schema as ParameterObject).in &&
-        !(schema as never as ReferenceObject).$ref &&
-        !(schema as ParameterObject).schema
-    ) {
-        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.parameter) } as any;
+    if (!schema.type && schema.in && !schema.$ref && !schema.schema) {
+        return { ...schema, ...cloneDeep(OPENAPI_DEFAULT_VALUES.parameter) };
     }
 
     return schema;
-};
-
-const transformItem = (schema: LocalSchemaObjectType): LocalSchemaObjectType | LocalSchemaObjectType[] => {
-    if (!schema) return schema;
-    if (typeof schema === 'object') {
-        if (Array.isArray(schema)) {
-            return schema.map(s => transformItem(s)) as LocalSchemaObjectType[];
-        }
-
-        const parsedSchema = parseItem(schema);
-
-        return Object.keys(parsedSchema).reduce<LocalSchemaObjectType>((acc, key) => {
-            const v = (parsedSchema as any)[key] as LocalSchemaObjectType;
-
-            if (typeof v !== 'object' || !v) return { ...acc, [key]: v };
-            if (Array.isArray(v))
-                return { ...acc, [key]: (v as LocalSchemaObjectType[]).map(vItem => transformItem(vItem)) };
-            if (v.type) return { ...acc, [key]: transformItem(parseItem(v)) };
-            return { ...acc, [key]: transformItem(v) };
-        }, {} as LocalSchemaObjectType);
-    }
-
-    return schema;
-};
-
-const parseSchema = (inputSchema: LocalSchemaObjectType) => {
-    return {
-        ...Object.entries(inputSchema).reduce<LocalSchemaObjectType>(
-            (acc, [key, value]: [key: string, value: LocalSchemaObjectType]) => {
-                const parsedObj = transformItem(value);
-                if (parsedObj) (acc as any)[key] = parsedObj;
-                return acc;
-            },
-            {} as LocalSchemaObjectType
-        ),
-    };
 };
 
 export class Loader {
@@ -100,11 +82,49 @@ export class Loader {
     private visitedUrls: Set<string> = new Set();
     private downloadedUrls: Set<string> = new Set();
     private allUrls: Set<string> = new Set();
+    private parseItem: (schema: LocalSchemaType) => LocalSchemaType;
 
-    constructor(url: string, cacheDir: string) {
+    constructor(url: string, cacheDir: string, { parseItem }: ILoaderOptionsParam) {
         this.indexUrl = url;
         this.cacheDir = cacheDir;
+        this.parseItem = parseItem || parseItemDefault;
     }
+
+    private transformItem = (schema: LocalSchemaType): LocalSchemaType | LocalSchemaType[] => {
+        if (!schema) return schema;
+        if (typeof schema === 'object') {
+            if (Array.isArray(schema)) {
+                return (schema as LocalSchemaType[]).map(s => this.transformItem(s)) as LocalSchemaType[];
+            }
+
+            const parsedSchema = this.parseItem(schema);
+
+            return Object.keys(parsedSchema).reduce<LocalSchemaType>((acc, key) => {
+                const v = (parsedSchema as any)[key] as LocalSchemaType;
+
+                if (typeof v !== 'object' || !v) return { ...acc, [key]: v };
+                if (Array.isArray(v))
+                    return { ...acc, [key]: (v as LocalSchemaType[]).map(vItem => this.transformItem(vItem)) };
+                if (v.type) return { ...acc, [key]: this.transformItem(this.parseItem(v)) };
+                return { ...acc, [key]: this.transformItem(v) };
+            }, {} as LocalSchemaType);
+        }
+
+        return schema;
+    };
+
+    private parseSchema = (inputSchema: LocalSchemaType) => {
+        return {
+            ...Object.entries(inputSchema).reduce<LocalSchemaType>(
+                (acc, [key, value]: [key: string, value: LocalSchemaType]) => {
+                    const parsedObj = this.transformItem(value);
+                    if (parsedObj) (acc as any)[key] = parsedObj;
+                    return acc;
+                },
+                {} as LocalSchemaType
+            ),
+        };
+    };
 
     private loadYaml = async (url: string) => {
         const response = await fetch(url);
@@ -149,8 +169,8 @@ export class Loader {
             const filePath = this.getFilePath(url);
             if (!filePath) throw new Error(`File ${url} was't saving`);
 
-            const parsedFile: LocalSchemaObjectType = parse(content);
-            const parsedSchema = parseSchema(parsedFile);
+            const parsedFile: LocalSchemaType = parse(content);
+            const parsedSchema = this.parseSchema(parsedFile);
             const yamlSchema = yaml.stringify(parsedSchema);
 
             fs.writeFileSync(filePath, yamlSchema);
@@ -161,13 +181,13 @@ export class Loader {
         }
     };
 
-    private preprocessSchema = (schema: LocalSchemaObjectType, baseUrl: string) => {
-        const clonedSchema: LocalSchemaObjectType = JSON.parse(JSON.stringify(schema));
+    private preprocessSchema = (schema: LocalSchemaType, baseUrl: string) => {
+        const clonedSchema: LocalSchemaType = JSON.parse(JSON.stringify(schema));
 
-        const preprocessSchemaItem = (innerSchema: LocalSchemaObjectType, innerBaseUrl: string) => {
+        const preprocessSchemaItem = (innerSchema: LocalSchemaType, innerBaseUrl: string) => {
             if (typeof innerSchema === 'object' && innerSchema !== null) {
                 if (Array.isArray(innerSchema)) {
-                    for (const item of innerSchema) preprocessSchemaItem(item, innerBaseUrl);
+                    for (const item of innerSchema as LocalSchemaType[]) preprocessSchemaItem(item, innerBaseUrl);
                     return;
                 }
 
@@ -196,12 +216,12 @@ export class Loader {
     };
 
     // Traverse the schema to find $ref references
-    private getRefsFromFile = (obj: LocalSchemaObjectType, baseUrl: string) => {
+    private getRefsFromFile = (obj: LocalSchemaType, baseUrl: string) => {
         const refs: string[] = [];
 
         if (typeof obj === 'object' && obj !== null) {
             if (Array.isArray(obj)) {
-                for (const item of obj) {
+                for (const item of obj as LocalSchemaType[]) {
                     refs.push(...this.getRefsFromFile(item, baseUrl));
                 }
 
@@ -236,7 +256,7 @@ export class Loader {
 
     private loadSchema = async (
         url: string,
-        getFilesData: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void
+        getFilesData?: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void
     ) => {
         const fileUrl = url.split(NODE_SEPARATOR)[0];
         // Skip already processed URLs
@@ -265,7 +285,7 @@ export class Loader {
 
             if (refs.length > 0) {
                 this.addAllUrls(refs);
-                getFilesData({ downloadedUrls: this.downloadedUrls, allUrls: this.allUrls });
+                getFilesData?.({ downloadedUrls: this.downloadedUrls, allUrls: this.allUrls });
 
                 await Promise.all(refs.map(ref => this.loadSchema(ref, getFilesData)));
             }
@@ -277,7 +297,7 @@ export class Loader {
     public download = async ({
         getFilesData,
     }: {
-        getFilesData: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void;
+        getFilesData?: (data: { downloadedUrls: Set<string>; allUrls: Set<string> }) => void;
     }) => {
         await this.loadSchema(this.indexUrl, getFilesData);
     };

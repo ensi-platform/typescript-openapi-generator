@@ -1,6 +1,5 @@
 .vscode
 node_modules
-build
 out-tsc
 *-debug.log
 *-error.log
@@ -8,6 +7,6 @@ out-tsc
 /dist
 /lib
 /tmp
-oclif.manifest.json
 output
 typescript-openapi-generator.ts
+.DS_Store

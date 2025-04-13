@@ -1,24 +1,27 @@
 import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { Options } from 'orval';
+import { Options, OutputOptions } from 'orval';
+import { tsImport } from 'ts-import';
 
-interface IConfigOrval extends Omit<Options, 'input'> {
-    output?: {
-        target: never;
-        schemas: never;
-    };
+import { ILoaderOptionsParam } from '../Loader';
+
+interface IConfigOrval extends Omit<Options, 'input' | 'output'> {
+    output?: Omit<OutputOptions, 'target' | 'schemas'>;
 }
 export interface ITypescriptOpenapiGeneratorConfig {
     cache: {
         input: string;
         output: string;
     }[];
+    loaderOptions?: ILoaderOptionsParam;
     orval: IConfigOrval;
 }
 
 export class Config {
-    static DEFAULT = `export default {
+    static DEFAULT = `import { type ITypescriptOpenapiGeneratorConfig } from '@ensi-platform/typescript-openapi-generator';
+
+const config: ITypescriptOpenapiGeneratorConfig = {
     cache: [
         {
             input: '',
@@ -26,7 +29,9 @@ export class Config {
         },
     ],
     orval: {},
-};`;
+};
+
+export default config;`;
 
     static async create() {
         const path = './typescript-openapi-generator.ts';
@@ -40,14 +45,13 @@ export class Config {
 
     public async load() {
         const path = resolve(process.cwd(), './typescript-openapi-generator.ts');
-
         try {
-            const exportedContent: ITypescriptOpenapiGeneratorConfig = require(path);
-            // eslint-disable-next-line unicorn/error-message
+            const exportedContent: { default: ITypescriptOpenapiGeneratorConfig } = await tsImport.compile(path);
+
             if (!exportedContent) throw new Error();
-            return exportedContent;
-        } catch {
-            console.error('Cannot find module typescript-openapi-generator.ts');
+            return exportedContent.default;
+        } catch (error: any) {
+            console.error('Cannot find module typescript-openapi-generator.ts', error);
         }
     }
 }
