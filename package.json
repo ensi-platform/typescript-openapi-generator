@@ -1,7 +1,7 @@
 {
     "name": "@ensi-platform/typescript-openapi-generator",
     "license": "MIT",
-    "version": "2.0.0",
+    "version": "2.1.1",
     "description": "A swagger client generator for typescript",
     "type": "module",
     "private": false,
@@ -35,9 +35,10 @@
     ],
     "dependencies": {
         "@stoplight/yaml": "^4.3.0",
+        "del": "6.1.1",
         "lodash.clonedeep": "^4.5.0",
         "openapi-typescript": "^6.7.6",
-        "orval": "^7.7.0",
+        "orval": "^7.9.0",
         "rimraf": "^6.0.1",
         "ts-import": "2.0.40",
         "yaml": "^2.5.1"
