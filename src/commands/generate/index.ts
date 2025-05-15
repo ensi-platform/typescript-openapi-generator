@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generate as oravalGenerate } from 'orval';
-import del from 'del';
+import { rimraf } from 'rimraf';
 import yaml from 'yaml';
 
 import { Config, ITypescriptOpenapiGeneratorConfig } from '../../classes/Config';
@@ -10,7 +10,6 @@ import { ILoaderOptionsParam, Loader } from '../../classes/Loader';
 import { RefResolver } from '../../classes/RefResolver';
 import { TerminalLoader } from '../../classes/TerminalLoader';
 import { displayLogs } from '../../common/console';
-
 
 const CACHE_DIR = './cache';
 const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
@@ -22,7 +21,7 @@ const serialize = async (
 ) => {
     try {
         if (fs.existsSync(CACHE_DIR)) {
-            await del(CACHE_DIR);
+            await rimraf(CACHE_DIR);
         }
 
         await fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -81,7 +80,7 @@ const serialize = async (
             })
         );
         if (fs.existsSync(CACHE_DIR)) {
-            await del(CACHE_DIR);
+            await rimraf(CACHE_DIR);
         }
     } catch (error) {
         console.error(error);
