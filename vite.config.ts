@@ -1,6 +1,6 @@
 import commonjsPlugin from '@rollup/plugin-commonjs';
 import { resolve } from 'node:path';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import { externalizeDeps } from 'vite-plugin-externalize-deps';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -15,20 +15,7 @@ export default defineConfig({
             formats: ['es'],
         },
         rollupOptions: {
-            plugins: [
-                peerDepsExternal({
-                    includeDependencies: true,
-                }),
-                commonjsPlugin(),
-            ],
-            external: [
-                'ts-import',
-                'typedoc',
-                'node:path',
-                'node:fs',
-                'node:fs/promises',
-                'node:readline',
-            ],
+            plugins: [commonjsPlugin()],
             output: {
                 entryFileNames: '[name].js',
                 chunkFileNames: 'chunks/[name]-[hash].js',
@@ -37,6 +24,9 @@ export default defineConfig({
         },
     },
     plugins: [
+        externalizeDeps({
+            deps: true,
+        }),
         dts(),
         viteStaticCopy({
             targets: [

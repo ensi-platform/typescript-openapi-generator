@@ -10,9 +10,35 @@ import { ILoaderOptionsParam, Loader } from '../../classes/Loader';
 import { RefResolver } from '../../classes/RefResolver';
 import { TerminalLoader } from '../../classes/TerminalLoader';
 import { displayLogs } from '../../common/console';
+import { normalizeInputToUrl } from '../../common/normalizeInputUrl';
 
 const CACHE_DIR = './cache';
 const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
+
+/**
+ * Orval валидирует spec до применения filters.schemas. Подменяем исключённые схемы на валидную
+ * заглушку (не delete — иначе падают $ref на #/components/schemas/...).
+ */
+function stubExcludedComponentSchemas(
+    spec: Record<string, unknown>,
+    filters: { mode?: 'include' | 'exclude'; schemas?: (string | RegExp)[] } | undefined
+): void {
+    if (!filters || filters.mode !== 'exclude' || !filters.schemas?.length) {
+        return;
+    }
+    const components = spec.components as Record<string, unknown> | undefined;
+    const schemas = components?.schemas as Record<string, unknown> | undefined;
+    if (!schemas) {
+        return;
+    }
+    const { schemas: patterns } = filters;
+    for (const key of Object.keys(schemas)) {
+        const match = patterns.some((p) => (typeof p === 'string' ? p === key : p.test(key)));
+        if (match) {
+            schemas[key] = { type: 'object', additionalProperties: true };
+        }
+    }
+}
 
 const serialize = async (
     file: { input: string; output: string },
@@ -33,14 +59,14 @@ const serialize = async (
             error: 'Generation error, process stopped',
         });
 
-        const loader = new Loader(file.input, CACHE_DIR, loaderOptions);
+        const inputUrl = normalizeInputToUrl(file.input);
+        const loader = new Loader(inputUrl, CACHE_DIR, loaderOptions);
 
         await terminalLoader.processing(async () => loader.download({}));
 
         displayLogs();
 
-        const pathname = new URL(file.input).pathname;
-        const pathToIndex = path.join(CACHE_DIR, pathname);
+        const pathToIndex = path.join(CACHE_DIR, new URL(inputUrl).pathname);
 
         terminalLoader.reinit({
             startInfo: 'Files resolved has started',
@@ -56,6 +82,8 @@ const serialize = async (
             const result = await refResolver.resolve();
             return result;
         });
+
+        stubExcludedComponentSchemas(resolvedSchema as Record<string, unknown>, orval.input?.filters);
 
         const yamlString = yaml.stringify(resolvedSchema);
         await fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
@@ -75,11 +103,13 @@ const serialize = async (
                     schemas: path.join(file.output, './models'),
                 },
                 input: {
-                    validation: true,
-                    target: './cache/resolved-schema.yaml',
+                    ...orval.input,
+                    target: RESOLVED_SCHEMA_PATH,
                 },
             })
         );
+
+        await rimraf(CACHE_DIR);
     } catch (error) {
         console.error(error);
     }
@@ -94,7 +124,6 @@ export const generate = async () => {
     }
 
     for (const file of configData.cache) {
-        // eslint-disable-next-line no-await-in-loop
         await serialize(file, configData.orval, { loaderOptions: configData.loaderOptions });
     }
 };

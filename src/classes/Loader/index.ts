@@ -1,7 +1,9 @@
 import { parse } from '@stoplight/yaml';
 import cloneDeep from 'lodash.clonedeep';
 import fs from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
     ArraySubtype,
     ObjectSubtype,
@@ -127,14 +129,17 @@ export class Loader {
     };
 
     private loadYaml = async (url: string) => {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.protocol === 'file:') {
+            return readFile(fileURLToPath(parsedUrl), 'utf8');
+        }
+
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch ${url}: ${response.status}`);
         }
 
-        const responseContent = await response.text();
-
-        return responseContent;
+        return response.text();
     };
 
     private updateFilePath = (filePath: string, baseUrl: string) => {
@@ -275,10 +280,7 @@ export class Loader {
 
             if (!parsedSchema) return;
 
-            const parsedUrl = new URL(fileUrl);
-
-            const pathParts = parsedUrl.pathname.split('/').slice(0, -1);
-            const internalBaseUrl = `${parsedUrl.origin}${pathParts.join('/')}/`;
+            const internalBaseUrl = new URL('.', fileUrl).href;
 
             const preprocessedSchema = this.preprocessSchema(parsedSchema, internalBaseUrl);
             const refs = this.getRefsFromFile(preprocessedSchema, this.cacheDir);
