@@ -75,13 +75,11 @@ const serialize = async (
                     schemas: path.join(file.output, './models'),
                 },
                 input: {
+                    validation: true,
                     target: './cache/resolved-schema.yaml',
                 },
             })
         );
-        if (fs.existsSync(CACHE_DIR)) {
-            await rimraf(CACHE_DIR);
-        }
     } catch (error) {
         console.error(error);
     }

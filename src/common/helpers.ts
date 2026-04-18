@@ -28,9 +28,9 @@ export const resolvePathSegments = (paths: string[]) => {
                 return acc;
             }
 
-            const prevSegment = acc.at(-1);
+            const prevSegmentForHash = acc.at(-1);
             if (segment === '#') {
-                acc[acc.length - 1] = `${prevSegment}#`;
+                acc[acc.length - 1] = `${prevSegmentForHash}#`;
                 return acc;
             }
 
@@ -49,8 +49,8 @@ export const serializeToCamelCase = (str: string) => {
     return camelCaseName;
 };
 
-export const getNestedValue = <T extends Record<string, any>>(obj: T, objPath: string[]) => {
-    const target = objPath.reduce<T>((acc, key) => acc[key] || {}, obj);
+export const getNestedValue = <T extends Record<string, unknown>>(obj: T, objPath: string[]) => {
+    const target = objPath.reduce<T>((acc, key) => (acc[key] as T) || ({} as T), obj);
 
     return target;
 };

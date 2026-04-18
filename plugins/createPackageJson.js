@@ -1,5 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const createDistPackageJson = () => {
     const packageJsonPath = resolve(__dirname, '../package.json');

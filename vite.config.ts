@@ -23,8 +23,6 @@ export default defineConfig({
             ],
             external: [
                 'ts-import',
-                'path',
-                'fs',
                 'typedoc',
                 'node:path',
                 'node:fs',
