@@ -11,6 +11,9 @@ importers:
       '@stoplight/yaml':
         specifier: ^4.3.0
         version: 4.3.0
+      jiti:
+        specifier: ^2.4.2
+        version: 2.6.1
       lodash.clonedeep:
         specifier: ^4.5.0
         version: 4.5.0
@@ -23,9 +26,6 @@ importers:
       rimraf:
         specifier: ^6.1.3
         version: 6.1.3
-      ts-import:
-        specifier: 2.0.40
-        version: 2.0.40
       yaml:
         specifier: ^2.8.3
         version: 2.8.3
@@ -2046,9 +2046,6 @@ packages:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
 
-  options-defaults@2.0.40:
-    resolution: {integrity: sha512-a0oW0AMaP/Uqk1gU7s3unE83wzs/MACy3wsCnNREn4wqp4KCcxRdulRjf0d2FeIxENbGJ4EBGtHTQ6J30XB6Cw==}
-
   orval@8.8.0:
     resolution: {integrity: sha512-jcHcAmXCvC0g+1acsUOv722ICuXCJ0tmRl3+e0kj1lgFVsuGYame+jRZUrNtpkEZgF1RlDtmL91yFsVHv3X1eA==}
     engines: {node: '>=22.18.0'}
@@ -2469,10 +2466,6 @@ packages:
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
-
-  ts-import@2.0.40:
-    resolution: {integrity: sha512-yTP9fSDaBL1LvcN7/taRHbcQoazk7cLrDOEPyIDUVKLNYTMhaDkvZhfUwp41iXe+GlAFL6l87ZoGABWZRdIfjg==}
-    engines: {node: '>=14.14.0'}
 
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
@@ -4875,8 +4868,6 @@ snapshots:
       type-check: 0.4.0
       word-wrap: 1.2.5
 
-  options-defaults@2.0.40: {}
-
   orval@8.8.0(prettier@3.8.3)(typescript@6.0.3):
     dependencies:
       '@commander-js/extra-typings': 14.0.0(commander@14.0.3)
@@ -5362,10 +5353,6 @@ snapshots:
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
-
-  ts-import@2.0.40:
-    dependencies:
-      options-defaults: 2.0.40
 
   tsconfck@3.1.6(typescript@6.0.3):
     optionalDependencies:

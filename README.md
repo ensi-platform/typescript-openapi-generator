@@ -1,65 +1,99 @@
 # typescript-openapi-generator
 
-`typescript-openapi-generator` is a wrapper package around [orval](https://orval.dev/).
+`typescript-openapi-generator` — обёртка над [orval](https://orval.dev/).
 
-## Who is this package for?
+## Для кого пакет
 
-This package is intended for frontend developers working with [ENSI](https://ensi.tech).
+Для фронтенд-разработчиков, работающих с [ENSI](https://ensi.tech).
 
-## What is this package for?
+## Зачем он нужен
 
--   **Reducing development time**: With `typescript-openapi-generator`, you don't need to manually write hooks or update types for each API endpoint defined in the OpenAPI specification. It automatically generates the source code for you, significantly reducing development costs.
--   **Simplifying API integration**: The package ensures smooth integration of your API with [react-query](https://tanstack.com/query), simplifying the process of fetching, mutating, and caching API responses, thereby reducing the complexity of data fetching and state management.
+- **Меньше ручной работы**: не нужно вручную писать хуки и обновлять типы под каждый endpoint из OpenAPI — код генерируется автоматически.
+- **Проще встраивать API**: интеграция с [react-query](https://tanstack.com/query) — запросы, мутации и кэш без лишней сложности.
 
-## Why is a wrapper needed?
+## Зачем обёртка над Orval
 
-Orval has limitations when working with complex schemas. To address this issue, the package performs preliminary processing: the overall schema is resolved, and then passed to orval for serialization.
+У Orval есть ограничения на сложные схемы. Пакет сначала разрешает общую схему, затем передаёт результат в Orval для сериализации.
 
-## How to use?
+## Как пользоваться
 
-### Install the package
+### Установка
 
-```bash
-npm i @ensi-platform/typescript-openapi-generator
-```
-
-or
+Пакет ставьте в **devDependencies** — он нужен для генерации кода, а не в рантайме приложения.
 
 ```bash
-yarn add @ensi-platform/typescript-openapi-generator
+npm i -D @ensi-platform/typescript-openapi-generator
 ```
 
-or
+или
 
 ```bash
-pnpm i @ensi-platform/typescript-openapi-generator
+yarn add -D @ensi-platform/typescript-openapi-generator
 ```
 
-### Initialize the configuration
+или
 
-Run the command:
+```bash
+pnpm add -D @ensi-platform/typescript-openapi-generator
+```
+
+### Инициализация конфигурации
+
+Выполните:
 
 ```
 typescript-openapi-generator-init
 ```
 
-As a result, a file named `typescript-openapi-generator.ts` will be created.
+Будет создан файл `typescript-openapi-generator.ts`.
 
-Parameters available for editing in the `typescript-openapi-generator.ts` file:
-| Field | Purpose | Example |
-|-----------------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------|
-| `cache > input` | Full URL to the `index.yaml` file containing the OpenAPI documentation | `https://admin-gui-backend-master-dev.ensi.tech/api-docs/v1/index.yaml` |
-| `cache > output` | Path to the folder where the generated files will be saved | `./output/src/api` |
-| `loaderOptions` | Additional loader settings | - |
-| `loaderOptions > parseItem` | A method through which all schemas are recursively parsed during loading. If there are issues with the input schema, you can use `parseItem` to handle special cases or set default values. | - |
-| `orval` |Orval settings (see [documentation](https://orval.dev/overview)) | - |
+Параметры, которые правят в `typescript-openapi-generator.ts`:
 
-### Generate
+| Поле | Назначение | Пример |
+|------|------------|--------|
+| `cache > input` | Точка входа OpenAPI: URL `http`/`https`, URL `file://` или путь в ФС (относительные пути считаются от каталога, из которого запускают `typescript-openapi-generator-generate`) | См. [источники входа](#input-sources-cacheinput) |
+| `cache > output` | Каталог, куда сохранять сгенерированные файлы | `./output/src/api` |
+| `loaderOptions` | Дополнительные настройки загрузчика | — |
+| `loaderOptions > parseItem` | Обход схем при загрузке; можно обработать особые случаи или подставить значения по умолчанию | — |
+| `orval` | Настройки Orval ([документация](https://orval.dev/overview)) | — |
 
-Save the configuration file and run the command:
+<a id="input-sources-cacheinput"></a>
+
+### Источники входа (`cache[].input`)
+
+- **Удалённый URL** — как раньше; указывайте корневой файл спеки (например `index.yaml`).
+- **Путь в файловой системе** — относительно текущего каталога запуска или абсолютный; внутри инструмент приводит его к `file:` URL.
+
+    ```ts
+    // Относительно cwd (удобно в репозитории)
+    input: './specs/openapi/index.yaml',
+
+    // Абсолютный путь (macOS / Linux)
+    input: '/Users/you/project/specs/openapi/index.yaml',
+    ```
+
+- **URL `file://`** — если уже есть file URL или нужен путь в виде URL. Строка должна начинаться с `file://`; нормализация как в Node.js для `file:` URL.
+
+    **macOS / Linux** — после `file:` три слэша для абсолютного пути (`file://` + `/` + путь):
+
+    ```ts
+    input: 'file:///Users/you/project/specs/openapi/index.yaml',
+    ```
+
+    **Windows** — в URL без обратных слэшей; прямые слэши и форма без хоста `file:///C:/...`:
+
+    ```ts
+    input: 'file:///C:/Users/you/project/specs/openapi/index.yaml',
+    ```
+
+    Если в пути есть пробелы или другие зарезервированные символы — закодируйте их в строке `file://` (например пробел → `%20`) либо укажите обычный путь в `input` без префикса `file://`.
+
+### Генерация
+
+Сохраните конфиг и выполните:
 
 ```
 typescript-openapi-generator-generate
 ```
 
-> This command recursively scans all references ($ref) in all OpenAPI schema definitions, downloads all files, resolves them into a single file, and passes it to orval for further processing.
+> Команда обходит все `$ref` в схемах OpenAPI, подтягивает файлы, собирает одну согласованную спецификацию и передаёт её в Orval.
