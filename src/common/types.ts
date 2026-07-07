@@ -14,9 +14,4 @@ export type SchemaObjectValueType =
     | number[];
 
 export type ValidSchemaObjectType =
-    | string[]
-    | ReferenceObject
-    | ReferenceObject[]
-    | SchemaObject
-    | SchemaObject[]
-    | number[];
+    string[] | ReferenceObject | ReferenceObject[] | SchemaObject | SchemaObject[] | number[];

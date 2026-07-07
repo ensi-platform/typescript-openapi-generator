@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -28,20 +26,23 @@ const getPackageJson = () => {
 };
 
 const savePackageJson = (path, data) => {
-    writeFileSync(path, JSON.stringify(data, null, 4) + '\n');
+    writeFileSync(path, `${JSON.stringify(data, null, 4)}\n`);
 };
 
 const bumpVersion = (version, type) => {
     const [major, minor, patch] = version.split('.').map(Number);
 
     switch (type) {
-        case 'major':
+        case 'major': {
             return `${major + 1}.0.0`;
-        case 'minor':
+        }
+        case 'minor': {
             return `${major}.${minor + 1}.0`;
+        }
         case 'patch':
-        default:
+        default: {
             return `${major}.${minor}.${patch + 1}`;
+        }
     }
 };
 
@@ -92,7 +93,7 @@ const main = async () => {
     console.log('  3) major — breaking changes (X.0.0)');
 
     const versionTypeInput = await question('\nВведите номер (1-3) или тип (patch/minor/major) [1]: ');
-    const versionTypeMap = { '1': 'patch', '2': 'minor', '3': 'major' };
+    const versionTypeMap = { 1: 'patch', 2: 'minor', 3: 'major' };
     const versionType = versionTypeMap[versionTypeInput] || versionTypeInput || 'patch';
 
     if (!['patch', 'minor', 'major'].includes(versionType)) {
@@ -116,6 +117,9 @@ const main = async () => {
     console.log('\n📝 Обновление package.json...');
     packageJson.version = newVersion;
     savePackageJson(packageJsonPath, packageJson);
+
+    console.log('\n🧪 Запуск тестов...');
+    run('pnpm run test');
 
     // Собираем проект
     console.log('\n🔨 Сборка проекта...');

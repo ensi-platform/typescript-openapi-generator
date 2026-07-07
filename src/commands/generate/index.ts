@@ -1,55 +1,30 @@
 import fs from 'node:fs';
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import { generate as oravalGenerate } from 'orval';
-import { rimraf } from 'rimraf';
 import yaml from 'yaml';
 
 import { Config, ITypescriptOpenapiGeneratorConfig } from '../../classes/Config';
-import { DuplicateResolver } from '../../classes/DuplicateResolver';
-import { ILoaderOptionsParam, Loader } from '../../classes/Loader';
-import { RefResolver } from '../../classes/RefResolver';
+import { ILoaderOptionsParam as ILoaderOptionsParameter } from '../../classes/Loader';
 import { TerminalLoader } from '../../classes/TerminalLoader';
 import { displayLogs } from '../../common/console';
 import { normalizeInputToUrl } from '../../common/normalizeInputUrl';
+import { normalizeObjectAllOfSchemas } from '../../common/normalizeObjectAllOfSchemas';
+import { sanitizeEnumAllOfSchemas } from '../../common/sanitizeEnumAllOfSchemas';
+import { sanitizeRequiredOnlySchemas } from '../../common/sanitizeRequiredOnlySchemas';
+import { stubExcludedComponentSchemas } from '../../common/stubExcludedComponentSchemas';
+import { resolveSpec } from './resolveSpec';
 
 const CACHE_DIR = './cache';
 const RESOLVED_SCHEMA_PATH = './cache/resolved-schema.yaml';
 
-/**
- * Orval валидирует spec до применения filters.schemas. Подменяем исключённые схемы на валидную
- * заглушку (не delete — иначе падают $ref на #/components/schemas/...).
- */
-function stubExcludedComponentSchemas(
-    spec: Record<string, unknown>,
-    filters: { mode?: 'include' | 'exclude'; schemas?: (string | RegExp)[] } | undefined
-): void {
-    if (!filters || filters.mode !== 'exclude' || !filters.schemas?.length) {
-        return;
-    }
-    const components = spec.components as Record<string, unknown> | undefined;
-    const schemas = components?.schemas as Record<string, unknown> | undefined;
-    if (!schemas) {
-        return;
-    }
-    const { schemas: patterns } = filters;
-    for (const key of Object.keys(schemas)) {
-        const match = patterns.some((p) => (typeof p === 'string' ? p === key : p.test(key)));
-        if (match) {
-            schemas[key] = { type: 'object', additionalProperties: true };
-        }
-    }
-}
-
 const serialize = async (
     file: { input: string; output: string },
     orval: ITypescriptOpenapiGeneratorConfig['orval'],
-    { loaderOptions = {} }: { loaderOptions?: ILoaderOptionsParam }
+    { loaderOptions = {} }: { loaderOptions?: ILoaderOptionsParameter }
 ) => {
     try {
-        if (fs.existsSync(CACHE_DIR)) {
-            await rimraf(CACHE_DIR);
-        }
-
+        await rm(CACHE_DIR, { recursive: true, force: true });
         await fs.mkdirSync(CACHE_DIR, { recursive: true });
 
         const terminalLoader = new TerminalLoader({
@@ -60,30 +35,18 @@ const serialize = async (
         });
 
         const inputUrl = normalizeInputToUrl(file.input);
-        const loader = new Loader(inputUrl, CACHE_DIR, loaderOptions);
-
-        await terminalLoader.processing(async () => loader.download({}));
-
-        displayLogs();
-
-        const pathToIndex = path.join(CACHE_DIR, new URL(inputUrl).pathname);
-
-        terminalLoader.reinit({
-            startInfo: 'Files resolved has started',
-            processInfo: 'Resolving files',
-            finishInfo: '🎉 Files resolve completed successfully',
-        });
-        const duplicateResolver = new DuplicateResolver(pathToIndex);
 
         const resolvedSchema = await terminalLoader.processing(async () => {
-            const duplicateMap = duplicateResolver.resolve();
-            const refResolver = new RefResolver(pathToIndex, duplicateMap);
-
-            const result = await refResolver.resolve();
+            const result = await resolveSpec(inputUrl, CACHE_DIR, loaderOptions);
+            displayLogs();
             return result;
         });
 
-        stubExcludedComponentSchemas(resolvedSchema as Record<string, unknown>, orval.input?.filters);
+        const resolvedSpec = resolvedSchema as unknown as Record<string, unknown>;
+        sanitizeRequiredOnlySchemas(resolvedSpec);
+        normalizeObjectAllOfSchemas(resolvedSpec);
+        sanitizeEnumAllOfSchemas(resolvedSpec);
+        stubExcludedComponentSchemas(resolvedSpec, orval.input?.filters);
 
         const yamlString = yaml.stringify(resolvedSchema);
         await fs.writeFileSync(RESOLVED_SCHEMA_PATH, yamlString);
@@ -109,7 +72,7 @@ const serialize = async (
             })
         );
 
-        await rimraf(CACHE_DIR);
+        await rm(CACHE_DIR, { recursive: true, force: true });
     } catch (error) {
         console.error(error);
     }

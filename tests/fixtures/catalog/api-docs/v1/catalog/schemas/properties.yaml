@@ -1,0 +1,203 @@
+PropertyReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 202
+    is_system:
+      type: boolean
+      description: Attribute of system non-changeable attribute
+      example: false
+    is_common:
+      type: boolean
+      description: Attribute common to all categories
+      example: false
+    created_at:
+      description: Date of creation
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Date of update
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+  required:
+    - id
+    - is_system
+    - is_common
+    - created_at
+    - updated_at
+PropertyFillableProperties:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Property name
+      example: Diagonal
+    display_name:
+      type: string
+      description: Public name
+      example: Screen diagonal
+    code:
+      type: string
+      description: Property code
+      example: diagonal
+    type:
+      type: string
+      description: Property type from PropertyTypeEnum
+      example: double
+    hint_value:
+      type: string
+      nullable: true
+      description: Fill-in hint for value
+      example: Select a colour
+    hint_value_name:
+      type: string
+      nullable: true
+      description: Fill-in hint for value name
+      example: Enter a colour name
+    is_multiple:
+      type: boolean
+      description: Supports multiple values
+      example: true
+    is_filterable:
+      type: boolean
+      description: Displayed in filters in the showcase
+      example: false
+    is_public:
+      type: boolean
+      description: Display in showcase
+      example: false
+    is_active:
+      type: boolean
+      description: Attribute activity
+      example: true
+    is_required:
+      type: boolean
+      description: Mandatory filling for a common (is_common=true) attribute
+      example: true
+    has_directory:
+      type: boolean
+      description: The attribute has a value directory
+      example: false
+    is_moderated:
+      type: boolean
+      description: Attribute is moderated
+      example: false
+PropertyFillableRequiredProperties:
+  type: object
+  required:
+    - name
+    - display_name
+    - code
+    - type
+    - hint_value
+    - hint_value_name
+    - is_multiple
+    - is_filterable
+    - is_public
+    - is_active
+    - is_required
+    - has_directory
+    - is_moderated
+  additionalProperties:
+    type: string
+PropertyIncludes:
+  type: object
+  properties:
+    directory:
+      type: array
+      items:
+        $ref: ./directory_values.yaml#/AttributeDirectoryValue
+    categories:
+      type: array
+      items:
+        $ref: ./categories.yaml#/Category
+PropertyRequiredProperties:
+  type: object
+  required:
+    - name
+    - type
+    - display_name
+  additionalProperties:
+    type: string
+Property:
+  allOf:
+    - $ref: "#/PropertyReadonlyProperties"
+    - $ref: "#/PropertyFillableProperties"
+    - $ref: "#/PropertyFillableRequiredProperties"
+    - $ref: "#/PropertyIncludes"
+CreatePropertyRequest:
+  allOf:
+    - $ref: "#/PropertyFillableProperties"
+    - $ref: "#/PropertyRequiredProperties"
+ReplacePropertyRequest:
+  allOf:
+    - $ref: "#/PropertyFillableProperties"
+    - $ref: "#/PropertyRequiredProperties"
+PatchPropertyRequest:
+  allOf:
+    - $ref: "#/PropertyFillableProperties"
+PropertyResponse:
+  x-lg-resource-class-name: ProductPropertiesResource
+  type: object
+  properties:
+    data:
+      $ref: "#/Property"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+SearchPropertiesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Attribute identifier(s)
+      example: 2
+    name_like:
+      type: string
+      description: Name or part of the attribute name
+      example: Diago
+    code:
+      type: string
+      description: Attribute code(s)
+      example: diagonal
+    is_filterable:
+      type: boolean
+      description: The attribute is available for filtering on the showcase
+      example: false
+    is_active:
+      type: boolean
+      description: Attribute is active and available for products
+      example: true
+SearchPropertiesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      $ref: "#/SearchPropertiesFilter"
+SearchPropertiesResponse:
+  x-lg-resource-class-name: ProductPropertiesResource
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Property"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

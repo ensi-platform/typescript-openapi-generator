@@ -10,7 +10,9 @@ import { SchemaObjectValueType, ValidSchemaObjectType } from '../../common/types
 
 export class DuplicateResolver {
     private pathToIndex: string;
+
     private nodes = new Map<string, string[]>();
+
     private nodesObj = new Map<string, { name: string; newName: string }>();
 
     constructor(pathToIndex: string) {
@@ -33,8 +35,8 @@ export class DuplicateResolver {
         return false;
     };
 
-    private fileProcessing = (ref: string, relativePath: string) => {
-        const filePathWithNode = path.join(resolvePathSegments([relativePath, ref]));
+    private fileProcessing = (reference: string, relativePath: string) => {
+        const filePathWithNode = path.join(resolvePathSegments([relativePath, reference]));
         if (this.nodesObj.has(filePathWithNode)) {
             return;
         }
@@ -54,8 +56,8 @@ export class DuplicateResolver {
         const isDuplicate = this.hasDuplicate(nodeName, filePathWithNode);
 
         if (isDuplicate) {
-            for (const [i, absolueUrl] of this.nodes.get(nodeName)!.entries()) {
-                this.nodesObj.set(absolueUrl, { name: nodeName, newName: `${nodeName}${i}` });
+            for (const [index, absolueUrl] of this.nodes.get(nodeName)!.entries()) {
+                this.nodesObj.set(absolueUrl, { name: nodeName, newName: `${nodeName}${index}` });
             }
         } else {
             this.nodesObj.set(filePathWithNode, { name: nodeName, newName: '' });
@@ -64,16 +66,16 @@ export class DuplicateResolver {
         return { file, filePath };
     };
 
-    private findRefs = (obj: ReferenceObject | SchemaObject, relativePath: string) => {
-        if ((obj as ReferenceObject).$ref) {
-            const fileData = this.fileProcessing((obj as ReferenceObject).$ref, relativePath);
+    private findRefs = (object: ReferenceObject | SchemaObject, relativePath: string) => {
+        if ((object as ReferenceObject).$ref) {
+            const fileData = this.fileProcessing((object as ReferenceObject).$ref, relativePath);
             if (fileData) this.findRefs(fileData.file, fileData.filePath);
             return;
         }
 
-        const keys = Object.keys(obj);
+        const keys = Object.keys(object);
         for (const key of keys) {
-            const value = (obj as any)[key] as SchemaObjectValueType;
+            const value = (object as any)[key] as SchemaObjectValueType;
 
             const validValue = this.getValidSchemaObject(value);
             if (!validValue) continue;
@@ -89,10 +91,10 @@ export class DuplicateResolver {
                 continue;
             }
 
-            const ref = (validValue as ReferenceObject).$ref;
+            const reference = (validValue as ReferenceObject).$ref;
 
-            if (ref) {
-                const fileData = this.fileProcessing(ref, relativePath);
+            if (reference) {
+                const fileData = this.fileProcessing(reference, relativePath);
                 if (fileData) this.findRefs(fileData.file, fileData.filePath);
                 continue;
             }

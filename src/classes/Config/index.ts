@@ -1,10 +1,10 @@
+import { createJiti } from 'jiti';
 import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { createJiti } from 'jiti';
 import { InputOptions, Options, OutputOptions } from 'orval';
 
-import { ILoaderOptionsParam } from '../Loader';
+import { ILoaderOptionsParam as ILoaderOptionsParameter } from '../Loader';
 
 const configLoader = createJiti(import.meta.url);
 
@@ -20,7 +20,7 @@ export interface ITypescriptOpenapiGeneratorConfig {
         input: string;
         output: string;
     }[];
-    loaderOptions?: ILoaderOptionsParam;
+    loaderOptions?: ILoaderOptionsParameter;
     orval: IConfigOrval;
 }
 
@@ -53,9 +53,7 @@ export default config;`;
         const configPath = resolve(process.cwd(), 'typescript-openapi-generator.ts');
 
         if (!existsSync(configPath)) {
-            console.error(
-                `Config not found: ${configPath}. Run typescript-openapi-generator-init or create the file.`
-            );
+            console.error(`Config not found: ${configPath}. Run typescript-openapi-generator-init or create the file.`);
             return;
         }
 
@@ -74,7 +72,6 @@ export default config;`;
             if (error instanceof Error && error.stack) {
                 console.error(error.stack);
             }
-            return;
         }
     }
 }

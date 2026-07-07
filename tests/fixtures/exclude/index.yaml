@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Exclude Test API
+  version: 1.0.0
+paths:
+  /items:
+    get:
+      tags:
+        - items
+      operationId: listItems
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+components:
+  schemas:
+    ItemResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/SecretSchema'
+      required:
+        - data
+    SecretSchema:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token

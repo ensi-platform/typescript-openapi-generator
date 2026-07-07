@@ -1,4 +1,7 @@
-module.exports = {
+import sortImports from '@trivago/prettier-plugin-sort-imports';
+
+/** @type {import('prettier').Config} */
+export default {
     arrowParens: 'avoid',
     bracketSpacing: true,
     printWidth: 120,
@@ -25,5 +28,5 @@ module.exports = {
     importOrderSeparation: true,
     importOrderSortSpecifiers: true,
     importOrderParserPlugins: ['typescript', 'decorators-legacy'],
-    plugins: [require('@trivago/prettier-plugin-sort-imports')],
+    plugins: [sortImports],
 };

@@ -29,7 +29,9 @@ export class RefResolver {
     private paths = new Map<string, string>();
 
     private componentSchemas = new Map<string, SchemaComponentType>();
+
     private componentResponses = new Map<string, SchemaComponentType>();
+
     private componentParameters = new Map<string, SchemaComponentType>();
 
     private duplicateMap = new Map<string, { name: string; newName: string }>();
@@ -49,11 +51,9 @@ export class RefResolver {
     }
 
     private getObjectFromMap(map: Map<string, any>) {
-        const arr = [...map.values()];
+        const array = [...map.values()];
 
-        return arr.reduce<any>((acc, item) => {
-            return { ...acc, ...item };
-        }, {});
+        return array.reduce<any>((accumulator, item) => ({ ...accumulator, ...item }), {});
     }
 
     private getComponentObj = (component: SchemaComponentType, name: string) => {
@@ -103,10 +103,10 @@ export class RefResolver {
         }
 
         if (map && type) {
-            const obj = map.get(pathToNode)!;
+            const object = map.get(pathToNode)!;
             return {
-                component: obj,
-                path: `${NODE_SEPARATOR}components/${type}/${Object.keys(obj)[0]}`,
+                component: object,
+                path: `${NODE_SEPARATOR}components/${type}/${Object.keys(object)[0]}`,
             };
         }
     };
@@ -133,30 +133,30 @@ export class RefResolver {
         obj: SchemaObjectValueType;
     }) {
         referenceObj.$ref = componentObj.path;
-        const objFormMap = { [name]: obj };
-        this.setComponentToMap(objFormMap as never as ParameterObject, componentObj.type, filePathWithNode);
+        const objectFormMap = { [name]: obj };
+        this.setComponentToMap(objectFormMap as never as ParameterObject, componentObj.type, filePathWithNode);
         this.resolveSchemaAnyObject(obj, filePath);
     }
 
-    private resolveReferenceObject = (obj: SchemaObjectValueType, relativePath: string) => {
-        const ref = (obj as ReferenceObject).$ref;
+    private resolveReferenceObject = (object: SchemaObjectValueType, relativePath: string) => {
+        const reference = (object as ReferenceObject).$ref;
 
-        if (ref) {
-            const referenceObj = obj as ReferenceObject;
+        if (reference) {
+            const referenceObject = object as ReferenceObject;
 
-            const filePathWithNode = path.join(resolvePathSegments([relativePath, ref]));
+            const filePathWithNode = path.join(resolvePathSegments([relativePath, reference]));
 
             const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
 
             if (filePathWithNode.includes(this.pathToIndex)) {
-                referenceObj.$ref = `${NODE_SEPARATOR}${node}`;
+                referenceObject.$ref = `${NODE_SEPARATOR}${node}`;
                 return;
             }
 
             const savedPath = this.getComponentForIndex(filePathWithNode);
 
             if (savedPath?.component) {
-                referenceObj.$ref = savedPath.path;
+                referenceObject.$ref = savedPath.path;
                 return;
             }
 
@@ -169,21 +169,23 @@ export class RefResolver {
 
             if (node) {
                 const isCompondNode = node.includes('/');
-                const nodeObj = (
-                    isCompondNode ? getNestedValue(response, node.split('/')) : (response as any)[node]
+                const nodeObject = (
+                    isCompondNode
+                        ? getNestedValue(response as unknown as Record<string, unknown>, node.split('/'))
+                        : (response as any)[node]
                 ) as SchemaObjectValueType;
                 const nodeName = newNodeName || ((isCompondNode ? node.split('/').at(-1) : node) as string);
 
-                const componentObj = this.getComponentObj(nodeObj as ParameterObject, nodeName);
+                const componentObject = this.getComponentObj(nodeObject as unknown as ParameterObject, nodeName);
 
-                if (componentObj) {
+                if (componentObject) {
                     this.setSchemaObject({
-                        referenceObj,
-                        componentObj,
+                        referenceObj: referenceObject,
+                        componentObj: componentObject,
                         name: nodeName,
                         filePath,
                         filePathWithNode,
-                        obj: nodeObj,
+                        obj: nodeObject,
                     });
                 }
             } else {
@@ -191,12 +193,12 @@ export class RefResolver {
 
                 if (!serializedFileName) return;
 
-                const componentObj = this.getComponentObj(response, serializedFileName);
+                const componentObject = this.getComponentObj(response, serializedFileName);
 
-                if (componentObj) {
+                if (componentObject) {
                     this.setSchemaObject({
-                        referenceObj,
-                        componentObj,
+                        referenceObj: referenceObject,
+                        componentObj: componentObject,
                         name: serializedFileName,
                         filePath,
                         filePathWithNode,
@@ -208,18 +210,18 @@ export class RefResolver {
             return;
         }
 
-        this.resolveSchemaAnyObject(obj, relativePath);
+        this.resolveSchemaAnyObject(object, relativePath);
     };
 
-    private resolveSchemaAnyObject = (obj: SchemaObjectValueType, relativePath: string) => {
-        if ((obj as ReferenceObject).$ref) {
-            this.resolveReferenceObject(obj, relativePath);
+    private resolveSchemaAnyObject = (object: SchemaObjectValueType, relativePath: string) => {
+        if ((object as ReferenceObject).$ref) {
+            this.resolveReferenceObject(object, relativePath);
             return;
         }
 
-        const keys = Object.keys(obj);
+        const keys = Object.keys(object);
         for (const key of keys) {
-            const value = (obj as any)[key] as SchemaObjectValueType;
+            const value = (object as any)[key] as SchemaObjectValueType;
 
             const validValue = this.getValidSchemaObject(value);
             if (!validValue) continue;
@@ -239,16 +241,16 @@ export class RefResolver {
         }
     };
 
-    private resolveSchemaPaths(obj: PathsObject) {
-        const endpoints = Object.keys(obj);
+    private resolveSchemaPaths(object: PathsObject) {
+        const endpoints = Object.keys(object);
 
         for (const endpoint of endpoints) {
-            const value = obj[endpoint] as ReferenceObject;
+            const value = object[endpoint] as ReferenceObject;
             if (!value.$ref) continue;
 
-            const ref = value.$ref;
+            const reference = value.$ref;
 
-            const filePathWithNode = path.join(resolvePathSegments([this.pathToIndex, ref]));
+            const filePathWithNode = path.join(resolvePathSegments([this.pathToIndex, reference]));
 
             const [filePath, node] = filePathWithNode.split(NODE_SEPARATOR);
 
@@ -259,28 +261,30 @@ export class RefResolver {
 
             if (node) {
                 const isCompondNode = node.includes('/');
-                const nodeObj = (
-                    isCompondNode ? getNestedValue(response, node.split('/')) : (response as any)[node]
+                const nodeObject = (
+                    isCompondNode
+                        ? getNestedValue(response as unknown as Record<string, unknown>, node.split('/'))
+                        : (response as any)[node]
                 ) as SchemaObjectValueType;
 
-                delete (obj[endpoint] as any).$ref;
-                if (typeof nodeObj === 'object') obj[endpoint] = { ...obj[endpoint], ...nodeObj };
+                delete (object[endpoint] as any).$ref;
+                if (typeof nodeObject === 'object') object[endpoint] = { ...object[endpoint], ...nodeObject };
             } else {
-                delete (obj[endpoint] as any).$ref;
-                obj[endpoint] = { ...obj[endpoint], ...response };
+                delete (object[endpoint] as any).$ref;
+                object[endpoint] = { ...object[endpoint], ...response };
             }
         }
     }
 
-    private resolveObjectsInSchemaPaths(obj: PathsObject) {
-        const endpoints = Object.keys(obj);
+    private resolveObjectsInSchemaPaths(object: PathsObject) {
+        const endpoints = Object.keys(object);
 
         for (const endpoint of endpoints) {
             const relativePath = this.paths.get(endpoint);
             if (!relativePath) continue;
-            const value = obj[endpoint];
+            const value = object[endpoint];
 
-            this.resolveSchemaAnyObject(value, relativePath);
+            this.resolveSchemaAnyObject(value as SchemaObjectValueType, relativePath);
         }
     }
 
@@ -294,7 +298,7 @@ export class RefResolver {
             this.resolveObjectsInSchemaPaths(paths);
         }
 
-        this.resolveSchemaAnyObject(otherJsonFile, this.pathToIndex);
+        this.resolveSchemaAnyObject(otherJsonFile as unknown as SchemaObjectValueType, this.pathToIndex);
 
         const totalJson = {
             ...jsonIndexFile,

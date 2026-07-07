@@ -1,0 +1,18 @@
+ActualCategoryPropertiesSearch:
+  post:
+    tags:
+      - catalog_categories
+    operationId: searchActualCategoryProperties
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesRequest
+    responses:
+      '200':
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesResponse

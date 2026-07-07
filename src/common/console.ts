@@ -1,7 +1,7 @@
 let messages: { message: string; consoleFn: (message: string) => void }[] = [];
 
-const setConsoleMessage = (message: string, consoleFn: (message: string) => void) => {
-    messages.push({ message, consoleFn });
+const setConsoleMessage = (message: string, consoleFunction: (message: string) => void) => {
+    messages.push({ message, consoleFn: consoleFunction });
 };
 
 export const displayLogs = () => {

@@ -7,6 +7,7 @@ out-tsc
 /dist
 /lib
 /tmp
+tests/.tmp
 output
 typescript-openapi-generator.ts
 .DS_Store

@@ -6,11 +6,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const createDistPackageJson = () => {
     const packageJsonPath = resolve(__dirname, '../package.json');
-    const distPackageJsonPath = resolve(__dirname, '../dist/package.json');
+    const distributionPackageJsonPath = resolve(__dirname, '../dist/package.json');
 
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-    const distPackageJson = {
+    const distributionPackageJson = {
         name: packageJson.name,
         version: packageJson.version,
         description: packageJson.description,
@@ -33,5 +33,5 @@ export const createDistPackageJson = () => {
     };
 
     // // Записываем новый package.json в dist
-    writeFileSync(distPackageJsonPath, JSON.stringify(distPackageJson, null, 2));
+    writeFileSync(distributionPackageJsonPath, JSON.stringify(distributionPackageJson, null, 2));
 };

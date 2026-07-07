@@ -6,51 +6,51 @@ export const resolvePathSegments = (paths: string[]) => {
     const lastPath = paths.at(-1) || '';
 
     const isLastPathWithFile = /\.[\dA-Za-z]+/.test(lastPath);
-    const parsedPath = paths.map((p, i) => {
-        if (i === paths.length - 1) return p;
+    const parsedPath = paths.map((p, index) => {
+        if (index === paths.length - 1) return p;
         if (isLastPathWithFile) return p.replace(/\/[^/]+(\.yaml)?(#.*)?$/, '/');
-        return p.split('#')[0];
+        return p.split('#', 1)[0];
     });
 
     const segmentsPathArray = parsedPath.join('/').split('/');
 
     const result = segmentsPathArray
-        .reduce<string[]>((acc, segment) => {
-            if (!segment) return acc;
+        .reduce<string[]>((accumulator, segment) => {
+            if (!segment) return accumulator;
             if (segment === '.') {
-                const prevSegment = acc.at(-1);
-                if (!prevSegment) acc.push(segment);
-                return acc;
+                const previousSegment = accumulator.at(-1);
+                if (!previousSegment) accumulator.push(segment);
+                return accumulator;
             }
 
             if (segment === '..') {
-                acc.pop();
-                return acc;
+                accumulator.pop();
+                return accumulator;
             }
 
-            const prevSegmentForHash = acc.at(-1);
+            const previousSegmentForHash = accumulator.at(-1);
             if (segment === '#') {
-                acc[acc.length - 1] = `${prevSegmentForHash}#`;
-                return acc;
+                accumulator[accumulator.length - 1] = `${previousSegmentForHash}#`;
+                return accumulator;
             }
 
-            acc.push(segment);
-            return acc;
+            accumulator.push(segment);
+            return accumulator;
         }, [])
         .join('/');
 
     return result;
 };
 
-export const serializeToCamelCase = (str: string) => {
-    const words = str.split('_');
+export const serializeToCamelCase = (string_: string) => {
+    const words = string_.split('_');
     const camelCaseName = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('');
 
     return camelCaseName;
 };
 
-export const getNestedValue = <T extends Record<string, unknown>>(obj: T, objPath: string[]) => {
-    const target = objPath.reduce<T>((acc, key) => (acc[key] as T) || ({} as T), obj);
+export const getNestedValue = <T extends Record<string, unknown>>(object: T, objectPath: string[]) => {
+    const target = objectPath.reduce<T>((accumulator, key) => (accumulator[key] as T) || ({} as T), object);
 
     return target;
 };

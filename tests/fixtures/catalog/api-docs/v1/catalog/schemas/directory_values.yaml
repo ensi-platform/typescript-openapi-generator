@@ -1,0 +1,161 @@
+DirectoryValueReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор значения
+      example: 1258
+    url:
+      type: string
+      nullable: true
+      description: URL файла
+      example: https://images.com?id-123
+    type:
+      type: string
+      description: Тип значения из перечисления CatalogPropertyTypeEnum
+      example: integer
+    property_id:
+      type: integer
+      description: Идентификатор атрибута, которому принадлежит значение
+      example: 1
+  required:
+    - id
+    - type
+DirectoryValueFillableProperties:
+  type: object
+  properties:
+    value:
+      nullable: false
+      type: string
+      description: >
+        Значение элемента справочника (string|number|integer|boolean) Обязателен
+        для заполнения, если не задан preload_file_id.
+      example: "#FFFFFF"
+    name:
+      type: string
+      description: Название значения (например, имя цвета)
+      example: 500 мм
+    code:
+      type: string
+      description: Символьный код значения
+      example: 15-mm
+DirectoryValueFillableRequiredProperties:
+  type: object
+  required:
+    - value
+    - name
+    - code
+  additionalProperties:
+    type: string
+DirectoryValueModifyProperties:
+  type: object
+  properties:
+    preload_file_id:
+      type: integer
+      description: Идентификатор предзагруженного ранее файла
+      example: 1010
+DirectoryValueExtendedProperties:
+  type: object
+  properties:
+    property_id:
+      type: integer
+      description: Идентификатор атрибута, которому принадлежит значение
+      example: 150
+AttributeDirectoryValue:
+  allOf:
+    - $ref: "#/DirectoryValueReadonlyProperties"
+    - $ref: "#/DirectoryValueFillableProperties"
+DirectoryValue:
+  allOf:
+    - $ref: "#/DirectoryValueReadonlyProperties"
+    - $ref: "#/DirectoryValueFillableProperties"
+    - $ref: "#/DirectoryValueFillableRequiredProperties"
+    - $ref: "#/DirectoryValueExtendedProperties"
+CreateDirectoryValueRequest:
+  allOf:
+    - $ref: "#/DirectoryValueFillableProperties"
+    - $ref: "#/DirectoryValueModifyProperties"
+MassCreateDirectoryValueRequest:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/CreateDirectoryValueRequest"
+ReplaceDirectoryValueRequest:
+  allOf:
+    - $ref: "#/DirectoryValueFillableProperties"
+    - $ref: "#/DirectoryValueModifyProperties"
+PatchDirectoryValueRequest:
+  allOf:
+    - $ref: "#/DirectoryValueFillableProperties"
+    - $ref: "#/DirectoryValueModifyProperties"
+SearchDirectoryValuesFilter:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Идентификатор(ы) значений
+      example: 2
+    name:
+      type: string
+      description: Название или часть названия значения
+      example: Красный
+    code:
+      type: string
+      description: Код(ы) значений
+      example: krasnyi
+    property_id:
+      type: integer
+      description: Идентификатор(ы) атрибута, которому принадлежит значение
+      example: 1024
+    value:
+      type: string
+      description: Значение элемента справочника (string|number|integer|boolean)
+      example: "#FFFFFF"
+SearchDirectoryValuesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      $ref: "#/SearchDirectoryValuesFilter"
+DirectoryValueResponse:
+  type: object
+  properties:
+    data:
+      $ref: "#/DirectoryValue"
+    meta:
+      type: object
+      additionalProperties:
+        type: string
+  required:
+    - data
+MassDirectoryValueResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DirectoryValue"
+  required:
+    - data
+SearchDirectoryValuesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/DirectoryValue"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,70 @@
+ActualCategoryPropertyReadonlyProperties:
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Identifier
+      example: 202
+    actual_category_property_id:
+      type: integer
+      description: ID from PIM
+      example: 202
+    property_id:
+      type: integer
+      description: ID property
+    category_id:
+      type: integer
+      description: ID category
+    is_migrated:
+      type: boolean
+      description: Saved/created during migration of records from master services
+      example: true
+    created_at:
+      description: Date of creation
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+    updated_at:
+      description: Date of update
+      format: date-time
+      type: string
+      example: 2021-07-03T11:57:28.000000Z
+  required:
+    - id
+    - actual_category_property_id
+    - property_id
+    - category_id
+    - is_migrated
+    - created_at
+    - updated_at
+ActualCategoryProperty:
+  allOf:
+    - $ref: "#/ActualCategoryPropertyReadonlyProperties"
+SearchActualCategoryPropertiesRequest:
+  type: object
+  properties:
+    sort:
+      $ref: ../../common_schemas.yaml#/RequestBodySort
+    include:
+      $ref: ../../common_schemas.yaml#/RequestBodyInclude
+    pagination:
+      $ref: ../../common_schemas.yaml#/RequestBodyPagination
+    filter:
+      type: object
+      additionalProperties:
+        type: string
+SearchActualCategoryPropertiesResponse:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/ActualCategoryProperty"
+    meta:
+      type: object
+      properties:
+        pagination:
+          $ref: ../../common_schemas.yaml#/ResponseBodyPagination
+  required:
+    - data
+    - meta

@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Catalog Duplicates API
+  version: 1.0.0
+paths:
+  /catalog/actual-category-properties:search:
+    $ref: ./catalog/categories-paths.yaml#/ActualCategoryPropertiesSearch
+  /catalog/feed-actual-category-properties:search:
+    $ref: ./catalog/categories-paths.yaml#/FeedActualCategoryPropertiesSearch
+components:
+  schemas: {}

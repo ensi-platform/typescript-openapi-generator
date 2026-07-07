@@ -1,0 +1,34 @@
+ActualCategoryPropertiesSearch:
+  post:
+    tags:
+      - catalog
+    operationId: searchActualCategoryProperties
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesRequest
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/actual_category_properties.yaml#/SearchActualCategoryPropertiesResponse
+FeedActualCategoryPropertiesSearch:
+  post:
+    tags:
+      - catalog
+    operationId: searchFeedActualCategoryProperties
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas/feed_actual_category_properties.yaml#/SearchActualCategoryPropertiesRequest
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/feed_actual_category_properties.yaml#/SearchActualCategoryPropertiesResponse

@@ -1,11 +1,10 @@
 import commonjsPlugin from '@rollup/plugin-commonjs';
-import { resolve } from 'node:path';
-import { externalizeDeps } from 'vite-plugin-externalize-deps';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
-import { createDistPackageJson } from './plugins/createPackageJson';
+import package_ from './package.json' with { type: 'json' };
+import { createDistPackageJson as createDistributionPackageJson } from './plugins/createPackageJson';
 
 export default defineConfig({
     build: {
@@ -15,6 +14,7 @@ export default defineConfig({
             formats: ['es'],
         },
         rollupOptions: {
+            external: [...Object.keys(package_.dependencies), /^node:/],
             plugins: [commonjsPlugin()],
             output: {
                 entryFileNames: '[name].js',
@@ -24,21 +24,18 @@ export default defineConfig({
         },
     },
     plugins: [
-        externalizeDeps({
-            deps: true,
-        }),
         dts(),
         viteStaticCopy({
             targets: [
-                { src: resolve(__dirname, 'bin/*'), dest: resolve(__dirname, 'dist/bin') },
-                { src: resolve(__dirname, 'README.md'), dest: resolve(__dirname, 'dist') },
-                { src: resolve(__dirname, 'LICENSE.md'), dest: resolve(__dirname, 'dist') },
+                { src: 'bin/*', dest: 'bin', rename: { stripBase: true } },
+                { src: 'README.md', dest: '.' },
+                { src: 'LICENSE.md', dest: '.' },
             ],
         }),
         {
             name: 'create-dist-package-json',
             closeBundle: () => {
-                createDistPackageJson();
+                createDistributionPackageJson();
             },
         },
     ],

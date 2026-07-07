@@ -2,8 +2,11 @@ import readline from 'node:readline';
 
 export class TerminalLoader {
     private processInfo: string;
+
     private startInfo: string;
+
     private finishInfo: string;
+
     private error: string;
 
     constructor({
@@ -42,13 +45,13 @@ export class TerminalLoader {
 
     private start = () => {
         console.info(this.startInfo);
-        console.info(this.processInfo + '...');
+        console.info(`${this.processInfo}...`);
     };
 
     private finish = () => {
         readline.moveCursor(process.stdout, 0, -1);
         readline.clearLine(process.stdout, 0);
-        console.info('\u001B[32m%s\u001B[0m', this.finishInfo);
+        console.info('\u{1B}[32m%s\u{1B}[0m', this.finishInfo);
         readline.moveCursor(process.stdout, 0, 1);
     };
 
@@ -59,7 +62,7 @@ export class TerminalLoader {
             this.finish();
 
             return result;
-        } catch (err) {
+        } catch {
             throw new Error(this.error);
         }
     };
