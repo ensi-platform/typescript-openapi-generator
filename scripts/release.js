@@ -14,9 +14,49 @@ const rl = readline.createInterface({
 
 const question = query => new Promise(resolve => rl.question(query, resolve));
 
+const runCapture = (command, options = {}) => execSync(command, { encoding: 'utf-8', ...options }).trim();
+
 const run = (command, options = {}) => {
     console.log(`> ${command}`);
     return execSync(command, { stdio: 'inherit', ...options });
+};
+
+const tagExists = tag => {
+    try {
+        runCapture(`git rev-parse refs/tags/${tag}`);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+const remoteTagExists = tag => {
+    try {
+        return runCapture(`git ls-remote --tags origin refs/tags/${tag}`).length > 0;
+    } catch {
+        return false;
+    }
+};
+
+const assertReleaseTagIsFree = version => {
+    const tagName = `v${version}`;
+    const conflicts = [];
+
+    if (tagExists(tagName)) {
+        conflicts.push(`локальный тег ${tagName}`);
+    }
+
+    if (remoteTagExists(tagName)) {
+        conflicts.push(`удалённый тег ${tagName}`);
+    }
+
+    if (conflicts.length === 0) {
+        return;
+    }
+
+    console.error(`❌ Ошибка: ${conflicts.join(', ')} уже существует.`);
+    console.error('Выберите другой тип версии или удалите тег перед релизом.');
+    process.exit(1);
 };
 
 const getPackageJson = () => {
@@ -113,6 +153,8 @@ const main = async () => {
         process.exit(0);
     }
 
+    assertReleaseTagIsFree(newVersion);
+
     // Обновляем версию в package.json
     console.log('\n📝 Обновление package.json...');
     packageJson.version = newVersion;
@@ -132,7 +174,20 @@ const main = async () => {
 
     // Создаем тег
     console.log('\n🏷️  Создание git тега...');
-    run(`git tag -a v${newVersion} -m "Release v${newVersion}"`);
+    const tagName = `v${newVersion}`;
+    if (tagExists(tagName)) {
+        const tagCommit = runCapture(`git rev-parse refs/tags/${tagName}^{commit}`);
+        const headCommit = runCapture('git rev-parse HEAD');
+
+        if (tagCommit === headCommit) {
+            console.log(`ℹ️  Тег ${tagName} уже указывает на текущий коммит, пропускаем.`);
+        } else {
+            console.error(`❌ Тег ${tagName} уже существует на другом коммите.`);
+            process.exit(1);
+        }
+    } else {
+        run(`git tag -a ${tagName} -m "Release ${tagName}"`);
+    }
 
     // Публикуем в npm
     console.log('\n📦 Публикация в npm...');
