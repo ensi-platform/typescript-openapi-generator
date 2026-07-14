@@ -5,11 +5,7 @@ import { normalizeObjectAllOfSchemas } from '../../src/common/normalizeObjectAll
 describe('normalizeObjectAllOfSchemas', () => {
     it('collapses allOf [$ref, nullable, description] into allOf+nullable on node', () => {
         const deliveryAddress = {
-            allOf: [
-                { $ref: '#/components/schemas/Address' },
-                { nullable: true },
-                { description: 'Адрес доставки' },
-            ],
+            allOf: [{ $ref: '#/components/schemas/Address' }, { nullable: true }, { description: 'Адрес доставки' }],
         };
         const spec = {
             components: {
@@ -40,10 +36,7 @@ describe('normalizeObjectAllOfSchemas', () => {
 
     it('collapses allOf [$ref, {nullable+description}] into allOf+nullable on node', () => {
         const deliveryAddress = {
-            allOf: [
-                { $ref: '#/components/schemas/Address' },
-                { nullable: true, description: 'Адрес доставки' },
-            ],
+            allOf: [{ $ref: '#/components/schemas/Address' }, { nullable: true, description: 'Адрес доставки' }],
         };
         const spec = {
             components: {
