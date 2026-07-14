@@ -46,17 +46,43 @@ function isMergeableAllOfObject(node: SchemaNode): boolean {
     return Object.keys(node).every(key => MERGEABLE_OBJECT_KEYS.has(key));
 }
 
+const PRESERVED_NODE_KEY_SET = new Set<string>(PRESERVED_NODE_KEYS);
+
 function isNullType(node: SchemaNode): boolean {
     return node.type === 'null';
 }
 
+function isPreservedOnlyFragment(node: SchemaNode): boolean {
+    const keys = Object.keys(node);
+    return keys.length > 0 && keys.every(key => PRESERVED_NODE_KEY_SET.has(key) || key === 'type');
+}
+
+/**
+ * allOf-фрагмент только про nullability (+ metadata).
+ * `{ nullable: true }`, `{ type: null }`, `{ nullable: true, description: '...' }`.
+ */
 function isNullMarker(node: SchemaNode): boolean {
     if (isNullType(node)) {
-        return true;
+        return isPreservedOnlyFragment(node);
     }
 
-    const keys = Object.keys(node);
-    return node.nullable === true && keys.length === 1;
+    if (node.nullable !== true) {
+        return false;
+    }
+
+    return Object.keys(node).every(key => PRESERVED_NODE_KEY_SET.has(key));
+}
+
+function hoistPreservedKeys(target: SchemaNode, source: SchemaNode): void {
+    for (const key of PRESERVED_NODE_KEYS) {
+        if (key === 'nullable') {
+            continue;
+        }
+
+        if (key in source && !(key in target)) {
+            target[key] = source[key];
+        }
+    }
 }
 
 function getNullableObjectBranch(node: SchemaNode): SchemaNode | undefined {
@@ -145,6 +171,7 @@ function normalizeNodeAllOf(node: SchemaNode, schemas: Record<string, unknown> |
     };
     const mergedRequired = new Set<string>(Array.isArray(node.required) ? (node.required as string[]) : []);
     const remaining: SchemaNode[] = [];
+    const hoistedPreserved: SchemaNode = {};
     let isChanged = false;
     let isNullable = node.nullable === true;
 
@@ -157,6 +184,7 @@ function normalizeNodeAllOf(node: SchemaNode, schemas: Record<string, unknown> |
 
         if (isNullMarker(item)) {
             isNullable = true;
+            hoistPreservedKeys(hoistedPreserved, item);
             isChanged = true;
             continue;
         }
@@ -164,6 +192,10 @@ function normalizeNodeAllOf(node: SchemaNode, schemas: Record<string, unknown> |
         const resolved = resolveFragment(item, schemas);
 
         if (isSkippableEmptyFragment(resolved) || isSkippableEmptyFragment(item)) {
+            hoistPreservedKeys(hoistedPreserved, item);
+            if (isSkippableEmptyFragment(resolved) && resolved !== item) {
+                hoistPreservedKeys(hoistedPreserved, resolved);
+            }
             isChanged = true;
             continue;
         }
@@ -214,7 +246,7 @@ function normalizeNodeAllOf(node: SchemaNode, schemas: Record<string, unknown> |
         return false;
     }
 
-    const preserved: SchemaNode = {};
+    const preserved: SchemaNode = { ...hoistedPreserved };
     for (const key of PRESERVED_NODE_KEYS) {
         if (key in node) {
             preserved[key] = node[key];
@@ -225,8 +257,12 @@ function normalizeNodeAllOf(node: SchemaNode, schemas: Record<string, unknown> |
         preserved.nullable = true;
     }
 
+    // OAS 3.0: allOf + nullable на узле стабильнее для orval, чем sibling у $ref
     if (remaining.length === 1 && typeof remaining[0].$ref === 'string' && Object.keys(mergedProperties).length === 0) {
-        const referenceOnly: SchemaNode = { $ref: remaining[0].$ref, ...preserved };
+        const referenceOnly: SchemaNode = {
+            allOf: [{ $ref: remaining[0].$ref }],
+            ...preserved,
+        };
         for (const key of Object.keys(node)) {
             delete node[key];
         }
